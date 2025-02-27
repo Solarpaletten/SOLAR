@@ -12,8 +12,7 @@ describe('Client Endpoints', () => {
   beforeEach(async () => {
     try {
       // Очистка БД
-      await prisma.$transaction([
-        prisma.purchases.deleteMany({}),
+      await prisma.$transaction([ 
         prisma.clients.deleteMany({}),
         prisma.products.deleteMany({}),
         prisma.chart_of_accounts.deleteMany({}),
