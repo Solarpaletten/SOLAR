@@ -41,3 +41,6 @@ prisma/migrations/
 # Temp files
 tmp/
 temp/ 
+
+# Prisma generated files
+prisma/generated/
