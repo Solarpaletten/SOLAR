@@ -95,3 +95,5 @@ RENDER_API_KEY_F
 https://api.render.com/deploy/srv-cu234ldds78s738eh6ug?key=Lyg7CmKEFw4
 
 test clients auth.test.js
+
+delete test product
