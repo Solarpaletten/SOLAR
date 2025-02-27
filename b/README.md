@@ -93,3 +93,5 @@ https://api.render.com/deploy/srv-cse013jv2p9s73b2i760?key=fu2FSU16Elo
 
 RENDER_API_KEY_F
 https://api.render.com/deploy/srv-cu234ldds78s738eh6ug?key=Lyg7CmKEFw4
+
+test clients auth.test.js
