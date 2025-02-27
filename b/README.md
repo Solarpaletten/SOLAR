@@ -82,3 +82,14 @@ VITE_API_URL=http://localhost:4000
 VITE_API_URL=http://localhost:5173
 
 new
+
+DATABASE_URL postgresql://solar_user:PWO1lclgDswIAhL7OV1zBKGglUeTPmuf@dpg-cs4khfrtq21c73fve2j0-a.oregon-postgres.render.com/solar_eat1
+
+
+JWT_SECRET bAw7>k3sUz&=a]g%rPECtc
+
+RENDER_API_KEY_B
+https://api.render.com/deploy/srv-cse013jv2p9s73b2i760?key=fu2FSU16Elo
+
+RENDER_API_KEY_F
+https://api.render.com/deploy/srv-cu234ldds78s738eh6ug?key=Lyg7CmKEFw4
