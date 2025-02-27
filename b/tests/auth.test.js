@@ -9,7 +9,6 @@ jest.setTimeout(30000); // увеличиваем до 30 секунд
 describe('Auth Endpoints', () => {
   beforeEach(async () => {
     await prisma.$transaction([
-      prisma.sales.deleteMany({}),
       prisma.purchases.deleteMany({}),
       prisma.clients.deleteMany({}),
       prisma.products.deleteMany({}),
