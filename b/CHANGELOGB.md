@@ -51,3 +51,19 @@
 - [ ] API documentation
 - [ ] Performance optimization
 - [ ] Security enhancements
+
+# Changelog
+
+All notable changes to the LEANID SOLAR project will be documented in this file.
+
+## [Unreleased]
+
+### Added
+- 2025-02-28: Created test schema `schema.test.prisma` for isolated testing, configured tests to use `.env.test` with test database `solartest`.
+- 2025-02-28: Restored cleanup of `clients` table in tests after syncing test database with all required tables (`users`, `clients`, `sales`, `purchases`, `doc_settlement`, etc.).
+
+### Changed
+- 2025-02-28: Updated `setup.js` to load `.env.test` and use test-specific Prisma client from `prisma/generated/test`.
+
+### Fixed
+- 2025-02-28: Resolved `PrismaClientKnownRequestError` by ensuring test database has all necessary tables.
