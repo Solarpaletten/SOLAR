@@ -63,13 +63,17 @@
     "nodemailer": "^6.10.0",
     "pdfkit": "^0.13.0",
     "prisma": "^6.3.1",
+    "jest": {
+  "moduleNameMapper": {
+    "@prisma/test-client": "<rootDir>/prisma/generated/test/index.js"
+  }
+},
     "@prisma/client": "^5.x.x",
     "rate-limit-redis": "^3.0.0",
     "sharp": "^0.32.1",
     "stopword": "^2.0.8",
     "uuid": "^11.0.5",
     "winston": "^3.8.2"
-  },
   
   "devDependencies": {
     "@prisma/client": "^6.3.1",
