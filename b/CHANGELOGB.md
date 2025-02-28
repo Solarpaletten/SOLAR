@@ -73,3 +73,6 @@ All notable changes to the LEANID SOLAR project will be documented in this file.
 - 2025-02-28: Replaced test database with solar_eat1_test_tdjt, updated GitHub Secrets with new DATABASE_URL, and removed .env.test from local tracking.
 ### Fixed
 - 2025-03-01: Corrected Prisma client import path in setup.js to fix test module resolution error.
+## Fix
+Fix Prisma client import path in setup.js for test schema
+
