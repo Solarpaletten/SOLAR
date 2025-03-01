@@ -50,7 +50,7 @@ describe('Auth Endpoints', () => {
     });
 
     expect(res.statusCode).toBe(400);
-    expect(res.body).toHaveProperty('error');
+    expect(res.body).toHaveProperty('error', 'Email already registered');
   });
 
   describe('POST /api/auth/login', () => {
@@ -83,7 +83,7 @@ describe('Auth Endpoints', () => {
       });
 
       expect(res.statusCode).toBe(401);
-      expect(res.body).toHaveProperty('error');
+      expect(res.body).toHaveProperty('message', 'Неверный пароль');
     });
   });
 

@@ -1,6 +1,6 @@
 require('dotenv').config({ path: '.env.test' });
 
-const { PrismaClient } = require('@prisma/test-client');
+const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 beforeAll(async () => {
