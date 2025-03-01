@@ -71,5 +71,8 @@ All notable changes to the LEANID SOLAR project will be documented in this file.
 - 2025-02-28: Updated test database to solar_eat1_test_tdjt with new credentials, applied migrations, and ensured tests pass in GitHub Actions.
 ### Changed
 - 2025-02-28: Replaced test database with solar_eat1_test_tdjt, updated GitHub Secrets with new DATABASE_URL, and removed .env.test from local tracking.
-### Fixed
-- 2025-03-01: Corrected Prisma client import path in setup.js to fix test module resolution error.
+### Added
+- 2025-03-01: Deployed frontend npmfr-frontend on Render in project Solar.
+- 2025-03-01: Deployed backend on Vercel with integration to Render databases.
+
+
