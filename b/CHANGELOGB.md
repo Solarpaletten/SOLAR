@@ -74,5 +74,9 @@ All notable changes to the LEANID SOLAR project will be documented in this file.
 ### Added
 - 2025-03-01: Deployed frontend npmfr-frontend on Render in project Solar.
 - 2025-03-01: Deployed backend on Vercel with integration to Render databases.
+### Deployed backend frontend
+- 2025-03-01: Deployed backend frontend on Render in project Solar.
+### Added
+- 2025-03-01: Corrected service names to npmbk (backend) and npmfr (frontend) in Render.
 
 
