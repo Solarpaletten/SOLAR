@@ -11,7 +11,7 @@
     "check-format": "prettier --check \"**/*.{js,ts,jsx,tsx,json,css}\"",
     "prepare": "exit 0",
     "pretest": "rm -rf logs && mkdir -p logs",
-    "test": "jest --forceExit --detectOpenHandles",
+    "test": "dotenv -e .env.test -- jest --forceExit --detectOpenHandles",
     "scan": "node src/utils/dbScan.js",
     "ca": "node src/utils/ca.js",
     "prisma:format": "prisma format",
@@ -37,6 +37,7 @@
     "check-routes": "tsx src/utils/routeChecker/index.ts"
   },
   "dependencies": {
+    "@prisma/client": "^5.x.x",
     "@turf/turf": "^6.5.0",
     "archiver": "^5.3.1",
     "axios": "^1.7.9",
@@ -63,7 +64,6 @@
     "nodemailer": "^6.10.0",
     "pdfkit": "^0.13.0",
     "prisma": "^6.3.1",
-    "@prisma/client": "^5.x.x",
     "rate-limit-redis": "^3.0.0",
     "sharp": "^0.32.1",
     "stopword": "^2.0.8",
@@ -74,6 +74,7 @@
     "@prisma/client": "^6.3.1",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.10.10",
+    "dotenv-cli": "^8.0.0",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
