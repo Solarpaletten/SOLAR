@@ -81,7 +81,7 @@ jobs:
         run: |
           curl -X POST \
             -H "Authorization: Bearer $RENDER_API_KEY_BACKEND" \
-            https://api.render.com/v1/services/srv-cse013jv2p9s73b2i760/deploys
+            https://api.render.com/deploy/srv-cv1lsclsvqrc738ou1j0?key=eggRuEnFkC8
 
       # Frontend deployment
       - name: Deploy Frontend to Render
@@ -90,4 +90,4 @@ jobs:
         run: |
           curl -X POST \
             -H "Authorization: Bearer $RENDER_API_KEY_FRONTEND" \
-            https://api.render.com/v1/services/srv-cu234ldds78s738eh6ug/deploys
+            https://api.render.com/deploy/srv-cv1lt9ij1k6c73957uk0?key=FU1hKmmHjdU
