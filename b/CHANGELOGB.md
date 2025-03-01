@@ -78,5 +78,7 @@ All notable changes to the LEANID SOLAR project will be documented in this file.
 - 2025-03-01: Deployed backend frontend on Render in project Solar.
 ### Added
 - 2025-03-01: Corrected service names to npmbk (backend) and npmfr (frontend) in Render.
+### Fixed
+- 2025-03-01: Fixed EJSONPARSE error in b/package.json by adding missing closing brace and removing extra comma.
 
 
