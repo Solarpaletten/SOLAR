@@ -88,4 +88,6 @@ All notable changes to the LEANID SOLAR project will be documented in this file.
 - 2025-03-01: Updated deploy.yml to use DATABASE_URL_TEST_VERCEL for tests.
 ### Fixed
 - 2025-03-02: Updated authController.js to use users_t model for tests, fixing failing registration in tests.
+### Fixed
+- 2025-03-02: Fixed Prisma Client import path in tests to resolve module not found error.
 
