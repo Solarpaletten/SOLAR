@@ -1,12 +1,19 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const path = require('path'); // Добавляем модуль path
 const { logger } = require('../config/logger');
 const emailService = require('../services/emailService');
 const { generateTemporaryPassword } = require('../utils/create/tokenGenerator');
-const {PrismaClient: PrismaClientTest,} = require('../../prisma/generated/test');
+
+// Используем абсолютный путь для импорта Prisma Client
+const { PrismaClient: PrismaClientTest } = require(path.resolve(
+  __dirname,
+  '../../prisma/generated/test'
+));
 const { PrismaClient: PrismaClientProd } = require('@prisma/client');
 
+// Выбираем Prisma Client в зависимости от окружения
 const prisma =
   process.env.NODE_ENV === 'test'
     ? new PrismaClientTest()
