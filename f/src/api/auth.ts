@@ -2,8 +2,9 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
-export const login = async (email, password) => {
-  console.log('API_URL being used:', API_URL); // Добавь для отладки
+// Функция логина с явными типами
+export const login = async (email: string, password: string) => {
+  console.log('Sending request to:', `${API_URL}/api/auth/login`);
   const response = await axios.post(`${API_URL}/api/auth/login`, {
     email,
     password,
@@ -11,7 +12,12 @@ export const login = async (email, password) => {
   return response.data;
 };
 
-export const register = async (email, password, username) => {
+// Функция регистрации с явными типами
+export const register = async (
+  email: string,
+  password: string,
+  username: string
+) => {
   const response = await axios.post(`${API_URL}/api/auth/register`, {
     email,
     password,

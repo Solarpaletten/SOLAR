@@ -1,37 +1,41 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { loginRequest } from '../../api/auth';
-import { LoginForm } from '../../components/auth/LoginForm';
+import React, { useState } from 'react';
+import { login } from '../../api/auth';
 
 const LoginPage: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const navigate = useNavigate();
-
-  const handleLogin = async (formEmail: string, formPassword: string) => {
-    setIsLoading(true);
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
-      const response = await loginRequest(formEmail, formPassword);
-      console.log('Login response:', response);
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('userEmail', response.user.email);
-      navigate('/dashboard');
+      const response = await login(email, password);
+      console.log('Login successful:', response);
+      // Сохрани токен и перенаправь пользователя
     } catch (err: any) {
-      // Явно указываем тип или используем более конкретный тип, например Error
-      console.error('Login failed:', err);
-      setError('Login failed: ' + (err.message || 'Unknown error'));
+      setError(err.message || 'Login failed');
     }
-    setIsLoading(false);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white shadow-md rounded-lg p-8">
-        <h1 className="text-2xl font-bold text-center mb-6">SOLAR</h1>
-        <LoginForm onLogin={handleLogin} isLoading={isLoading} />
-        {error && <p className="text-red-500 mt-4">{error}</p>}
-      </div>
+    <div>
+      <h1>SOLAR</h1>
+      <form onSubmit={handleLogin}>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button type="submit">Login</button>
+        {error && <p>{error}</p>}
+      </form>
     </div>
   );
 };
