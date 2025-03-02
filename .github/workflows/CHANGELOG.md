@@ -126,3 +126,9 @@ All notable changes to the LEANID SOLAR project will be documented in this file.
 - 2025-03-02: Fixed backend deployment by updating Prisma Client import; fixed frontend 502 error by setting Start Command to npm run preview.
 ### Fixed
 - 2025-03-02: Fixed backend deployment on Render by resolving Prisma Client generation error and updating Build Command.
+### Fixed
+- 2025-03-02: Switched backend to main database (DATABASE_URL) and removed test database (DATABASE_URL_TEST_VERCEL) for production.
+### Fixed
+- 2025-03-02: Updated Prisma Client imports and admin password to pass123 for production.
+### Fixed
+- 2025-03-02: Fixed server startup by ensuring prismaManager.connect is properly called.

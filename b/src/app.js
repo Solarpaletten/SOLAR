@@ -3,7 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const { logger } = require('./config/logger');
-const prismaManager = require('./utils/create/prismaManager');
+const prismaManager = require('./utils/prismaManager');
 
 const app = express();
 

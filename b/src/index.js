@@ -1,6 +1,6 @@
 const app = require('./app'); // Импортируем наше приложение
 const { logger } = require('./config/logger');
-const prismaManager = require('./utils/create/prismaManager');
+const prismaManager = require('./utils/prismaManager');
 
 // Проверка состояния базы данных и запуск сервера
 async function startServer() {
