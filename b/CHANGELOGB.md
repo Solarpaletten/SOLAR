@@ -82,4 +82,10 @@ All notable changes to the LEANID SOLAR project will be documented in this file.
 - 2025-03-01: Fixed EJSONPARSE error in b/package.json by adding missing closing brace and removing extra comma.
 ### Added
 - 2025-03-01: Created new migration to add purchases table to test database.
+### Added
+- 2025-03-01: Created new migration to add purchases table to test database.
+### Fixed
+- 2025-03-01: Updated deploy.yml to use DATABASE_URL_TEST_VERCEL for tests.
+### Fixed
+- 2025-03-02: Updated authController.js to use users_t model for tests, fixing failing registration in tests.
 
