@@ -6,12 +6,14 @@ const { logger } = require('../config/logger');
 const emailService = require('../services/emailService');
 const { generateTemporaryPassword } = require('../utils/create/tokenGenerator');
 
+const usersTable = process.env.NODE_ENV === 'test' ? 'users_t' : 'users';
+
 class AuthController {
   async verifyEmail(req, res) {
     try {
       const { token } = req.params;
 
-      const user = await prismaManager.prisma.users.findFirst({
+      const user = await prismaManager.prisma[usersTable].findFirst({
         where: {
           verification_token: token,
           token_expires: {
@@ -46,7 +48,7 @@ class AuthController {
     try {
       const { email } = req.body;
 
-      const user = await prismaManager.prisma.users.findUnique({
+      const user = await prismaManager.prisma[usersTable].findUnique({
         where: { email },
       });
 
@@ -84,7 +86,7 @@ class AuthController {
     try {
       const { token, password } = req.body;
 
-      const user = await prismaManager.prisma.users.findFirst({
+      const user = await prismaManager.prisma[usersTable].findFirst({
         where: {
           reset_token: token,
           reset_token_expires: {
@@ -120,7 +122,7 @@ class AuthController {
 
   async getCurrentUser(req, res) {
     try {
-      const user = await prismaManager.prisma.users.findUnique({
+      const user = await prismaManager.prisma[usersTable].findUnique({
         where: { id: req.user.id },
         select: {
           id: true,
@@ -172,7 +174,7 @@ class AuthController {
         return res.status(400).json({ error: 'All fields are required' });
       }
 
-      const existingUser = await prismaManager.prisma.users.findUnique({
+      const existingUser = await prismaManager.prisma[usersTable].findUnique({
         where: { email },
       });
 
@@ -183,7 +185,7 @@ class AuthController {
       const salt = await bcrypt.genSalt(10);
       const passwordHash = await bcrypt.hash(password, salt);
 
-      const user = await prismaManager.prisma.users.create({
+      const user = await prismaManager.prisma[usersTable].create({
         data: {
           email,
           username,
@@ -236,7 +238,7 @@ class AuthController {
 
       logger.info('Login attempt:', { email });
 
-      const user = await prismaManager.prisma.users.findUnique({
+      const user = await prismaManager.prisma[usersTable].findUnique({
         where: { email },
       });
 
@@ -298,7 +300,7 @@ class AuthController {
       }
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      const user = await prismaManager.prisma.users.findUnique({
+      const user = await prismaManager.prisma[usersTable].findUnique({
         where: { id: decoded.id },
       });
 
