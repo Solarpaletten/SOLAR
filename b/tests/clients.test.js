@@ -1,6 +1,6 @@
 const request = require('supertest');
 const app = require('../src/app');
-const { PrismaClient } = require('@prisma/client');
+const { PrismaClient } = require('../prisma/generated/test');
 const prisma = new PrismaClient();
 
 jest.setTimeout(60000);
@@ -13,12 +13,12 @@ describe('Client Endpoints', () => {
     try {
       // Очистка БД
       await prisma.$transaction([
-        prisma.purchases.deleteMany({}),
-        prisma.clients.deleteMany({}),
-        prisma.products.deleteMany({}),
-        prisma.chart_of_accounts.deleteMany({}),
-        prisma.bank_operations.deleteMany({}),
-        prisma.warehouses.deleteMany({}),
+        prisma.purchases_t.deleteMany({}),
+        prisma.clients_t.deleteMany({}),
+        prisma.products_t.deleteMany({}),
+        prisma.chart_of_accounts_t.deleteMany({}),
+        prisma.bank_operations_t.deleteMany({}),
+        prisma.warehouses_t.deleteMany({}),
       ]);
 
       const registerResponse = await request(app)

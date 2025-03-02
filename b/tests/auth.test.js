@@ -1,7 +1,7 @@
 // auth.test.js
 const request = require('supertest');
 const app = require('../src/app');
-const { PrismaClient } = require('@prisma/client');
+const { PrismaClient } = require('../prisma/generated/test');
 const prisma = new PrismaClient();
 
 jest.setTimeout(30000); // увеличиваем до 30 секунд
@@ -9,13 +9,13 @@ jest.setTimeout(30000); // увеличиваем до 30 секунд
 describe('Auth Endpoints', () => {
   beforeEach(async () => {
     await prisma.$transaction([
-      prisma.purchases.deleteMany({}),
-      prisma.clients.deleteMany({}),
-      prisma.products.deleteMany({}),
-      prisma.chart_of_accounts.deleteMany({}),
-      prisma.bank_operations.deleteMany({}),
-      prisma.warehouses.deleteMany({}),
-      prisma.users.deleteMany({}),
+      prisma.purchases_t.deleteMany({}),
+      prisma.clients_t.deleteMany({}),
+      prisma.products_t.deleteMany({}),
+      prisma.chart_of_accounts_t.deleteMany({}),
+      prisma.bank_operations_t.deleteMany({}),
+      prisma.warehouses_t.deleteMany({}),
+      prisma.users_t.deleteMany({}),
     ]);
   });
 
@@ -134,7 +134,7 @@ describe('Auth Endpoints', () => {
       });
 
       // Получаем токен сброса
-      const user = await prisma.users.findUnique({
+      const user = await prisma.users_t.findUnique({
         where: { email: 'test@example.com' },
       });
       resetToken = user.reset_token;
