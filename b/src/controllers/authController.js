@@ -5,7 +5,6 @@ const { logger } = require('../config/logger');
 const emailService = require('../services/emailService');
 const { generateTemporaryPassword } = require('../utils/create/tokenGenerator');
 
-// Импортируем Prisma Client только для тестовой схемы
 const { PrismaClient } = require('../../prisma/generated/test');
 const prisma = new PrismaClient();
 
