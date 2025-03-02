@@ -7,7 +7,7 @@ async function createUser() {
       data: {
         email: 'sl@sl.de',
         password_hash:
-          '$2a$10$UZfwHDYQ16k10Sd4EQhSae23TZrDM527ZxyJPfSPNHVOpLKQ/aeIe',
+          '$2a$10$TaMAp53.tUaXDilnIYO6SOXhTXqI2lkZfJUMvhkhX08HrJLkQQJXe',
         username: 'solar',
         role: 'ADMIN',
         email_verified: true,
