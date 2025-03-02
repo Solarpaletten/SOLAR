@@ -94,4 +94,5 @@ All notable changes to the LEANID SOLAR project will be documented in this file.
 - 2025-03-02: Fixed authController.js to correctly select Prisma Client for test and prod environments, resolving undefined findUnique error.
 ### Fixed
 - 2025-03-02: Fixed Prisma Client import path in authController.js using path.resolve to resolve module not found error.
-
+### Fixed
+- 2025-03-02: Fixed authController.js to dynamically select users/users_t model based on environment, resolving undefined findUnique error.
