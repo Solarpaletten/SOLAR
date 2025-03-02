@@ -6,6 +6,9 @@ const prisma = new PrismaClient();
 beforeAll(async () => {
   console.log('Connecting to database...');
   await prisma.$connect();
+
+  // Очищаем тестовую базу данных перед тестами
+  await prisma.usersT.deleteMany();
 });
 
 afterAll(async () => {

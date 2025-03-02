@@ -5,10 +5,13 @@ const auth = require('../middleware/auth');
 const { logger } = require('../config/logger');
 const prisma = new PrismaClient();
 
-// GET /api/clients - Получение всех клиентов
+// Добавим отладку
+logger.info('Prisma Client initialized in clientsRoutes.js');
+
 router.get('/', auth, async (req, res) => {
   try {
-    const clients = await prisma.clients.findMany({
+    logger.info('Fetching all clients for user:', { userId: req.user.id });
+    const clients = await prisma.clientsT.findMany({
       where: {
         user_id: req.user.id,
       },
@@ -20,10 +23,13 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// GET /api/clients/:id - Получение клиента по ID
 router.get('/:id', auth, async (req, res) => {
   try {
-    const client = await prisma.clients.findFirst({
+    logger.info('Fetching client by ID:', {
+      id: req.params.id,
+      userId: req.user.id,
+    });
+    const client = await prisma.clientsT.findFirst({
       where: {
         id: parseInt(req.params.id),
         user_id: req.user.id,
@@ -41,7 +47,6 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
-// POST /api/clients - Создание нового клиента
 router.post('/', auth, async (req, res) => {
   try {
     if (!req.user || !req.user.id) {
@@ -58,7 +63,11 @@ router.post('/', auth, async (req, res) => {
       });
     }
 
-    const client = await prisma.clients.create({
+    logger.info('Creating new client:', {
+      data: req.body,
+      userId: req.user.id,
+    });
+    const client = await prisma.clientsT.create({
       data: {
         name: req.body.name,
         email: req.body.email,
@@ -79,13 +88,15 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-// PUT /api/clients/:id - Обновление клиента
 router.put('/:id', auth, async (req, res) => {
   try {
     const clientId = parseInt(req.params.id, 10);
 
-    // Сначала проверяем существование клиента
-    const existingClient = await prisma.clients.findFirst({
+    logger.info('Checking for existing client:', {
+      clientId,
+      userId: req.user.id,
+    });
+    const existingClient = await prisma.clientsT.findFirst({
       where: {
         AND: [{ id: clientId }, { user_id: req.user.id }],
       },
@@ -96,14 +107,13 @@ router.put('/:id', auth, async (req, res) => {
       return res.status(404).json({ error: 'Client not found' });
     }
 
-    // Обновляем клиента
-    const updatedClient = await prisma.clients.update({
+    logger.info('Updating client:', { clientId, data: req.body });
+    const updatedClient = await prisma.clientsT.update({
       where: {
         id: clientId,
       },
       data: {
         name: req.body.name,
-        // Сохраняем остальные поля без изменений
         email: existingClient.email,
         code: existingClient.code,
         vat_code: existingClient.vat_code,
@@ -121,11 +131,14 @@ router.put('/:id', auth, async (req, res) => {
   }
 });
 
-// DELETE /api/clients/:id - Удаление клиента
 router.delete('/:id', auth, async (req, res) => {
   try {
     const clientId = parseInt(req.params.id, 10);
-    const existingClient = await prisma.clients.findFirst({
+    logger.info('Checking for existing client to delete:', {
+      clientId,
+      userId: req.user.id,
+    });
+    const existingClient = await prisma.clientsT.findFirst({
       where: {
         id: clientId,
         user_id: req.user.id,
@@ -136,7 +149,7 @@ router.delete('/:id', auth, async (req, res) => {
       return res.status(404).json({ error: 'Client not found' });
     }
 
-    await prisma.clients.delete({
+    await prisma.clientsT.delete({
       where: {
         id: clientId,
         user_id: req.user.id,

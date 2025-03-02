@@ -104,3 +104,5 @@ All notable changes to the LEANID SOLAR project will be documented in this file.
 - 2025-03-02: Updated clientsRoutes.js to use test schema Prisma Client, resolving module not found error.
 ### Fixed
 - 2025-03-02: Fixed DATABASE_URL_TEST_VERCEL not found error by ensuring it is set in .env.test and GitHub Actions.
+### Fixed
+- 2025-03-02: Updated schema_t.prisma to use camelCase model names (usersT, clientsT) and fixed cleanup order in tests.
