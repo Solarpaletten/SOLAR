@@ -30,7 +30,7 @@ enum warehouse_status {
   Inactive
 }
 
-model users_t {
+model usersT {
   id                  Int       @id @default(autoincrement())
   email               String    @unique
   username            String
@@ -45,21 +45,21 @@ model users_t {
   created_at          DateTime  @default(now())
   updated_at          DateTime  @updatedAt
 
-  clients                   clients_t[]
-  purchases                 purchases_t[]
-  sales                     sales_t[]
-  bank_operations           bank_operations_t[]
-  chart_of_accounts         chart_of_accounts_t[]
-  products                  products_t[]
-  warehouses_as_user        warehouses_t[]        @relation("warehouses_user")
-  warehouses_as_responsible warehouses_t[]        @relation("warehouses_responsible_person")
-  doc_settlements           doc_settlement_t[]
+  clients                   clientsT[]
+  purchases                 purchasesT[]
+  sales                     salesT[]
+  bank_operations           bank_operationsT[]
+  chart_of_accounts         chart_of_accountsT[]
+  products                  productsT[]
+  warehouses_as_user        warehousesT[]        @relation("warehouses_user")
+  warehouses_as_responsible warehousesT[]        @relation("warehouses_responsible_person")
+  doc_settlements           doc_settlementT[]
 
   @@index([email], map: "idx_users_email") // email
   @@index([role], map: "idx_users_role")
 }
 
-model clients_t {
+model clientsT {
   id         Int        @id @default(autoincrement())
   name       String     @db.VarChar(100)
   email      String     @db.VarChar(100)
@@ -73,19 +73,19 @@ model clients_t {
   updated_at DateTime?  @default(now()) @db.Timestamp(6)
 
   // Связи с правильными названиями моделей
-  users           users_t             @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  purchases       purchases_t[]
-  sales           sales_t[]
-  warehouses      warehouses_t[]
-  doc_settlements doc_settlement_t[]
-  bank_operations bank_operations_t[]
+  users           usersT             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  purchases       purchasesT[]
+  sales           salesT[]
+  warehouses      warehousesT[]
+  doc_settlements doc_settlementT[]
+  bank_operations bank_operationsT[]
 
   @@index([created_at])
   @@index([role])
   @@index([is_active])
 }
 
-model sales_t {
+model salesT {
   id             Int       @id @default(autoincrement())
   doc_number     String    @db.VarChar(50)
   doc_date       DateTime  @db.Date
@@ -103,9 +103,9 @@ model sales_t {
   vat_rate       Decimal?  @db.Decimal(5, 2)
 
   // Связи
-  users     users_t      @relation(fields: [user_id], references: [id])
-  client    clients_t    @relation(fields: [client_id], references: [id])
-  warehouse warehouses_t @relation(fields: [warehouse_id], references: [id])
+  users     usersT      @relation(fields: [user_id], references: [id])
+  client    clientsT    @relation(fields: [client_id], references: [id])
+  warehouse warehousesT @relation(fields: [warehouse_id], references: [id])
 
   @@index([doc_date])
   @@index([client_id])
@@ -113,7 +113,7 @@ model sales_t {
   @@index([status])
 }
 
-model purchases_t {
+model purchasesT {
   id             Int       @id @default(autoincrement())
   doc_number     String    @db.VarChar(50)
   doc_date       DateTime  @db.Date
@@ -131,9 +131,9 @@ model purchases_t {
   vat_rate       Decimal?  @db.Decimal(5, 2)
 
   // Связи
-  users     users_t      @relation(fields: [user_id], references: [id])
-  client    clients_t    @relation(fields: [client_id], references: [id])
-  warehouse warehouses_t @relation(fields: [warehouse_id], references: [id])
+  users     usersT      @relation(fields: [user_id], references: [id])
+  client    clientsT    @relation(fields: [client_id], references: [id])
+  warehouse warehousesT @relation(fields: [warehouse_id], references: [id])
 
   @@index([doc_date])
   @@index([client_id])
@@ -141,7 +141,7 @@ model purchases_t {
   @@index([status])
 }
 
-model warehouses_t {
+model warehousesT {
   id                    Int              @id @default(autoincrement())
   name                  String           @db.VarChar(100)
   code                  String?          @db.VarChar(50)
@@ -154,17 +154,17 @@ model warehouses_t {
   updated_at            DateTime?        @default(now()) @db.Timestamp(6)
 
   // Связи
-  users              users_t       @relation("warehouses_user", fields: [user_id], references: [id])
-  responsible_person users_t?      @relation("warehouses_responsible_person", fields: [responsible_person_id], references: [id])
-  client             clients_t?    @relation(fields: [client_id], references: [id])
-  sales              sales_t[]
-  purchases          purchases_t[]
+  users              usersT       @relation("warehouses_user", fields: [user_id], references: [id])
+  responsible_person usersT?      @relation("warehouses_responsible_person", fields: [responsible_person_id], references: [id])
+  client             clientsT?    @relation(fields: [client_id], references: [id])
+  sales              salesT[]
+  purchases          purchasesT[]
 
   @@index([status])
   @@index([client_id])
 }
 
-model bank_operations_t {
+model bank_operationsT {
   id          Int       @id @default(autoincrement())
   date        DateTime  @db.Date
   description String    @db.VarChar(255)
@@ -177,14 +177,14 @@ model bank_operations_t {
   updated_at  DateTime? @default(now()) @db.Timestamp(6)
 
   // Связи
-  users  users_t    @relation(fields: [user_id], references: [id])
-  client clients_t? @relation(fields: [client_id], references: [id])
+  users  usersT    @relation(fields: [user_id], references: [id])
+  client clientsT? @relation(fields: [client_id], references: [id])
 
   @@index([date])
   @@index([type])
 }
 
-model products_t {
+model productsT {
   id          Int       @id @default(autoincrement())
   code        String    @db.VarChar(50)
   name        String    @db.VarChar(255)
@@ -197,13 +197,13 @@ model products_t {
   created_at  DateTime? @default(now()) @db.Timestamp(6)
   updated_at  DateTime? @default(now()) @db.Timestamp(6)
 
-  users users_t @relation(fields: [user_id], references: [id])
+  users usersT @relation(fields: [user_id], references: [id])
 
   @@index([code])
   @@index([is_active])
 }
 
-model chart_of_accounts_t {
+model chart_of_accountsT {
   id           Int       @id @default(autoincrement())
   code         String    @db.VarChar(20)
   name         String    @db.VarChar(255)
@@ -215,14 +215,14 @@ model chart_of_accounts_t {
   created_at   DateTime? @default(now()) @db.Timestamp(6)
   updated_at   DateTime? @default(now()) @db.Timestamp(6)
 
-  users users_t @relation(fields: [user_id], references: [id])
+  users usersT @relation(fields: [user_id], references: [id])
 
   @@index([code])
   @@index([type])
   @@index([is_active])
 }
 
-model doc_settlement_t {
+model doc_settlementT {
   id           Int       @id @default(autoincrement())
   doc_number   String    @db.VarChar(50)
   doc_date     DateTime  @db.Date
@@ -236,8 +236,8 @@ model doc_settlement_t {
   user_id      Int
 
   // Связи
-  client clients_t @relation(fields: [client_id], references: [id])
-  users  users_t   @relation(fields: [user_id], references: [id])
+  client clientsT @relation(fields: [client_id], references: [id])
+  users  usersT   @relation(fields: [user_id], references: [id])
 
   @@index([doc_date])
   @@index([client_id])

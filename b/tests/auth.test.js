@@ -1,21 +1,23 @@
-// auth.test.js
 const request = require('supertest');
 const app = require('../src/app');
 const { PrismaClient } = require('../prisma/generated/test');
 const prisma = new PrismaClient();
 
-jest.setTimeout(30000); // увеличиваем до 30 секунд
+jest.setTimeout(30000);
 
 describe('Auth Endpoints', () => {
   beforeEach(async () => {
+    // Очищаем таблицы в правильном порядке, чтобы учесть зависимости
     await prisma.$transaction([
-      prisma.purchases_t.deleteMany({}),
-      prisma.clients_t.deleteMany({}),
-      prisma.products_t.deleteMany({}),
-      prisma.chart_of_accounts_t.deleteMany({}),
-      prisma.bank_operations_t.deleteMany({}),
-      prisma.warehouses_t.deleteMany({}),
-      prisma.users_t.deleteMany({}),
+      prisma.doc_settlementT.deleteMany({}),
+      prisma.bank_operationsT.deleteMany({}),
+      prisma.purchasesT.deleteMany({}),
+      prisma.salesT.deleteMany({}),
+      prisma.warehousesT.deleteMany({}),
+      prisma.clientsT.deleteMany({}),
+      prisma.productsT.deleteMany({}),
+      prisma.chart_of_accountsT.deleteMany({}),
+      prisma.usersT.deleteMany({}),
     ]);
   });
 
@@ -134,7 +136,7 @@ describe('Auth Endpoints', () => {
       });
 
       // Получаем токен сброса
-      const user = await prisma.users_t.findUnique({
+      const user = await prisma.usersT.findUnique({
         where: { email: 'test@example.com' },
       });
       resetToken = user.reset_token;

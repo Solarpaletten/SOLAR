@@ -11,14 +11,17 @@ describe('Client Endpoints', () => {
 
   beforeEach(async () => {
     try {
-      // Очистка БД
+      // Очистка БД в правильном порядке
       await prisma.$transaction([
-        prisma.purchases_t.deleteMany({}),
-        prisma.clients_t.deleteMany({}),
-        prisma.products_t.deleteMany({}),
-        prisma.chart_of_accounts_t.deleteMany({}),
-        prisma.bank_operations_t.deleteMany({}),
-        prisma.warehouses_t.deleteMany({}),
+        prisma.doc_settlementT.deleteMany({}),
+        prisma.bank_operationsT.deleteMany({}),
+        prisma.purchasesT.deleteMany({}),
+        prisma.salesT.deleteMany({}),
+        prisma.warehousesT.deleteMany({}),
+        prisma.clientsT.deleteMany({}),
+        prisma.productsT.deleteMany({}),
+        prisma.chart_of_accountsT.deleteMany({}),
+        prisma.usersT.deleteMany({}),
       ]);
 
       const registerResponse = await request(app)

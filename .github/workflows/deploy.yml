@@ -45,13 +45,21 @@ jobs:
           npx prisma migrate deploy --schema=prisma/schema_t.prisma
         env:
           DATABASE_URL_TEST_VERCEL: ${{ secrets.DATABASE_URL_TEST_VERCEL }}
+         
+      - name: Debug Environment Variables 
+        run: |
+          echo "DATABASE_URL_TEST_VERCEL=$DATABASE_URL_TEST_VERCEL"
+        working-directory: ./b
+        env:
+          DATABASE_URL_TEST_VERCEL: ${{ secrets.DATABASE_URL_TEST_VERCEL }}
 
       - name: Run b
         run: npm test
         working-directory: ./b
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL_TEST_VERCEL: ${{ secrets.DATABASE_URL_TEST_VERCEL }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          NODE_ENV: test
 
       - name: Check Database Connection
         run: |
@@ -64,10 +72,6 @@ jobs:
       - name: Install f
         run: npm install
         working-directory: ./f
-
-      # - name: Run f
-      #   run: npm test
-      #   working-directory: ./f
 
       - name: Build f
         run: npm run build
