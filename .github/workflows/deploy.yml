@@ -1,17 +1,14 @@
 name: SOLAR
-
 on:
   push:
     branches:
       - main
-
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -34,7 +31,7 @@ jobs:
       - name: Install b
         run: |
           cd ./b
-          npm install --ignore-scripts
+          npm install
           npx prisma generate --schema=prisma/schema_t.prisma
         env:
           CI: true
@@ -45,8 +42,8 @@ jobs:
           npx prisma migrate deploy --schema=prisma/schema_t.prisma
         env:
           DATABASE_URL_TEST_VERCEL: ${{ secrets.DATABASE_URL_TEST_VERCEL }}
-         
-      - name: Debug Environment Variables 
+
+      - name: Debug Environment Variables
         run: |
           echo "DATABASE_URL_TEST_VERCEL=$DATABASE_URL_TEST_VERCEL"
         working-directory: ./b
@@ -80,7 +77,6 @@ jobs:
   deploy:
     needs: build-and-test
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
