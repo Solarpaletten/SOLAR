@@ -1,16 +1,16 @@
-const { PrismaClient } = require('./prisma/generated/test');
+const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
 
 async function createAdmin() {
   try {
-    const email = 'sl@sl.de';
-    const password = 'admin123';
-    const username = 'solarde';
+    const email = 'solar@solar.de';
+    const password = 'pass123';
+    const username = 'desolar';
 
     // Проверяем, существует ли пользователь с таким email
-    const existingUser = await prisma.usersT.findUnique({
+    const existingUser = await prisma.users.findUnique({
       where: { email },
     });
 
@@ -24,7 +24,7 @@ async function createAdmin() {
     const passwordHash = await bcrypt.hash(password, salt);
 
     // Создаём администратора
-    const admin = await prisma.usersT.create({
+    const admin = await prisma.users.create({
       data: {
         email,
         username,
