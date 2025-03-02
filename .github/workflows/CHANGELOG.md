@@ -122,3 +122,5 @@ All notable changes to the LEANID SOLAR project will be documented in this file.
 - 2025-03-02: Fixed TypeScript errors in frontend build (auth.ts and LoginPage.tsx) to enable successful deployment.
 ### Fixed
 - 2025-03-02: Updated CORS_ORIGIN to include Render frontend URL and set NODE_ENV=production on Render.
+### Fixed
+- 2025-03-02: Fixed backend deployment by updating Prisma Client import; fixed frontend 502 error by setting Start Command to npm run preview.
