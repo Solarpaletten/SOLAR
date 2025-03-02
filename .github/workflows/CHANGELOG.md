@@ -132,3 +132,5 @@ All notable changes to the LEANID SOLAR project will be documented in this file.
 - 2025-03-02: Updated Prisma Client imports and admin password to pass123 for production.
 ### Fixed
 - 2025-03-02: Fixed server startup by ensuring prismaManager.connect is properly called.
+### Fixed
+- 2025-03-02: Fixed Fixed LoginPage  useNavigate из react-router-dom.
