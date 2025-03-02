@@ -1,19 +1,23 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const prismaManager = require('../utils/create/prismaManager');
 const { logger } = require('../config/logger');
 const emailService = require('../services/emailService');
 const { generateTemporaryPassword } = require('../utils/create/tokenGenerator');
+const {PrismaClient: PrismaClientTest,} = require('../../prisma/generated/test');
+const { PrismaClient: PrismaClientProd } = require('@prisma/client');
 
-const usersTable = process.env.NODE_ENV === 'test' ? 'users_t' : 'users';
+const prisma =
+  process.env.NODE_ENV === 'test'
+    ? new PrismaClientTest()
+    : new PrismaClientProd();
 
 class AuthController {
   async verifyEmail(req, res) {
     try {
       const { token } = req.params;
 
-      const user = await prismaManager.prisma[usersTable].findFirst({
+      const user = await prisma.users.findFirst({
         where: {
           verification_token: token,
           token_expires: {
@@ -28,7 +32,7 @@ class AuthController {
           .json({ error: 'Invalid or expired verification token' });
       }
 
-      await prismaManager.prisma.users.update({
+      await prisma.users.update({
         where: { id: user.id },
         data: {
           email_verified: true,
@@ -48,7 +52,7 @@ class AuthController {
     try {
       const { email } = req.body;
 
-      const user = await prismaManager.prisma[usersTable].findUnique({
+      const user = await prisma.users.findUnique({
         where: { email },
       });
 
@@ -59,7 +63,7 @@ class AuthController {
       const resetToken = crypto.randomBytes(32).toString('hex');
       const tokenExpires = new Date(Date.now() + 60 * 60 * 1000);
 
-      await prismaManager.prisma.users.update({
+      await prisma.users.update({
         where: { id: user.id },
         data: {
           reset_token: resetToken,
@@ -86,7 +90,7 @@ class AuthController {
     try {
       const { token, password } = req.body;
 
-      const user = await prismaManager.prisma[usersTable].findFirst({
+      const user = await prisma.users.findFirst({
         where: {
           reset_token: token,
           reset_token_expires: {
@@ -104,7 +108,7 @@ class AuthController {
       const salt = await bcrypt.genSalt(10);
       const passwordHash = await bcrypt.hash(password, salt);
 
-      await prismaManager.prisma.users.update({
+      await prisma.users.update({
         where: { id: user.id },
         data: {
           password_hash: passwordHash,
@@ -122,7 +126,7 @@ class AuthController {
 
   async getCurrentUser(req, res) {
     try {
-      const user = await prismaManager.prisma[usersTable].findUnique({
+      const user = await prisma.users.findUnique({
         where: { id: req.user.id },
         select: {
           id: true,
@@ -174,7 +178,7 @@ class AuthController {
         return res.status(400).json({ error: 'All fields are required' });
       }
 
-      const existingUser = await prismaManager.prisma[usersTable].findUnique({
+      const existingUser = await prisma.users.findUnique({
         where: { email },
       });
 
@@ -185,7 +189,7 @@ class AuthController {
       const salt = await bcrypt.genSalt(10);
       const passwordHash = await bcrypt.hash(password, salt);
 
-      const user = await prismaManager.prisma[usersTable].create({
+      const user = await prisma.users.create({
         data: {
           email,
           username,
@@ -238,7 +242,7 @@ class AuthController {
 
       logger.info('Login attempt:', { email });
 
-      const user = await prismaManager.prisma[usersTable].findUnique({
+      const user = await prisma.users.findUnique({
         where: { email },
       });
 
@@ -300,7 +304,7 @@ class AuthController {
       }
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      const user = await prismaManager.prisma[usersTable].findUnique({
+      const user = await prisma.users.findUnique({
         where: { id: decoded.id },
       });
 
