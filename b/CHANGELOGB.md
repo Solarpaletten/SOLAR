@@ -110,4 +110,6 @@ All notable changes to the LEANID SOLAR project will be documented in this file.
 - 2025-03-02: Applied migration to sync schema_t.prisma with test database and verified tables in Prisma Studio.
 ### Fixed
 - 2025-03-02: Fixed 404 error on frontend by setting VITE_API_URL to point to the backend on Render.
+### Fixed
+- 2025-03-02: Added express to dependencies in b/package.json to fix MODULE_NOT_FOUND error during deployment.
 
