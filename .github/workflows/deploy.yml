@@ -93,6 +93,15 @@ jobs:
           curl -X POST \
             -H "Authorization: Bearer $RENDER_API_KEY_BACKEND" \
             https://api.render.com/deploy/srv-cv1lsclsvqrc738ou1j0?key=eggRuEnFkC8
+        
+      # Запуск Backend (добавьте это)
+      - name: Start Backend
+        run: |
+          cd ./b
+          npm run start
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
       # Frontend deployment
       - name: Deploy Frontend to Render
