@@ -35,14 +35,14 @@ jobs:
         run: |
           cd ./b
           npm install --ignore-scripts
-          npx prisma generate --schema=prisma/schema.test.prisma
+          npx prisma generate --schema=prisma/schema_t.prisma
         env:
           CI: true
 
       - name: Apply database migrations for tests
         run: |
           cd ./b
-          npx prisma migrate deploy --schema=prisma/schema.test.prisma
+          npx prisma migrate deploy --schema=prisma/schema_t.prisma
         env:
           DATABASE_URL_TEST_VERCEL: ${{ secrets.DATABASE_URL_TEST_VERCEL }}
 
