@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const prismaManager = require('../utils/create/prismaManager');
+const prismaManager = require('../utils/prismaManager');
 
 // Общая статистика базы данных
 router.get('/database-stats', async (req, res) => {

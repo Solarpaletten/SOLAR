@@ -1,4 +1,4 @@
-const prismaManager = require('../utils/create/prismaManager');
+const prismaManager = require('../utils/prismaManager');
 const { logger } = require('../config/logger');
 
 const getAllClients = async (req, res) => {

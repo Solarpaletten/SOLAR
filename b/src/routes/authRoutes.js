@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
 const auth = require('../middleware/auth');
-const prismaManager = require('../utils/create/prismaManager');
+const prismaManager = require('../utils/prismaManager');
 
 // Основные маршруты аутентификации
 router.post('/register', authController.register);
