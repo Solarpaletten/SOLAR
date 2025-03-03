@@ -146,3 +146,5 @@ All notable changes to the LEANID SOLAR project will be documented in this file.
 
 This commit completes the authentication flow from login to dashboard
 access and logout functionality.
+### Fixed 
+- 2025-03-03: Fixed access and logout functionality.
