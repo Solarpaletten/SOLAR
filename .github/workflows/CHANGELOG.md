@@ -116,3 +116,5 @@ All notable changes to the LEANID SOLAR project will be documented in this file.
 
 ### Added
 - 2025-03-03: Added sidebar navigation, updated dashboard with stats and recent clients, and created Clients and Client Detail pages.
+### Added
+- 2025-03-03: Added ability to create new clients via /clients/new page.
