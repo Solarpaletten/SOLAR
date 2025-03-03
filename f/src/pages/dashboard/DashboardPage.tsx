@@ -1,34 +1,73 @@
-import React, { FC } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '../../api/axios';
 
-export const DashboardPage: FC = () => {
-  const navigate = useNavigate();
+const fetchClients = async () => {
+  const response = await api.get('/api/clients');
+  return response.data;
+};
 
-  const handleLogout = () => {
-    // Удаляем токен и другие данные авторизации
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+const DashboardPage: React.FC = () => {
+  const {
+    data: clients = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ['clients'],
+    queryFn: fetchClients,
+  });
 
-    // Перенаправляем на страницу входа
-    navigate('/auth/login');
-  };
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error loading clients: {error.message}</div>;
+
+  const totalClients = clients.length;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <button
-            onClick={handleLogout}
-            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition-colors"
-          >
-            Выйти
-          </button>
+    <div>
+      <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
+      <p className="text-gray-600 mb-6">
+        Лучшая бухгалтерская компания LEANID SOLAR
+      </p>
+
+      {/* Карточка со статистикой */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="p-4 bg-blue-100 rounded-lg shadow">
+          <h2 className="text-xl font-semibold">Total Clients</h2>
+          <p className="text-2xl">{totalClients}</p>
         </div>
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <p>Лучшая бухгалтерская компания LEANID SOLAR</p>
-        </div>
+        {/* Добавь другие карточки, если нужно */}
+      </div>
+
+      {/* Таблица последних клиентов */}
+      <div>
+        <h2 className="text-xl font-semibold mb-2">Recent Clients</h2>
+        {clients.length === 0 ? (
+          <p>No clients found.</p>
+        ) : (
+          <table className="min-w-full bg-white border">
+            <thead>
+              <tr>
+                <th className="py-2 px-4 border">Name</th>
+                <th className="py-2 px-4 border">Email</th>
+                <th className="py-2 px-4 border">Code</th>
+                <th className="py-2 px-4 border">VAT Code</th>
+              </tr>
+            </thead>
+            <tbody>
+              {clients.slice(0, 5).map((client: any) => (
+                <tr key={client.id}>
+                  <td className="py-2 px-4 border">{client.name}</td>
+                  <td className="py-2 px-4 border">{client.email}</td>
+                  <td className="py-2 px-4 border">{client.code}</td>
+                  <td className="py-2 px-4 border">{client.vat_code}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );
 };
+
+export default DashboardPage;
