@@ -2,6 +2,23 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
+// Создание экземпляра axios с базовым URL
+export const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Добавление перехватчика для установки токена авторизации
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 // Функция логина с явными типами
 export const login = async (email: string, password: string) => {
   console.log('Sending request to:', `${API_URL}/api/auth/login`);
