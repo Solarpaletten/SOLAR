@@ -1,11 +1,12 @@
 import axios from 'axios';
 
-// Получаем базовый URL из переменных окружения
+// Получаем базовый URL из переменных окружения и добавляем /api
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const BASE_URL = `${API_URL}/api`;
 
 // Создаем экземпляр axios с базовым URL
 export const api = axios.create({
-  baseURL: API_URL,
+  baseURL: BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -22,7 +23,7 @@ api.interceptors.request.use((config) => {
 
 // Экспортируем функции для авторизации
 export const login = async (email: string, password: string) => {
-  const response = await api.post('/api/auth/login', { email, password });
+  const response = await api.post('/auth/login', { email, password }); // Убираем /api
   return response.data;
 };
 
@@ -31,11 +32,11 @@ export const register = async (
   password: string,
   username: string
 ) => {
-  const response = await api.post('/api/auth/register', {
+  const response = await api.post('/auth/register', {
     email,
     password,
     username,
-  });
+  }); // Убираем /api
   return response.data;
 };
 

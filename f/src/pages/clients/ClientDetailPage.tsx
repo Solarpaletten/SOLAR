@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/axios';
 
 const fetchClient = async (id: string) => {
-  const response = await api.get(`/api/clients/${id}`);
+  const response = await api.get(`/clients/${id}`); // Убираем /api
   return response.data;
 };
 
@@ -17,7 +17,7 @@ const ClientDetailPage: React.FC = () => {
   } = useQuery({
     queryKey: ['client', id],
     queryFn: () => fetchClient(id!),
-    enabled: !!id, // Запрос выполняется только если id существует
+    enabled: !!id,
   });
 
   if (isLoading) return <div>Loading...</div>;
