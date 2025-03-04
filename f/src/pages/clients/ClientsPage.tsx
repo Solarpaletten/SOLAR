@@ -1,14 +1,15 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../api/axios';
 
 const fetchClients = async () => {
-  const response = await api.get('/api/clients');
+  const response = await api.get('/clients'); // Убираем /api
   return response.data;
 };
 
 const ClientsPage: React.FC = () => {
+  const navigate = useNavigate();
   const {
     data: clients = [],
     isLoading,
@@ -24,6 +25,12 @@ const ClientsPage: React.FC = () => {
   return (
     <div>
       <h1 className="text-3xl font-bold mb-4">Clients</h1>
+      <button
+        onClick={() => navigate('/clients/new')}
+        className="mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+      >
+        Add Client
+      </button>
       {clients.length === 0 ? (
         <p>No clients found.</p>
       ) : (

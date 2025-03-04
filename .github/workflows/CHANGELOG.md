@@ -118,3 +118,8 @@ All notable changes to the LEANID SOLAR project will be documented in this file.
 - 2025-03-03: Added sidebar navigation, updated dashboard with stats and recent clients, and created Clients and Client Detail pages.
 ### Added
 - 2025-03-03: Added ability to create new clients via /clients/new page.
+### Fixed
+- 2025-03-03: Fixed API paths in axios setup to avoid duplicating /api.
+
+### Added
+- 2025-03-03: Improved sidebar UI with icons, enhanced dashboard with more stats, and added NewClientPage for creating clients.

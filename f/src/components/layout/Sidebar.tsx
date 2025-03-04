@@ -1,12 +1,13 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { FaHome, FaUsers, FaSignOutAlt } from 'react-icons/fa';
 
 const Sidebar: React.FC = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem('token'); // Удаляем токен
-    navigate('/auth/login'); // Перенаправляем на страницу логина
+    localStorage.removeItem('token');
+    navigate('/auth/login');
   };
 
   return (
@@ -17,13 +18,18 @@ const Sidebar: React.FC = () => {
           <li className="mb-2">
             <Link
               to="/dashboard"
-              className="block p-2 hover:bg-gray-700 rounded"
+              className="flex items-center p-2 hover:bg-gray-700 rounded"
             >
+              <FaHome className="mr-2" />
               Dashboard
             </Link>
           </li>
           <li className="mb-2">
-            <Link to="/clients" className="block p-2 hover:bg-gray-700 rounded">
+            <Link
+              to="/clients"
+              className="flex items-center p-2 hover:bg-gray-700 rounded"
+            >
+              <FaUsers className="mr-2" />
               Clients
             </Link>
           </li>
@@ -32,8 +38,9 @@ const Sidebar: React.FC = () => {
       <div className="p-4">
         <button
           onClick={handleLogout}
-          className="w-full p-2 bg-red-600 hover:bg-red-700 rounded"
+          className="w-full flex items-center p-2 bg-red-600 hover:bg-red-700 rounded"
         >
+          <FaSignOutAlt className="mr-2" />
           Logout
         </button>
       </div>
