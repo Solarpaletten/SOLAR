@@ -113,3 +113,8 @@ All notable changes to the LEANID SOLAR project will be documented in this file.
 - API documentation
 - Performance optimization
 
+### Fixed
+- 2025-03-04: Added axios api
+
+
+
