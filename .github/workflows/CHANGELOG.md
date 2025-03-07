@@ -115,6 +115,8 @@ All notable changes to the LEANID SOLAR project will be documented in this file.
 
 ### Fixed
 - 2025-03-04: Added axios api
+### Fixed
+- 2025-03-07: Fix frontend build by adding redirects and updating TypeScript config
 
 
 
