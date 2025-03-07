@@ -121,21 +121,19 @@ describe('Auth Endpoints', () => {
     let resetToken;
 
     beforeEach(async () => {
-      // Создаем пользователя
-      const registerResponse = await request(app)
-        .post('/api/auth/register')
-        .send({
-          email: 'test@example.com',
-          password: 'password123',
-          username: 'testuser',
-        });
-
-      // Запрашиваем сброс пароля
-      await request(app).post('/api/auth/forgot-password').send({
+      // Создаем тестового пользователя
+      await request(app).post('/api/auth/register').send({
         email: 'test@example.com',
+        username: 'testuser',
+        password: 'password123',
       });
 
-      // Получаем токен сброса
+      // Запрашиваем сброс пароля
+      await request(app)
+        .post('/api/auth/forgot-password')
+        .send({ email: 'test@example.com' });
+
+      // Получаем токен из базы
       const user = await prisma.usersT.findUnique({
         where: { email: 'test@example.com' },
       });
@@ -143,27 +141,33 @@ describe('Auth Endpoints', () => {
     });
 
     it('should reset password with valid token', async () => {
-      const response = await request(app)
-        .post('/api/auth/reset-password')
-        .send({
-          token: resetToken,
-          password: 'newpassword123',
-        });
+      const res = await request(app).post('/api/auth/reset-password').send({
+        token: resetToken,
+        password: 'newpassword123',
+      });
 
-      expect(response.statusCode).toBe(200);
-      expect(response.body).toHaveProperty('message');
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toHaveProperty('message', 'Password reset successful');
+
+      // Проверяем, что можем войти с новым паролем
+      const loginRes = await request(app).post('/api/auth/login').send({
+        email: 'test@example.com',
+        password: 'newpassword123',
+      });
+
+      expect(loginRes.statusCode).toBe(200);
+      expect(loginRes.body).toHaveProperty('token');
     });
 
     it('should fail with invalid token', async () => {
-      const response = await request(app)
-        .post('/api/auth/reset-password')
-        .send({
-          token: 'invalid-token',
-          password: 'newpassword123',
-        });
+      const res = await request(app).post('/api/auth/reset-password').send({
+        token: 'invalid-token',
+        password: 'newpassword123',
+      });
 
-      expect(response.statusCode).toBe(400);
-      expect(response.body).toHaveProperty('error');
+      expect(res.statusCode).toBe(400);
+      expect(res.body).toHaveProperty(
+        'error', 'Invalid or expired reset token');
     });
   });
 });
