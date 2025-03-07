@@ -1,47 +1,249 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { FaHome, FaUsers, FaSignOutAlt } from 'react-icons/fa';
+import React, { useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import {
+  FaUsers,
+  FaWarehouse,
+  FaChartBar,
+  FaBook,
+  FaCashRegister,
+  FaFileAlt,
+  FaUserTie,
+  FaIndustry,
+  FaCoins,
+  FaFileInvoice,
+  FaMoneyBillWave,
+  FaCog,
+  FaSignOutAlt,
+  FaChevronDown,
+  FaChevronRight,
+} from 'react-icons/fa';
+
+interface SubmenuState {
+  warehouse: boolean;
+  cashier: boolean;
+}
 
 const Sidebar: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [expandedMenus, setExpandedMenus] = useState<SubmenuState>({
+    warehouse: false,
+    cashier: location.pathname.includes('/cashier'),
+  });
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/auth/login');
   };
 
+  const toggleSubmenu = (menu: keyof SubmenuState) => {
+    setExpandedMenus({
+      ...expandedMenus,
+      [menu]: !expandedMenus[menu],
+    });
+  };
+
+  const isActive = (path: string) => {
+    return location.pathname.startsWith(path);
+  };
+
   return (
-    <div className="w-64 h-screen bg-gray-800 text-white flex flex-col">
-      <div className="p-4 text-2xl font-bold">SOLAR</div>
-      <nav className="flex-1 p-4">
-        <ul>
-          <li className="mb-2">
-            <Link
-              to="/dashboard"
-              className="flex items-center p-2 hover:bg-gray-700 rounded"
-            >
-              <FaHome className="mr-2" />
-              Dashboard
-            </Link>
-          </li>
-          <li className="mb-2">
+    <div className="w-64 h-screen bg-[#0f3c4c] text-white flex flex-col">
+      <div className="p-4 text-2xl font-bold bg-[#0a2e3b]">Solar</div>
+
+      <nav className="flex-1 overflow-y-auto">
+        <ul className="p-0 m-0 list-none">
+          <li>
             <Link
               to="/clients"
-              className="flex items-center p-2 hover:bg-gray-700 rounded"
+              className={`flex items-center p-3 hover:bg-[#165468] transition-colors ${isActive('/clients') ? 'bg-[#165468]' : ''}`}
             >
-              <FaUsers className="mr-2" />
-              Clients
+              <FaUsers className="mr-3" />
+              <span>Clients</span>
+            </Link>
+          </li>
+
+          <li>
+            <div
+              className={`flex items-center justify-between p-3 hover:bg-[#165468] cursor-pointer transition-colors ${expandedMenus.warehouse || isActive('/warehouse') ? 'bg-[#165468]' : ''}`}
+              onClick={() => toggleSubmenu('warehouse')}
+            >
+              <div className="flex items-center">
+                <FaWarehouse className="mr-3" />
+                <span>Warehouse</span>
+              </div>
+              {expandedMenus.warehouse ? (
+                <FaChevronDown size={12} />
+              ) : (
+                <FaChevronRight size={12} />
+              )}
+            </div>
+            {expandedMenus.warehouse && (
+              <ul className="bg-[#0a2e3b] py-1">
+                <li>
+                  <Link
+                    to="/warehouse/products"
+                    className={`pl-10 pr-3 py-2 block hover:bg-[#165468] ${isActive('/warehouse/products') ? 'bg-[#165468]' : ''}`}
+                  >
+                    Products
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/warehouse/inventory"
+                    className={`pl-10 pr-3 py-2 block hover:bg-[#165468] ${isActive('/warehouse/inventory') ? 'bg-[#165468]' : ''}`}
+                  >
+                    Inventory
+                  </Link>
+                </li>
+              </ul>
+            )}
+          </li>
+
+          <li>
+            <Link
+              to="/dashboard"
+              className={`flex items-center p-3 hover:bg-[#165468] transition-colors ${isActive('/dashboard') ? 'bg-[#165468]' : ''}`}
+            >
+              <FaChartBar className="mr-3" />
+              <span>Dashboard</span>
+            </Link>
+          </li>
+
+          <li>
+            <Link
+              to="/general-ledger"
+              className={`flex items-center p-3 hover:bg-[#165468] transition-colors ${isActive('/general-ledger') ? 'bg-[#165468]' : ''}`}
+            >
+              <FaBook className="mr-3" />
+              <span>General ledger</span>
+            </Link>
+          </li>
+
+          <li>
+            <div
+              className={`flex items-center justify-between p-3 hover:bg-[#165468] cursor-pointer transition-colors ${expandedMenus.cashier || isActive('/cashier') ? 'bg-[#165468]' : ''}`}
+              onClick={() => toggleSubmenu('cashier')}
+            >
+              <div className="flex items-center">
+                <FaCashRegister className="mr-3" />
+                <span>Cashier</span>
+              </div>
+              {expandedMenus.cashier ? (
+                <FaChevronDown size={12} />
+              ) : (
+                <FaChevronRight size={12} />
+              )}
+            </div>
+            {expandedMenus.cashier && (
+              <ul className="bg-[#0a2e3b] py-1">
+                <li>
+                  <Link
+                    to="/cashier/transactions"
+                    className={`pl-10 pr-3 py-2 block hover:bg-[#165468] ${isActive('/cashier/transactions') ? 'bg-[#165468]' : ''}`}
+                  >
+                    Transactions
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/cashier/receipts"
+                    className={`pl-10 pr-3 py-2 block hover:bg-[#165468] ${isActive('/cashier/receipts') ? 'bg-[#165468]' : ''}`}
+                  >
+                    Receipts
+                  </Link>
+                </li>
+              </ul>
+            )}
+          </li>
+
+          <li>
+            <Link
+              to="/reports"
+              className={`flex items-center p-3 hover:bg-[#165468] transition-colors ${isActive('/reports') ? 'bg-[#165468]' : ''}`}
+            >
+              <FaFileAlt className="mr-3" />
+              <span>Reports</span>
+            </Link>
+          </li>
+
+          <li>
+            <Link
+              to="/personnel"
+              className={`flex items-center p-3 hover:bg-[#165468] transition-colors ${isActive('/personnel') ? 'bg-[#165468]' : ''}`}
+            >
+              <FaUserTie className="mr-3" />
+              <span>Personnel</span>
+            </Link>
+          </li>
+
+          <li>
+            <Link
+              to="/production"
+              className={`flex items-center p-3 hover:bg-[#165468] transition-colors ${isActive('/production') ? 'bg-[#165468]' : ''}`}
+            >
+              <FaIndustry className="mr-3" />
+              <span>Production</span>
+            </Link>
+          </li>
+
+          <li>
+            <Link
+              to="/assets"
+              className={`flex items-center p-3 hover:bg-[#165468] transition-colors ${isActive('/assets') ? 'bg-[#165468]' : ''}`}
+            >
+              <FaCoins className="mr-3" />
+              <span>Assets</span>
+            </Link>
+          </li>
+
+          <li>
+            <Link
+              to="/documents"
+              className={`flex items-center p-3 hover:bg-[#165468] transition-colors ${isActive('/documents') ? 'bg-[#165468]' : ''}`}
+            >
+              <FaFileInvoice className="mr-3" />
+              <span>Documents</span>
+            </Link>
+          </li>
+
+          <li>
+            <Link
+              to="/salary"
+              className={`flex items-center p-3 hover:bg-[#165468] transition-colors ${isActive('/salary') ? 'bg-[#165468]' : ''}`}
+            >
+              <FaMoneyBillWave className="mr-3" />
+              <span>Salary</span>
+            </Link>
+          </li>
+
+          <li>
+            <Link
+              to="/declaration"
+              className={`flex items-center p-3 hover:bg-[#165468] transition-colors ${isActive('/declaration') ? 'bg-[#165468]' : ''}`}
+            >
+              <FaFileAlt className="mr-3" />
+              <span>Declaration</span>
             </Link>
           </li>
         </ul>
       </nav>
-      <div className="p-4">
+
+      <div className="p-3 border-t border-[#165468]">
+        <Link
+          to="/settings"
+          className={`flex items-center p-3 hover:bg-[#165468] transition-colors ${isActive('/settings') ? 'bg-[#165468]' : ''}`}
+        >
+          <FaCog className="mr-3" />
+          <span>Settings</span>
+        </Link>
+
         <button
           onClick={handleLogout}
-          className="w-full flex items-center p-2 bg-red-600 hover:bg-red-700 rounded"
+          className="w-full flex items-center p-3 hover:bg-[#165468] transition-colors text-left"
         >
-          <FaSignOutAlt className="mr-2" />
-          Logout
+          <FaSignOutAlt className="mr-3" />
+          <span>Log Out</span>
         </button>
       </div>
     </div>
