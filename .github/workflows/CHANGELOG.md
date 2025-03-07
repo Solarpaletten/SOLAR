@@ -120,6 +120,7 @@ All notable changes to the LEANID SOLAR project will be documented in this file.
 - 2025-03-07: Move type definitions to dependencies for deployment
 - 2025-03-07: Move type to dependencies for deployment
 - 2025-03-07: vite.config.ts --dirname
+- Add start script for Render deployment
 
 
 
