@@ -10,6 +10,7 @@ import ClientsPage from './pages/clients/ClientsPage';
 import ClientDetailPage from './pages/clients/ClientDetailPage';
 import NewClientPage from './pages/clients/NewClientPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
+import AdminPage from './pages/administartor/AdminPage';
 
 // Заглушки для страниц, которые будут разработаны позже
 const Warehouse = () => (
@@ -97,6 +98,7 @@ const App: React.FC = () => {
           <Route path="clients" element={<ClientsPage />} />
           <Route path="clients/new" element={<NewClientPage />} />
           <Route path="clients/:id" element={<ClientDetailPage />} />
+          <Route path="admin" element={<AdminPage />} />
 
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="warehouse/*" element={<Warehouse />} />

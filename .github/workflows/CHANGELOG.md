@@ -146,3 +146,13 @@ Author: LEANID
 - Set up visual indicator for database connection status (green/yellow/red)
 - Implement script for test client creation
 - Fix import paths and structure for better component organization
+
+feat: add database administration panel
+### Fixed
+- 2025-03-08 Add database info endpoint to statsRoutes for monitoring table statistics
+- Create AdminPage component to display database structure and record counts
+- Integrate Admin Panel link in sidebar navigation
+- Improve layout with properly structured HTML elements
+- Add access control based on user role
+- Update routing configuration to include admin panel
+- Fix sidebar navigation styling for consistent appearance
