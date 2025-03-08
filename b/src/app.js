@@ -11,7 +11,30 @@ const app = express();
 app.use(compression());
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:5173', 'http://localhost:3000'],
+    origin: function (origin, callback) {
+      // Получаем разрешенные источники из переменной окружения или используем значения по умолчанию
+      const allowedOrigins = process.env.CORS_ORIGIN
+        ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+        : ['http://localhost:5173', 'http://localhost:3000'];
+
+      // Добавляем URL GitHub Codespace явно
+      allowedOrigins.push(
+        'https://organic-space-journey-wrvq6j9rgxw72g5g7-5173.app.github.dev'
+      );
+
+      // Логирование для отладки
+      console.log('Request origin:', origin);
+      console.log('Allowed origins:', allowedOrigins);
+
+      // Разрешаем запросы без origin (например, от Postman)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+        callback(null, true);
+      } else {
+        callback(new Error('CORS не разрешен для этого источника'));
+      }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],

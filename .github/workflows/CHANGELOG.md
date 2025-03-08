@@ -137,5 +137,5 @@ Author: LEANID
 - 2025-03-08 "gitignore f delete env"
 - "Add devcontainer configuration for Codespaces"
 - "Add environment configuration files for development and production"
-
+- gitignore f delete env dev prod
 
