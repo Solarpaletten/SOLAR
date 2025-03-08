@@ -1,6 +1,6 @@
 // src/components/layout/AppHeader.tsx
 import React, { useState, useEffect } from 'react';
-import { checkDatabaseConnection } from '../../api/axios';
+import { api } from '../../api/axios';
 
 const AppHeader: React.FC = () => {
   const [dbStatus, setDbStatus] = useState<'checking' | 'connected' | 'error'>(
