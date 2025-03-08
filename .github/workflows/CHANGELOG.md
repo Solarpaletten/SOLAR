@@ -158,3 +158,5 @@ feat: add database administration panel
 - Fix sidebar navigation styling for consistent appearance
 ### Fixed
 - 2025-03-08 CORS_ORIGIN https://npmfr-snpq.onrender.com
+### Fixed
+- 2025-03-09 cors origin: '*'
