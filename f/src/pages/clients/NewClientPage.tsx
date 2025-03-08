@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FaArrowLeft } from 'react-icons/fa';
+import { api } from '../../api/axios';
 
 interface ClientFormData {
   name: string;
@@ -36,12 +37,7 @@ const NewClientPage: React.FC = () => {
     setError(null);
 
     try {
-      // Здесь будет запрос к API для создания клиента
-      // const response = await axios.post('/api/clients', formData);
-
-      // Имитация успешного запроса
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
+      await api.post('/clients', formData);
       navigate('/clients');
     } catch (err) {
       setError('Failed to create client. Please try again.');
