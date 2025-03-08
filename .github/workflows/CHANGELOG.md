@@ -135,5 +135,6 @@ All notable changes to the LEANID SOLAR project will be documented in this file.
 Author: LEANID
 ### Fixed
 - 2025-03-08 "gitignore f delete env"
+- "Add devcontainer configuration for Codespaces"
 
 
