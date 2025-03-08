@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 // Получаем базовый URL из переменных окружения и добавляем /api
-const API_URL = import.meta.env.VITE_API_URL || 'https://npmbk-ppnp.onrender.com';
+const API_URL =
+  import.meta.env.VITE_API_URL || 'https://npmbk-ppnp.onrender.com';
 const BASE_URL = `${API_URL}/api`;
 
 // Создаем экземпляр axios с базовым URL
