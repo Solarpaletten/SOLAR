@@ -13,12 +13,6 @@ export const api = axios.create({
   },
 });
 
-<div className="text-sm text-gray-500 mt-2">
-  Frontend URL: {window.location.origin}
-  <br />
-  Backend URL: {import.meta.env.VITE_API_URL || 'https://npmbk-ppnp.onrender.com'}
-</div>
-
 // Добавляем перехватчик для автоматической установки токена авторизации
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
@@ -50,9 +44,4 @@ export const register = async (
 export const logout = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
-};
-
-
-export const checkDatabaseConnection = async () => {
-  return await api.get('/health');
 };

@@ -70,7 +70,7 @@ const AdminPage: React.FC = () => {
       <div className="p-6">
         <h1 className="text-2xl font-semibold text-red-600">Access Denied</h1>
         <DebugInfo />
-        <p className="mt-2">You don't have permission to access this page.</p>
+        <p className="mt-2">You have permission to access this page.</p>
       </div>
     );
   }
