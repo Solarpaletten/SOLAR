@@ -10,7 +10,7 @@ const AppHeader: React.FC = () => {
   useEffect(() => {
     const checkDb = async () => {
       try {
-        await checkDatabaseConnection();
+        await api.get('/health');
         setDbStatus('connected');
       } catch {
         setDbStatus('error');
