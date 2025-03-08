@@ -12,6 +12,7 @@ import {
   FaCoins,
   FaFileInvoice,
   FaMoneyBillWave,
+  FaDatabase,
   FaCog,
   FaSignOutAlt,
   FaChevronDown,
@@ -230,21 +231,37 @@ const Sidebar: React.FC = () => {
       </nav>
 
       <div className="p-3 border-t border-[#165468]">
-        <Link
-          to="/settings"
-          className={`flex items-center p-3 hover:bg-[#165468] transition-colors ${isActive('/settings') ? 'bg-[#165468]' : ''}`}
-        >
-          <FaCog className="mr-3" />
-          <span>Settings</span>
-        </Link>
+        <ul className="p-0 m-0 list-none">
+          <li>
+            <Link
+              to="/admin"
+              className={`flex items-center p-3 hover:bg-[#165468] transition-colors ${isActive('/admin') ? 'bg-[#165468]' : ''}`}
+            >
+              <FaDatabase className="mr-3" />
+              <span>Admin Panel</span>
+            </Link>
+          </li>
 
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center p-3 hover:bg-[#165468] transition-colors text-left"
-        >
-          <FaSignOutAlt className="mr-3" />
-          <span>Log Out</span>
-        </button>
+          <li>
+            <Link
+              to="/settings"
+              className={`flex items-center p-3 hover:bg-[#165468] transition-colors ${isActive('/settings') ? 'bg-[#165468]' : ''}`}
+            >
+              <FaCog className="mr-3" />
+              <span>Settings</span>
+            </Link>
+          </li>
+
+          <li>
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center p-3 hover:bg-[#165468] transition-colors text-left"
+            >
+              <FaSignOutAlt className="mr-3" />
+              <span>Log Out</span>
+            </button>
+          </li>
+        </ul>
       </div>
     </div>
   );

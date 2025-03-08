@@ -8,7 +8,7 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({
-  user = { name: 'Leanid GMBH SWAPOIL' },
+  user = { name: 'LEANID SOLAR' },
 }) => {
   return (
     <header className="flex justify-between items-center h-15 px-4 bg-[#f7931e] text-white">

@@ -2,6 +2,37 @@ const express = require('express');
 const router = express.Router();
 const prismaManager = require('../utils/prismaManager');
 
+router.get('/database-info', async (req, res) => {
+  try {
+    // Получаем список всех таблиц
+    const tables = await prismaManager.prisma.$queryRaw`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public'
+    `;
+
+    // Получаем количество записей в каждой таблице
+    const tableStats = [];
+    for (const table of tables) {
+      const tableName = table.table_name;
+      const count = await prismaManager.prisma.$executeRawUnsafe(
+        `SELECT COUNT(*) FROM "${tableName}"`
+      );
+      tableStats.push({
+        name: tableName,
+        recordCount: parseInt(count[0].count),
+      });
+    }
+
+    res.json({
+      tables: tableStats,
+      timestamp: new Date(),
+    });
+  } catch (error) {
+    logger.error('Failed to get database info:', error);
+    res.status(500).json({ error: 'Failed to get database info' });
+  }
+});
 // Общая статистика базы данных
 router.get('/database-stats', async (req, res) => {
   try {
