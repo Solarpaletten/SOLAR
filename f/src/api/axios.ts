@@ -45,3 +45,7 @@ export const logout = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
 };
+
+export const checkDatabaseConnection = async () => {
+  return await api.get('/health');
+};
