@@ -1,7 +1,9 @@
+// src/components/layout/Layout.tsx
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import AppHeader from './AppHeader';
 
 const Layout: React.FC = () => {
   return (
@@ -9,6 +11,7 @@ const Layout: React.FC = () => {
       <Sidebar />
       <div className="flex flex-col flex-1 overflow-hidden">
         <Header user={{ name: 'Leanid GMBH SWAPOIL' }} />
+        <AppHeader /> {/* Добавляем наш новый компонент */}
         <main className="flex-1 p-5 overflow-auto bg-gray-50">
           <Outlet />
         </main>

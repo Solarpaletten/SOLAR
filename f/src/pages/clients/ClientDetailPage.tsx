@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaEdit, FaTrash, FaCheck, FaTimes } from 'react-icons/fa';
+import { api } from '../../api/axios';
 
 interface Client {
   id: number;
@@ -12,40 +13,6 @@ interface Client {
   registrationDate: string;
   isActive?: boolean;
 }
-
-// Моковые данные для демонстрации
-const mockClients: { [key: number]: Client } = {
-  1: {
-    id: 1,
-    registrationDate: '24.10.2024',
-    name: 'SOLAR',
-    code: '-',
-    vat_code: '-',
-    phone: '+4915394807778',
-    email: 'solar@gmail.com',
-    isActive: true,
-  },
-  2: {
-    id: 2,
-    registrationDate: '24.10.2024',
-    name: 'SOLAR GMBH',
-    code: '-',
-    vat_code: '-',
-    phone: '+49163',
-    email: 'solar@gmail.com',
-    isActive: true,
-  },
-  3: {
-    id: 3,
-    registrationDate: '24.10.2024',
-    name: 'SOL',
-    code: '-',
-    vat_code: '-',
-    phone: '+1',
-    email: 'sol@sol.com',
-    isActive: false,
-  },
-};
 
 const ClientDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -59,19 +26,8 @@ const ClientDetailPage: React.FC = () => {
     const fetchClient = async () => {
       setLoading(true);
       try {
-        // В реальном проекте здесь будет API запрос
-        // const { data } = await axios.get(`/api/clients/${id}`);
-
-        // Имитация задержки запроса
-        await new Promise((resolve) => setTimeout(resolve, 300));
-
-        // Используем моковые данные
-        const clientData = mockClients[Number(id)];
-        if (clientData) {
-          setClient(clientData);
-        } else {
-          setError('Client not found');
-        }
+        const response = await api.get(`/clients/${id}`);
+        setClient(response.data);
       } catch (err) {
         console.error('Error fetching client:', err);
         setError('Failed to load client details');
@@ -87,12 +43,7 @@ const ClientDetailPage: React.FC = () => {
 
   const handleDelete = async () => {
     try {
-      // Здесь будет API запрос на удаление
-      // await axios.delete(`/api/clients/${id}`);
-
-      // Имитация запроса
-      await new Promise((resolve) => setTimeout(resolve, 300));
-
+      await api.delete(`/clients/${id}`);
       navigate('/clients');
     } catch (err) {
       console.error('Error deleting client:', err);
