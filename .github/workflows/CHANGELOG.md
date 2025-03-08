@@ -156,3 +156,5 @@ feat: add database administration panel
 - Add access control based on user role
 - Update routing configuration to include admin panel
 - Fix sidebar navigation styling for consistent appearance
+### Fixed
+- 2025-03-08 CORS_ORIGIN
