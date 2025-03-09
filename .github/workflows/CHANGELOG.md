@@ -184,3 +184,7 @@ fix: добавление защиты маршрутов и исправлен�
 - 2025-03-09 feat: .env.production render
 ### Fixed
 - 2025-03-09 feat: app.js cors only frontend
+### Fixed
+- 2025-03-09 feat: backend frontend env development production
+### Fixed
+- 2025-03-09 feat: cors app.js

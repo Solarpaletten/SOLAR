@@ -35,3 +35,8 @@ src/
 ├── App.tsx
 ├── main.tsx
 └── index.css
+
+### Fixed
+- 2025-03-09 feat: .env.production render
+### Fixed
+- 2025-03-09 feat: app.js cors only frontend
