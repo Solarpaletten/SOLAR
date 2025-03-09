@@ -11,7 +11,11 @@ const app = express();
 app.use(compression());
 app.use(
   cors({
-    origin: [process.env.CORS_ORIGIN, 'http://localhost:5173', 'http://localhost:3000'],
+    origin: [
+      'https://npmfr-snpq.onrender.com',
+      'http://localhost:5173',
+      'http://localhost:3000',
+    ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
