@@ -270,8 +270,7 @@ class AuthController {
         process.env.JWT_SECRET,
         { expiresIn: '24h' }
       );
-      res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
-      res.header('Access-Control-Allow-Credentials', 'true');
+      
       return res.json({
         token,
         user: {
