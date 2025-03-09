@@ -164,3 +164,5 @@ feat: add database administration panel
 - 2025-03-09 git commit -m "Fixed authentication, CORS, and clients API issues"
 ### Fixed
 - 2025-03-09 git commit -m "Fixed authentication, CORS, bk and fr and clients API issues"
+### Fixed
+- 2025-03-09 fix: separate URLs in CORS origin into individual array elements
