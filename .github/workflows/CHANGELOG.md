@@ -188,3 +188,5 @@ fix: добавление защиты маршрутов и исправлен�
 - 2025-03-09 feat: backend frontend env development production
 ### Fixed
 - 2025-03-09 feat: cors app.js
+### Fixed
+- 2025-03-09 feat: cors res frontend authController.js
