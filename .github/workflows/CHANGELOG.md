@@ -176,3 +176,5 @@ fix: добавление защиты маршрутов и исправлен�
 - Добавлено перенаправление неавторизованных пользователей на страницу входа
 ### Fixed
 - 2025-03-09 feat: add environment configuration for development and production - Added .env.development for local development (localhost API) - Added .env.production for deployed version (Render API) - Updated npm scripts to use correct environment modes - Removed redundant .env file - Updated API URL configuration in axios client
+### Fixed
+- 2025-03-09 feat: add environment configuration for development and production - Added .env.development for local development (localhost API) - Added .env.production for deployed version (Render API) - Updated npm scripts to use correct environment modes - Removed redundant .env file - Updated API URL configuration in axios client env
