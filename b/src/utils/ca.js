@@ -8,7 +8,7 @@ async function createAdmin() {
     const hashedPassword = await bcrypt.hash('pass123', 10);
     const admin = await prisma.user.create({
       data: {
-        email: 'solar@solar.de',
+        email: 'dk@dk.de',
         password: hashedPassword,
         role: 'ADMIN', // Убедитесь, что это поле есть в вашей схеме
       },

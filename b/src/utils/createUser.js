@@ -5,9 +5,9 @@ async function createUser() {
   try {
     const newUser = await prismaManager.prisma.users.create({
       data: {
-        email: 'solar@solar1.pl',
+        email: 'dk@dk.de',
         password_hash:
-          '$2a$10$IsMt046F8fS3RftOF/BJJuWOH6QCr2cyx6vq6yXwrsny5gOG..ds6',
+          '$2a$10$E/uQLngYlJuzwXECSnNNbOH1HZqhMOqHs5f9Rj6dlBhD6NAPiq8Zm',
         username: 'solar',
         role: 'ADMIN',
         email_verified: true,
