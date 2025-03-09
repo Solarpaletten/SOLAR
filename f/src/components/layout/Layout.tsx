@@ -10,7 +10,7 @@ const Layout: React.FC = () => {
     <div className="flex h-screen overflow-hidden">
       <Sidebar />
       <div className="flex flex-col flex-1 overflow-hidden">
-        <Header user={{ name: 'Leanid GMBH SWAPOIL' }} />
+        <Header user={{ name: 'LEANID SOLAR' }} />
         <AppHeader /> {/* Добавляем наш новый компонент */}
         <main className="flex-1 p-5 overflow-auto bg-gray-50">
           <Outlet />
