@@ -6,13 +6,13 @@ async function createAdmin() {
   try {
     // Используем готовый хеш пароля, который вы уже сгенерировали
     const passwordHash =
-      '$2a$10$TaMAp53.tUaXDilnIYO6SOXhTXqI2lkZfJUMvhkhX08HrJLkQQJXe';
+      '$2a$10$bS1MonzuJMwJy5UyD3wYs..0ofq/olEU8r7TUA.ncTImXUSq4iClG';
 
     const admin = await prisma.users.create({
       data: {
-        email: 'sl@sl.de',
+        email: 'dk@dk.de',
         password_hash: passwordHash,
-        username: 'solar',
+        username: 'DASCHA',
         role: 'ADMIN',
         email_verified: true,
         status: 'ACTIVE',
