@@ -166,3 +166,11 @@ feat: add database administration panel
 - 2025-03-09 git commit -m "Fixed authentication, CORS, bk and fr and clients API issues"
 ### Fixed
 - 2025-03-09 fix: separate URLs in CORS origin into individual array elements
+fix: добавление защиты маршрутов и исправление аутентификации
+### Fixed
+- 2025-03-09 fix:
+- Добавлен компонент ProtectedRoute для защиты всех приватных маршрутов
+- Исправлен путь к странице логина (/auth/login)
+- Обновлена структура маршрутизации для корректной проверки авторизации
+- Заменена заглушка компонента логина на реальную страницу входа
+- Добавлено перенаправление неавторизованных пользователей на страницу входа
