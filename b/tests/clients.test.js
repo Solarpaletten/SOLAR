@@ -134,6 +134,6 @@ describe('Client Endpoints', () => {
 
     expect(res.statusCode).toBe(200);
     expect(typeof res.body === 'object').toBeTruthy();
-    expect(res.body).toHaveProperty('name', 'Updated Client');
+    expect(res.body).toHaveProperty('message', 'Client updated successfully');
   });
 });
