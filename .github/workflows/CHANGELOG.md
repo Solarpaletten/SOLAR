@@ -234,3 +234,8 @@ Fix build error by removing references to deleted ClientDetailPage
 Removed import of non-existent ClientDetailPage from App.tsx
 Fixed build error "Could not resolve ./pages/clients/ClientDetailPage"
 Removed related routing and component references
+### Fixed
+- 2025-03-16 Fix build error by removing references to deleted ClientDetailPage
+Removed import of non-existent ClientDetailPage from App.tsx
+Fixed build error "Could not resolve ./pages/clients/ClientDetailPage"
+Removed related routing and component references
