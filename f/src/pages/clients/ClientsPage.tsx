@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { FaArrowLeft, FaEdit, FaTrash, FaCheck, FaTimes } from 'react-icons/fa';
+import { Link, useNavigate } from 'react-router-dom';
+import { FaPlus, FaEdit, FaTrash, FaEye } from 'react-icons/fa';
 import { api } from '../../api/axios';
 
 interface Client {
@@ -10,46 +10,34 @@ interface Client {
   code: string;
   vat_code: string;
   phone: string;
-  registrationDate: string;
-  isActive?: boolean;
+  is_active: boolean;
 }
 
-const ClientDetailPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+const ClientsPage: React.FC = () => {
   const navigate = useNavigate();
-  const [client, setClient] = useState<Client | null>(null);
+  const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
-    const fetchClient = async () => {
+    const fetchClients = async () => {
       setLoading(true);
       try {
-        const response = await api.get(`/clients/${id}`);
-        setClient(response.data);
+        console.log('Fetching clients...');
+        const response = await api.get('/clients');
+        console.log('Clients response:', response.data);
+        setClients(response.data);
+        setError(null);
       } catch (err) {
-        console.error('Error fetching client:', err);
-        setError('Failed to load client details');
+        console.error('Error fetching clients:', err);
+        setError('Failed to load clients. Please try again.');
       } finally {
         setLoading(false);
       }
     };
 
-    if (id) {
-      fetchClient();
-    }
-  }, [id]);
-
-  const handleDelete = async () => {
-    try {
-      await api.delete(`/clients/${id}`);
-      navigate('/clients');
-    } catch (err) {
-      console.error('Error deleting client:', err);
-      setError('Failed to delete client');
-    }
-  };
+    fetchClients();
+  }, []);
 
   if (loading) {
     return (
@@ -59,159 +47,157 @@ const ClientDetailPage: React.FC = () => {
     );
   }
 
-  if (error || !client) {
-    return (
-      <div className="bg-red-50 p-4 rounded-md">
-        <h2 className="text-xl font-semibold text-red-700">Error</h2>
-        <p className="text-red-600">{error || 'Client not found'}</p>
-        <Link
-          to="/clients"
-          className="mt-4 inline-flex items-center text-[#f7931e] hover:text-[#e67e00]"
-        >
-          <FaArrowLeft className="mr-2" />
-          Back to Clients
-        </Link>
-      </div>
-    );
-  }
-
   return (
-    <div className="h-full bg-gray-50">
-      <div className="max-w-4xl mx-auto py-8">
-        <div className="mb-6 flex justify-between items-center">
+    <div className="h-full bg-gray-50 p-6">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-semibold text-gray-800">Clients</h1>
           <Link
-            to="/clients"
-            className="inline-flex items-center text-[#f7931e] hover:text-[#e67e00]"
+            to="/clients/new"
+            className="inline-flex items-center px-4 py-2 bg-[#f7931e] text-white rounded hover:bg-[#e67e00]"
           >
-            <FaArrowLeft className="mr-2" />
-            Back to Clients
+            <FaPlus className="mr-2" />
+            Add Client
           </Link>
-
-          <div className="flex space-x-3">
-            <button
-              onClick={() => navigate(`/clients/${id}/edit`)}
-              className="inline-flex items-center px-4 py-2 bg-[#f7931e] text-white rounded hover:bg-[#e67e00]"
-            >
-              <FaEdit className="mr-2" />
-              Edit
-            </button>
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              className="inline-flex items-center px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-            >
-              <FaTrash className="mr-2" />
-              Delete
-            </button>
-          </div>
         </div>
 
-        <div className="bg-white shadow rounded-lg overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <h1 className="text-2xl font-semibold text-gray-800">
-              {client.name}
-            </h1>
-            <div className="flex items-center mt-1">
-              <span
-                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${client.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
-              >
-                {client.isActive ? 'Active' : 'Inactive'}
-              </span>
-              <span className="ml-2 text-sm text-gray-500">
-                ID: {client.id}
-              </span>
-            </div>
+        {error && (
+          <div className="mb-6 p-4 bg-red-100 text-red-700 rounded">
+            {error}
           </div>
+        )}
 
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h2 className="text-lg font-medium text-gray-900 mb-3">
-                  Contact Information
-                </h2>
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-sm text-gray-500">Email</p>
-                    <p className="font-medium">{client.email}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Phone</p>
-                    <p className="font-medium">{client.phone}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h2 className="text-lg font-medium text-gray-900 mb-3">
-                  Business Information
-                </h2>
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-sm text-gray-500">Code</p>
-                    <p className="font-medium">
-                      {client.code !== '-' ? client.code : 'Not specified'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">VAT Code</p>
-                    <p className="font-medium">
-                      {client.vat_code !== '-'
-                        ? client.vat_code
-                        : 'Not specified'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Registration Date</p>
-                    <p className="font-medium">{client.registrationDate}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-8">
-              <h2 className="text-lg font-medium text-gray-900 mb-3">
-                Activity History
-              </h2>
-              <div className="bg-gray-50 rounded p-4 text-gray-500">
-                No activity recorded yet.
-              </div>
-            </div>
+        {clients.length === 0 && !loading ? (
+          <div className="bg-white p-6 rounded shadow text-center">
+            <p className="text-gray-500">No clients found.</p>
+            <Link
+              to="/clients/new"
+              className="mt-4 inline-flex items-center text-[#f7931e] hover:text-[#e67e00]"
+            >
+              <FaPlus className="mr-2" />
+              Add your first client
+            </Link>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white rounded shadow overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Name
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Email
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Phone
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Code
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Status
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {clients.map((client) => (
+                  <tr
+                    key={client.id}
+                    className="hover:bg-gray-50 cursor-pointer"
+                    onClick={() => navigate(`/clients/${client.id}`)}
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="font-medium text-gray-900">
+                        {client.name}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-gray-500">{client.email}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-gray-500">{client.phone || '-'}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-gray-500">{client.code}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          client.is_active
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}
+                      >
+                        {client.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div
+                        className="flex justify-end space-x-2"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/clients/${client.id}`);
+                          }}
+                          className="text-[#f7931e] hover:text-[#e67e00]"
+                          title="View"
+                        >
+                          <FaEye />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/clients/${client.id}/edit`);
+                          }}
+                          className="text-blue-600 hover:text-blue-900"
+                          title="Edit"
+                        >
+                          <FaEdit />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Implement delete confirmation
+                          }}
+                          className="text-red-600 hover:text-red-900"
+                          title="Delete"
+                        >
+                          <FaTrash />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
-
-      {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-3">
-              Confirm Deletion
-            </h3>
-            <p className="text-gray-500 mb-5">
-              Are you sure you want to delete{' '}
-              <span className="font-medium">{client.name}</span>? This action
-              cannot be undone.
-            </p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f7931e]"
-              >
-                <FaTimes className="mr-2" />
-                Cancel
-              </button>
-              <button
-                onClick={handleDelete}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded shadow-sm text-sm font-medium text-white bg-red-500 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-              >
-                <FaCheck className="mr-2" />
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
-
-export default ClientDetailPage;
+export default ClientsPage;
