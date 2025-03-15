@@ -192,3 +192,19 @@ fix: добавление защиты маршрутов и исправлен�
 - 2025-03-09 feat: cors res frontend authController.js
 ### Fixed
 - 2025-03-09 feat: cors res frontend authController.js
+### Fixed
+- 2025-03-15 feat: Implement invoice management backend
+
+Add backend support for sales and purchases invoices with the following changes:
+
+- Create salesController.js with CRUD operations for sales invoices
+- Create purchasesController.js with CRUD operations for purchases invoices
+- Add corresponding route handlers in salesRoutes.js and purchasesRoutes.js
+- Register new routes in app.js
+- Standardize code structure across all controllers and routes
+- Prepare foundation for accordion view of invoice details
+
+Next steps:
+- Implement frontend components for displaying invoices
+- Add accordion functionality to show detailed invoice information
+- Create sales_items and purchase_items models (planned for future)
