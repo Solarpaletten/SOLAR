@@ -226,3 +226,11 @@ Fixed useEffect hook structure for proper API fetching
 Added console logging for debugging API requests and responses
 Improved error handling and loading state display
 Ensured clean component structure following React best practices
+
+### Fixed
+- 2025-03-16 Commit message:
+Fix build error by removing references to deleted ClientDetailPage
+
+Removed import of non-existent ClientDetailPage from App.tsx
+Fixed build error "Could not resolve ./pages/clients/ClientDetailPage"
+Removed related routing and component references
