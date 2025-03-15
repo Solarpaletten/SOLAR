@@ -9,6 +9,7 @@ import Layout from './components/layout/Layout';
 
 // Импортируем страницы клиентов правильно
 import ClientsPage from './pages/clients/ClientsPage';
+import ClientDetailPage from './pages/clients/ClientDetailPage';
 import NewClientPage from './pages/clients/NewClientPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
 import AdminPage from './pages/administartor/AdminPage';
