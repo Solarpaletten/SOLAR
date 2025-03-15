@@ -18,7 +18,7 @@
     "prisma:studio": "prisma studio",
     "start": "node --env-file=.env.production src/index.js",
     "dev": "nodemon --env-file=.env.development src/index.js",
-    "build": "npm install",
+    "build": "npm install && npx prisma generate --schema=prisma/schema_t.prisma",
     "start:prod": "node --env-file=.env.production src/index.js",
     "start:dev": "nodemon --env-file=.env.development src/index.js",
     "test": "jest --forceExit --detectOpenHandles",

@@ -44,6 +44,10 @@ apiRouter.use('/auth', require('./routes/authRoutes'));
 apiRouter.use('/clients', require('./routes/clientsRoutes'));
 apiRouter.use('/stats', require('./routes/statsRoutes'));
 
+// Добавим маршруты для продаж и покупок
+apiRouter.use('/sales', require('./routes/salesRoutes'));
+apiRouter.use('/purchases', require('./routes/purchasesRoutes'));
+
 apiRouter.get('/test', (req, res) => {
   res.json({
     message: 'Backend API is working!',
