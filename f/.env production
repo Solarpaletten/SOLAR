@@ -1,0 +1,5 @@
+VITE_API_URL=https://npmbk-ppnp.onrender.com
+
+NODE_ENV=production
+
+PORT=3000

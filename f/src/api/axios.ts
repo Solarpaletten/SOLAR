@@ -1,8 +1,11 @@
 import axios from 'axios';
 
 // Получаем базовый URL из переменных окружения и добавляем /api
-const API_URL = '';  // Используем пустую строку для относительных путей, так как настроен прокси
-const BASE_URL = '/api';  // Просто используем относительный путь
+const API_URL = import.meta.env.PROD 
+  ? import.meta.env.VITE_API_URL // для продакшн берем из .env
+  : ''; // для локальной разработки используем пустую строку
+
+const BASE_URL = `${API_URL}/api`;  // формируем полный путь
 
 // Создаем экземпляр axios с базовым URL
 export const api = axios.create({

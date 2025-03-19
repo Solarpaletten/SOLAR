@@ -250,3 +250,12 @@ Removed related routing and component references
 
 This commit ensures smooth API communication between frontend and backend
 when running locally, while maintaining compatibility with production deployment."
+### Fixed
+- 2025-03-20 fix: update API configuration for both development and production
+- Set up environment-aware API URLs to work in both development and production
+- Update axios configuration to use VITE_API_URL in production and relative paths in development
+- Fix AdminPage component to display correct backend URL
+- Keep proper CORS settings in backend for all environments
+- Maintain proxy settings in Vite for local development
+
+This commit ensures the application works correctly both in local development environment (with proxy) and in production deployment, fixing client loading issues.
