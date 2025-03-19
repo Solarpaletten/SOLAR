@@ -239,3 +239,14 @@ Removed related routing and component references
 Removed import of non-existent ClientDetailPage from App.tsx
 Fixed build error "Could not resolve ./pages/clients/ClientDetailPage"
 Removed related routing and component references
+### Fixed
+- 2025-03-19 "fix: configure CORS and API proxy for local development
+
+- Set up Vite proxy to handle API requests and prevent CORS issues
+- Update axios.ts to use relative paths instead of hardcoded URLs
+- Fix API_URL configuration in frontend code to work with proxy
+- Update AdminPage component to use correct API reference
+- Resolve CORS blocking errors when running in local development
+
+This commit ensures smooth API communication between frontend and backend
+when running locally, while maintaining compatibility with production deployment."
