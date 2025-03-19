@@ -1,9 +1,8 @@
 import axios from 'axios';
 
 // Получаем базовый URL из переменных окружения и добавляем /api
-const API_URL =
-  import.meta.env.VITE_API_URL || 'https://npmbk-ppnp.onrender.com';
-const BASE_URL = `${API_URL}/api`;
+const API_URL = '';  // Используем пустую строку для относительных путей, так как настроен прокси
+const BASE_URL = '/api';  // Просто используем относительный путь
 
 // Создаем экземпляр axios с базовым URL
 export const api = axios.create({

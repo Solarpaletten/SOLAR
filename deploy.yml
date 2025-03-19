@@ -1,0 +1,109 @@
+name: SOLAR
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            **/node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      # Backend (`b`)
+      - name: Install b
+        run: |
+          cd ./b
+          npm install
+          npx prisma generate --schema=prisma/schema.prisma
+        env:
+          CI: true
+
+      - name: Apply database migrations for tests
+        run: |
+          cd ./b
+          npx prisma migrate deploy --schema=prisma/schema.prisma
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Debug Environment Variables
+        run: |
+          echo "DATABASE_URL=$DATABASE_URL"
+        working-directory: ./b
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Run b
+        run: npm test
+        working-directory: ./b
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          NODE_ENV: test
+
+      - name: Check Database Connection
+        run: |
+          cd ./b
+          npx prisma db push
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      # Frontend (`f`)
+      - name: Install f
+        run: npm install
+        working-directory: ./f
+
+      - name: Build f
+        run: npm run build
+        working-directory: ./f
+
+  deploy:
+    runs-on: ubuntu-latest
+    # Убираем зависимость от build-and-test и добавляем if: always()
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Устанавливаем зависимости для бэкенда перед деплоем
+      - name: Install backend dependencies
+        run: |
+          cd ./b
+          npm install
+        env:
+          CI: true
+
+      # Backend deployment
+      - name: Deploy Backend to Render
+        env:
+          RENDER_API_KEY_BACKEND: ${{ secrets.RENDER_API_KEY_B }}
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer $RENDER_API_KEY_BACKEND" \
+            https://api.render.com/deploy/srv-cv1lsclsvqrc738ou1j0?key=eggRuEnFkC8
+
+      # Frontend deployment
+      - name: Deploy Frontend to Render
+        env:
+          RENDER_API_KEY_FRONTEND: ${{ secrets.RENDER_API_KEY_F }}
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer $RENDER_API_KEY_FRONTEND" \
+            https://api.render.com/deploy/srv-cv1lt9ij1k6c73957uk0?key=FU1hKmmHjdU

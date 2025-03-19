@@ -9,7 +9,7 @@ const DebugInfo: React.FC = () => {
       Frontend URL: {window.location.origin}
       <br />
       Backend URL:{' '}
-      {import.meta.env.VITE_API_URL || 'https://npmbk-ppnp.onrender.com'}
+    {import.meta.env.VITE_API_URL || '/api'} {/* Используем Vite.env */}
     </div>
   );
 };

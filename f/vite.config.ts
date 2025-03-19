@@ -3,7 +3,6 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from 'tailwindcss';
 import autoprefixer from 'autoprefixer';
 import { resolve } from 'path';
-
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
@@ -25,6 +24,14 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 5173,
+    proxy: {
+      '/api': {
+        target: 'https://npmbk-ppnp.onrender.com',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path
+      }
+    }
   },
   preview: {
     allowedHosts: ['npmfr-snpq.onrender.com'], // Разрешаем хост для предосмотра
