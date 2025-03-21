@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import LoginPage from './pages/auth/LoginPage';
 
+
 // Импортируем компоненты layout
 import Layout from './components/layout/Layout';
 
@@ -13,6 +14,13 @@ import ClientDetailPage from './pages/clients/ClientDetailPage';
 import NewClientPage from './pages/clients/NewClientPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
 import AdminPage from './pages/administartor/AdminPage';
+
+// Импортируем страницы закупок
+import PurchasesPage from './pages/purchases/PurchasesPage';
+import PurchasesDetailPage from './pages/purchases/PurchasesDetailPage';
+import CreatePurchasesPage from './pages/purchases/CreatePurchasesPage';
+import EditPurchasesPage from './pages/purchases/EditPurchasesPage';
+
 
 // Заглушки для страниц, которые будут разработаны позже
 const Warehouse = () => (
@@ -70,11 +78,6 @@ const Settings = () => (
     <h1 className="text-2xl font-semibold">Settings</h1>
   </div>
 );
-// const LoginPage = () => (
-//   <div className="p-6">
-//     <h1 className="text-2xl font-semibold">Login</h1>
-//   </div>
-// );
 
 // Создание экземпляра QueryClient для React Query
 const queryClient = new QueryClient({
@@ -98,13 +101,37 @@ const App: React.FC = () => {
           <Route path="/" element={<Layout />}>
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<DashboardPage />} />
+            
             {/* Маршруты для клиентов */}
             <Route path="clients" element={<ClientsPage />} />
             <Route path="clients/new" element={<NewClientPage />} />
             <Route path="clients/:id" element={<ClientDetailPage />} />
+            
+            {/* Маршруты для warehouse */}
+            <Route path="warehouse">
+              {/* Внутри warehouse разные подсекции, включая закупки */}
+              <Route path="purchases" element={<PurchasesPage />} />
+              <Route path="purchases/create" element={<CreatePurchasesPage />} />
+              <Route path="purchases/edit/:id" element={<EditPurchasesPage />} />
+              <Route path="purchases/:id" element={<PurchasesDetailPage />} />
+              
+              {/* Другие подсекции warehouse можно добавить здесь */}
+              <Route path="sales" element={<Warehouse />} />
+              <Route path="client-prices" element={<Warehouse />} />
+              <Route path="automatic-invoicing" element={<Warehouse />} />
+              <Route path="sales-returns" element={<Warehouse />} />
+              <Route path="remaining-items" element={<Warehouse />} />
+              <Route path="item-movement" element={<Warehouse />} />
+              <Route path="consignment-balance" element={<Warehouse />} />
+              <Route path="stock-taking" element={<Warehouse />} />
+              <Route path="revaluation" element={<Warehouse />} />
+              <Route path="internal-movement-confirmation" element={<Warehouse />} />
+              <Route path="e-commerce" element={<Warehouse />} />
+              <Route path="cash-register-sales" element={<Warehouse />} />
+            </Route>
+            
             <Route path="admin" element={<AdminPage />} />
 
-            <Route path="warehouse/*" element={<Warehouse />} />
             <Route path="general-ledger" element={<GeneralLedger />} />
             <Route path="cashier/*" element={<Cashier />} />
             <Route path="reports" element={<Reports />} />
