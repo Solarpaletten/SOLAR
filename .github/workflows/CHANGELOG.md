@@ -259,3 +259,5 @@ when running locally, while maintaining compatibility with production deployment
 - Maintain proxy settings in Vite for local development
 
 This commit ensures the application works correctly both in local development environment (with proxy) and in production deployment, fixing client loading issues.
+"### Fixed
+- 2025-03-21 fix: purchases"

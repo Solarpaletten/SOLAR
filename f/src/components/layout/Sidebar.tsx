@@ -65,41 +65,35 @@ const Sidebar: React.FC = () => {
           </li>
 
           <li>
-            <div
-              className={`flex items-center justify-between p-3 hover:bg-[#165468] cursor-pointer transition-colors ${expandedMenus.warehouse || isActive('/warehouse') ? 'bg-[#165468]' : ''}`}
-              onClick={() => toggleSubmenu('warehouse')}
-            >
-              <div className="flex items-center">
-                <FaWarehouse className="mr-3" />
-                <span>Warehouse</span>
-              </div>
-              {expandedMenus.warehouse ? (
-                <FaChevronDown size={12} />
-              ) : (
-                <FaChevronRight size={12} />
-              )}
-            </div>
-            {expandedMenus.warehouse && (
-              <ul className="bg-[#0a2e3b] py-1">
-                <li>
-                  <Link
-                    to="/warehouse/products"
-                    className={`pl-10 pr-3 py-2 block hover:bg-[#165468] ${isActive('/warehouse/products') ? 'bg-[#165468]' : ''}`}
-                  >
-                    Products
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/warehouse/inventory"
-                    className={`pl-10 pr-3 py-2 block hover:bg-[#165468] ${isActive('/warehouse/inventory') ? 'bg-[#165468]' : ''}`}
-                  >
-                    Inventory
-                  </Link>
-                </li>
-              </ul>
-            )}
-          </li>
+  <div
+    className={`flex items-center justify-between p-3 hover:bg-[#165468] cursor-pointer transition-colors ${expandedMenus.warehouse || isActive('/warehouse') ? 'bg-[#165468]' : ''}`}
+    onClick={() => toggleSubmenu('warehouse')}
+  >
+    <div className="flex items-center">
+      <FaWarehouse className="mr-3" />
+      <span>Warehouse</span>
+    </div>
+    {expandedMenus.warehouse ? <FaChevronDown size={12} /> : <FaChevronRight size={12} />}
+  </div>
+  {expandedMenus.warehouse && (
+    <ul className="bg-[#0a2e3b] py-1">
+      <li><Link to="/warehouse/sales" className="pl-10 pr-3 py-2 block hover:bg-[#165468]">Sales</Link></li>
+      <li><Link to="/warehouse/client-prices" className="pl-10 pr-3 py-2 block hover:bg-[#165468]">Client prices</Link></li>
+      <li><Link to="/warehouse/automatic-invoicing" className="pl-10 pr-3 py-2 block hover:bg-[#165468]">Automatic invoicing</Link></li>
+      <li><Link to="/warehouse/purchases" className="pl-10 pr-3 py-2 block hover:bg-[#165468]">Purchases</Link></li>
+      <li><Link to="/warehouse/sales-returns" className="pl-10 pr-3 py-2 block hover:bg-[#165468]">Sales returns</Link></li>
+      <li><Link to="/warehouse/remaining-items" className="pl-10 pr-3 py-2 block hover:bg-[#165468]">Remaining items</Link></li>
+      <li><Link to="/warehouse/item-movement" className="pl-10 pr-3 py-2 block hover:bg-[#165468]">Item movement</Link></li>
+      <li><Link to="/warehouse/consignment-balance" className="pl-10 pr-3 py-2 block hover:bg-[#165468]">Consignment balance</Link></li>
+      <li><Link to="/warehouse/stock-taking" className="pl-10 pr-3 py-2 block hover:bg-[#165468]">Stock-taking</Link></li>
+      <li><Link to="/warehouse/revaluation" className="pl-10 pr-3 py-2 block hover:bg-[#165468]">Revaluation</Link></li>
+      <li><Link to="/warehouse/internal-movement-confirmation" className="pl-10 pr-3 py-2 block hover:bg-[#165468]">Internal movement confirmation</Link></li>
+      <li><Link to="/warehouse/e-commerce" className="pl-10 pr-3 py-2 block hover:bg-[#165468]">E-commerce</Link></li>
+      <li><Link to="/warehouse/cash-register-sales" className="pl-10 pr-3 py-2 block hover:bg-[#165468]">Cash register sales</Link></li>
+    </ul>
+  )}
+</li>
+
 
           <li>
             <Link

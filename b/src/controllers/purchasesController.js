@@ -18,31 +18,7 @@ const getAllPurchases = async (req, res) => {
   }
 };
 
-const getPurchaseById = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const purchase = await prismaManager.prisma.purchases.findFirst({
-      where: {
-        id: parseInt(id),
-        user_id: req.user.id,
-      },
-      include: {
-        client: true,
-        warehouse: true,
-      },
-    });
-
-    if (!purchase) {
-      return res.status(404).json({ error: 'Purchase not found' });
-    }
-
-    res.json(purchase);
-  } catch (error) {
-    logger.error('Error fetching purchase:', error);
-    res.status(500).json({ error: 'Failed to fetch purchase' });
-  }
-};
-
+// Обновление функции создания закупки
 const createPurchase = async (req, res) => {
   try {
     const {
@@ -57,29 +33,94 @@ const createPurchase = async (req, res) => {
       invoice_type,
       invoice_number,
       vat_rate,
+      items // Новое поле: массив позиций
     } = req.body;
 
-    const purchase = await prismaManager.prisma.purchases.create({
-      data: {
-        doc_number,
-        doc_date: new Date(doc_date),
-        purchase_date: purchase_date ? new Date(purchase_date) : null,
-        client_id: parseInt(client_id),
-        warehouse_id: parseInt(warehouse_id),
-        total_amount,
-        currency,
-        status: status || 'draft',
-        invoice_type,
-        invoice_number,
-        vat_rate,
-        user_id: req.user.id,
-      },
+    // Создаем закупку с позициями в одной транзакции
+    const purchase = await prismaManager.prisma.$transaction(async (prisma) => {
+      // Создание записи о закупке
+      const newPurchase = await prisma.purchases.create({
+        data: {
+          doc_number,
+          doc_date: new Date(doc_date),
+          purchase_date: purchase_date ? new Date(purchase_date) : null,
+          client_id: parseInt(client_id),
+          warehouse_id: parseInt(warehouse_id),
+          total_amount,
+          currency,
+          status: status || 'draft',
+          invoice_type,
+          invoice_number,
+          vat_rate,
+          user_id: req.user.id,
+        },
+      });
+      
+      // Если есть позиции, создаем их
+      if (items && items.length > 0) {
+        for (const item of items) {
+          await prisma.purchase_items.create({
+            data: {
+              purchase_id: newPurchase.id,
+              product_id: parseInt(item.product_id),
+              quantity: parseFloat(item.quantity),
+              unit_price: parseFloat(item.unit_price),
+              amount: parseFloat(item.amount),
+            }
+          });
+        }
+      }
+      
+      // Возвращаем созданную закупку со всеми позициями
+      return await prisma.purchases.findUnique({
+        where: { id: newPurchase.id },
+        include: {
+          client: true,
+          warehouse: true,
+          items: {
+            include: {
+              product: true
+            }
+          }
+        }
+      });
     });
 
     res.status(201).json(purchase);
   } catch (error) {
     logger.error('Error creating purchase:', error);
     res.status(500).json({ error: 'Failed to create purchase' });
+  }
+};
+
+// Обновление функции получения деталей закупки
+const getPurchaseById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const purchase = await prismaManager.prisma.purchases.findFirst({
+      where: {
+        id: parseInt(id),
+        user_id: req.user.id,
+      },
+      include: {
+        client: true,
+        warehouse: true,
+        items: {
+          include: {
+            product: true
+          }
+        }
+      },
+    });
+
+    if (!purchase) {
+      return res.status(404).json({ error: 'Purchase not found' });
+    }
+
+    res.json(purchase);
+  } catch (error) {
+    logger.error('Error fetching purchase:', error);
+    res.status(500).json({ error: 'Failed to fetch purchase' });
   }
 };
 
@@ -147,8 +188,8 @@ const deletePurchase = async (req, res) => {
 
 module.exports = {
   getAllPurchases,
-  getPurchaseById,
   createPurchase,
+  getPurchaseById,
   updatePurchase,
   deletePurchase,
 };

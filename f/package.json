@@ -4,15 +4,15 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-  "format": "prettier --write \"**/*.{js,ts,jsx,tsx,json,css}\"",
-  "check-format": "prettier --check \"**/*.{js,ts,jsx,tsx,json,css}\"",
-  "lint": "eslint . --ext .js,.ts,.jsx,.tsx",
-  "check-lint": "eslint . --ext .js,.ts,.jsx,.tsx --fix --dry-run",
-  "dev": "vite --mode development",
-  "build": "vite build --mode production",
-  "preview": "vite preview --mode production",
-  "start": "vite preview --host 0.0.0.0 --port $PORT"
-},
+    "format": "prettier --write \"**/*.{js,ts,jsx,tsx,json,css}\"",
+    "check-format": "prettier --check \"**/*.{js,ts,jsx,tsx,json,css}\"",
+    "lint": "eslint . --ext .js,.ts,.jsx,.tsx",
+    "check-lint": "eslint . --ext .js,.ts,.jsx,.tsx --fix --dry-run",
+    "dev": "vite --mode development",
+    "build": "vite build --mode production",
+    "preview": "vite preview --mode production",
+    "start": "vite preview --host 0.0.0.0 --port $PORT"
+  },
   "dependencies": {
     "@prisma/client": "^6.4.1",
     "@tanstack/react-query": "^5.66.9",
@@ -25,6 +25,7 @@
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.3.0",
+    "react-toastify": "^11.0.5",
     "typescript": "^5.x.x"
   },
   "devDependencies": {
