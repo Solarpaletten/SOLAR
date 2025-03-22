@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 
 import './index.css';
 import App from './App';
+import './i18n'; // Импортируем настройки i18next
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

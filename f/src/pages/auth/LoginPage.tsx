@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { login } from '../../api/axios';
 
 const LoginPage: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Проверяем, авторизован ли пользователь при загрузке компонента
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -24,21 +25,13 @@ const LoginPage: React.FC = () => {
 
     try {
       const response = await login(email, password);
-      console.log('Login successful:', response);
-
-      // Сохраняем токен в localStorage
       localStorage.setItem('token', response.token);
-
-      // Если в ответе есть данные пользователя, сохраняем и их
       if (response.user) {
         localStorage.setItem('user', JSON.stringify(response.user));
       }
-
-      // Перенаправляем на дашборд
       navigate('/dashboard');
     } catch (err: any) {
-      console.error('Login error:', err);
-      setError(err.message || 'Ошибка сети');
+      setError(err.message || 'Network Error');
     } finally {
       setIsLoading(false);
     }
@@ -50,24 +43,36 @@ const LoginPage: React.FC = () => {
       <nav className="bg-white shadow p-4 flex justify-between items-center">
         <div className="text-2xl font-bold text-blue-600">LEANID SOLAR</div>
         <div className="flex space-x-4">
-          <a href="#" className="text-gray-600 hover:text-blue-600">Продукт</a>
-          <a href="#" className="text-gray-600 hover:text-blue-600">Интеграции</a>
-          <a href="#" className="text-gray-600 hover:text-blue-600">Обучение</a>
-          <a href="#" className="text-gray-600 hover:text-blue-600">Цены</a>
-          <a href="#" className="text-gray-600 hover:text-blue-600">Бухгалтерские компании</a>
+          <a href="#" className="text-gray-600 hover:text-blue-600">{t('product')}</a>
+          <a href="#" className="text-gray-600 hover:text-blue-600">{t('integrations')}</a>
+          <a href="#" className="text-gray-600 hover:text-blue-600">{t('training')}</a>
+          <a href="#" className="text-gray-600 hover:text-blue-600">{t('prices')}</a>
+          <a href="#" className="text-gray-600 hover:text-blue-600">{t('accountingCompanies')}</a>
         </div>
         <div className="flex space-x-2">
           <button
-            onClick={() => navigate('/login')}
-            className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+            onClick={() => i18n.changeLanguage('en')}
+            className={`px-2 py-1 rounded ${i18n.language === 'en' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
           >
-            Войти
+            EN
           </button>
           <button
-            onClick={() => navigate('/register')}
+            onClick={() => i18n.changeLanguage('ru')}
+            className={`px-2 py-1 rounded ${i18n.language === 'ru' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+          >
+            RU
+          </button>
+          <button
+            onClick={() => navigate('/auth/login')}
+            className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+          >
+            {t('signIn')}
+          </button>
+          <button
+            onClick={() => navigate('/auth/register')}
             className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
           >
-            Регистрация
+            {t('register')}
           </button>
         </div>
       </nav>
@@ -75,12 +80,12 @@ const LoginPage: React.FC = () => {
       {/* Форма входа */}
       <div className="flex-grow flex items-center justify-center">
         <div className="max-w-md w-full p-6 bg-white rounded shadow">
-          <h1 className="text-2xl font-bold mb-4 text-center">Вход в систему</h1>
+          <h1 className="text-2xl font-bold mb-4 text-center">{t('loginTitle')}</h1>
           <div className="flex justify-center space-x-2 mb-4">
             <button className="px-4 py-2 bg-blue-600 text-white rounded">Facebook</button>
             <button className="px-4 py-2 bg-red-600 text-white rounded">Google</button>
           </div>
-          <p className="text-center text-gray-600 mb-4">Или используйте логин и пароль</p>
+          <p className="text-center text-gray-600 mb-4">{t('orUseLogin')}</p>
           {error && (
             <div className="p-2 text-sm text-red-700 bg-red-100 border border-red-300 rounded mb-4">
               {error}
@@ -88,10 +93,10 @@ const LoginPage: React.FC = () => {
           )}
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Логин *</label>
+              <label className="block text-sm font-medium text-gray-700">{t('username')} *</label>
               <input
                 type="email"
-                placeholder="Email"
+                placeholder={t('emailPlaceholder')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -100,10 +105,10 @@ const LoginPage: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Пароль *</label>
+              <label className="block text-sm font-medium text-gray-700">{t('password')} *</label>
               <input
                 type="password"
-                placeholder="Пароль"
+                placeholder={t('passwordPlaceholder')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -116,16 +121,16 @@ const LoginPage: React.FC = () => {
               disabled={isLoading}
               className="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
             >
-              {isLoading ? 'Вход...' : 'Войти'}
+              {isLoading ? 'Loading...' : t('signInButton')}
             </button>
           </form>
           <div className="flex justify-between mt-4 text-sm">
-            <a href="#" className="text-blue-500 hover:underline">Забыли пароль?</a>
+            <a href="#" className="text-blue-500 hover:underline">{t('forgotPassword')}</a>
             <button
-              onClick={() => navigate('/register')}
+              onClick={() => navigate('/auth/register')}
               className="text-blue-500 hover:underline"
             >
-              Регистрация
+              {t('registerLink')}
             </button>
           </div>
         </div>
