@@ -1,23 +1,23 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { PurchaseItem } from '../../types/purchasesTypes';
 
 interface PurchasesItemRowProps {
   item: PurchaseItem;
   onItemChange: (itemId: string, field: keyof PurchaseItem, value: any) => void;
   onRemoveItem: (itemId: string) => void;
+  currency?: string;
 }
 
 const PurchasesItemRow: React.FC<PurchasesItemRowProps> = ({
   item,
   onItemChange,
-  onRemoveItem
+  onRemoveItem,
+  currency = 'EUR'
 }) => {
-  // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     let parsedValue: string | number = value;
 
-    // Convert to number for numeric fields
     if (name === 'quantity' || name === 'unitPrice') {
       parsedValue = value === '' ? 0 : parseFloat(value);
     }
@@ -25,17 +25,22 @@ const PurchasesItemRow: React.FC<PurchasesItemRowProps> = ({
     onItemChange(item.id, name as keyof PurchaseItem, parsedValue);
   };
 
-  // Format currency
+  useEffect(() => {
+    const calculatedTotal = item.quantity * item.unitPrice;
+    if (item.totalPrice !== calculatedTotal) {
+      onItemChange(item.id, 'totalPrice', calculatedTotal);
+    }
+  }, [item.quantity, item.unitPrice]);
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('ru-RU', {
       style: 'currency',
-      currency: 'RUB'
+      currency
     }).format(amount);
   };
 
   return (
     <div className="grid grid-cols-12 gap-2 items-center">
-      {/* Description field */}
       <div className="col-span-5">
         <input
           type="text"
@@ -48,7 +53,6 @@ const PurchasesItemRow: React.FC<PurchasesItemRowProps> = ({
         />
       </div>
 
-      {/* Quantity field */}
       <div className="col-span-2">
         <input
           type="number"
@@ -63,7 +67,6 @@ const PurchasesItemRow: React.FC<PurchasesItemRowProps> = ({
         />
       </div>
 
-      {/* Unit price field */}
       <div className="col-span-2">
         <input
           type="number"
@@ -78,12 +81,10 @@ const PurchasesItemRow: React.FC<PurchasesItemRowProps> = ({
         />
       </div>
 
-      {/* Total price (calculated automatically) */}
       <div className="col-span-2 text-right font-medium">
         {formatCurrency(item.totalPrice)}
       </div>
 
-      {/* Remove button */}
       <div className="col-span-1 text-right">
         <button
           type="button"

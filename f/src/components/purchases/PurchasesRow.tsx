@@ -8,10 +8,8 @@ const PurchasesRow: React.FC<PurchasesRowProps> = ({
   onDelete,
   onView
 }) => {
-  // Format date
   const formattedDate = new Date(purchase.date).toLocaleDateString();
-  
-  // Format currency
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',

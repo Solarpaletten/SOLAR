@@ -1,13 +1,9 @@
 import React, { useState } from 'react';
-import { Purchase, PurchasesTableProps } from '../../types/purchasesTypes';
+import { PurchasesTableProps } from '../../types/purchasesTypes';
 import PurchasesRow from './PurchasesRow';
-import PurchasesPagination from './PurchasesPagination';
-import PurchasesSearch from './PurchasesSearch';
-import PurchasesActions from './PurchasesActions';
-import PurchasesSummary from './PurchasesSummary';
 
 const PurchasesTable: React.FC<PurchasesTableProps> = ({
-  purchases = [], // Добавлено значение по умолчанию
+  purchases = [],
   isLoading,
   error,
   onEdit,
@@ -15,232 +11,121 @@ const PurchasesTable: React.FC<PurchasesTableProps> = ({
   onView,
   onSearch,
   onPageChange,
-  onItemsPerPageChange,
-  onSort,
-  currentPage,
-  totalItems,
-  itemsPerPage,
-  onExport,
-  onImport
+  currentPage = 1,
+  totalItems = 0,
+  itemsPerPage = 10,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [localCurrentPage, setLocalCurrentPage] = useState(1);
-  const [localItemsPerPage, setLocalItemsPerPage] = useState(10);
-  const [sortBy, setSortBy] = useState<{ field: string; direction: 'asc' | 'desc' }>({
-    field: 'date',
-    direction: 'desc'
-  });
+  const [sortField, setSortField] = useState<string>('date');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [selectedRows, setSelectedRows] = useState<string[]>([]);
+  const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
 
-  // Используем либо внешнее управление страницей, либо локальное состояние
-  const effectiveCurrentPage = currentPage || localCurrentPage;
-  const effectiveItemsPerPage = itemsPerPage || localItemsPerPage;
+  const toggleRow = (id: string) => {
+    setExpandedRowId((prev) => (prev === id ? null : id));
+  };
 
-  // Filter purchases based on search term
-  const filteredPurchases = purchases.filter(purchase => 
-    purchase.vendor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    purchase.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (purchase.description?.toLowerCase() || '').includes(searchTerm.toLowerCase())
-  );
+  const handleSelectRow = (id: string) => {
+    setSelectedRows((prev) =>
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+    );
+  };
 
-  // Sort purchases
-  const sortedPurchases = [...filteredPurchases].sort((a, b) => {
-    const aValue = a[sortBy.field as keyof Purchase];
-    const bValue = b[sortBy.field as keyof Purchase];
-    
-    if (aValue === undefined || bValue === undefined) return 0;
-    
-    if (typeof aValue === 'string' && typeof bValue === 'string') {
-      return sortBy.direction === 'asc' 
-        ? aValue.localeCompare(bValue) 
-        : bValue.localeCompare(aValue);
-    }
-    
-    if (aValue instanceof Date && bValue instanceof Date) {
-      return sortBy.direction === 'asc' 
-        ? aValue.getTime() - bValue.getTime() 
-        : bValue.getTime() - aValue.getTime();
-    }
-    
-    if (typeof aValue === 'number' && typeof bValue === 'number') {
-      return sortBy.direction === 'asc' ? aValue - bValue : bValue - aValue;
-    }
-    
-    return 0;
-  });
-
-  // Pagination
-  const indexOfLastItem = effectiveCurrentPage * effectiveItemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - effectiveItemsPerPage;
-  const currentPurchases = sortedPurchases.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(sortedPurchases.length / effectiveItemsPerPage);
-
-  // Calculate summary data
-  const totalAmount = filteredPurchases.reduce((sum, purchase) => sum + purchase.totalAmount, 0);
-  const totalItemsCount = filteredPurchases.length;
-
-  // Handle sort
-  const handleSort = (field: string) => {
-    const newDirection = sortBy.field === field && sortBy.direction === 'asc' ? 'desc' : 'asc';
-    
-    setSortBy({
-      field,
-      direction: newDirection
-    });
-    
-    // Если передан обработчик сортировки от родительского компонента
-    if (onSort) {
-      onSort(field, newDirection);
+  const handleSelectAll = () => {
+    if (selectedRows.length === purchases.length) {
+      setSelectedRows([]);
+    } else {
+      setSelectedRows(purchases.map((p) => p.id));
     }
   };
 
-  // Handle search
-  const handleSearchChange = (value: string) => {
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
     setSearchTerm(value);
-    
-    // Если передан обработчик поиска от родительского компонента
-    if (onSearch) {
-      onSearch(value);
-    }
+    if (onSearch) onSearch(value);
   };
 
-  // Handle page change
-  const handlePageChange = (page: number) => {
-    setLocalCurrentPage(page);
-    
-    // Если передан обработчик изменения страницы от родительского компонента
-    if (onPageChange) {
-      onPageChange(page);
-    }
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ru-RU');
   };
 
-  // Handle items per page change
-  const handleItemsPerPageChange = (limit: number) => {
-    setLocalItemsPerPage(limit);
-    
-    // Если передан обработчик изменения количества элементов от родительского компонента
-    if (onItemsPerPageChange) {
-      onItemsPerPageChange(limit);
-    }
+  const formatAmount = (amount: number) => {
+    return amount.toLocaleString('ru-RU', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
   };
 
-  if (isLoading) {
-    return <div className="flex justify-center p-8">Loading purchases...</div>;
-  }
+  if (isLoading) return <div className="flex justify-center p-4">Загрузка данных...</div>;
+  if (error) return <div className="text-red-500 p-4">Ошибка: {error.message}</div>;
 
-  if (error) {
-    return <div className="text-red-500 p-4">Error loading purchases: {error.message}</div>;
-  }
+  const totalAmount = purchases.reduce((sum, p) => sum + p.totalAmount, 0);
 
   return (
-    <div className="bg-white rounded-lg shadow-md">
-      <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b">
-        <PurchasesSearch 
-          searchTerm={searchTerm} 
-          onSearchChange={handleSearchChange} 
-        />
-        <PurchasesActions 
-          onCreateNew={() => window.location.href = "/warehouse/purchases/create"} 
-          onExport={onExport}
-          onImport={onImport}
-          hasExportFeature={!!onExport}
-          hasImportFeature={!!onImport}
-        />
-      </div>
-      
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th 
-                scope="col" 
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                onClick={() => handleSort('date')}
-              >
-                Date
-                {sortBy.field === 'date' && (
-                  <span className="ml-1">{sortBy.direction === 'asc' ? '↑' : '↓'}</span>
-                )}
-              </th>
-              <th 
-                scope="col" 
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                onClick={() => handleSort('invoiceNumber')}
-              >
-                Invoice #
-                {sortBy.field === 'invoiceNumber' && (
-                  <span className="ml-1">{sortBy.direction === 'asc' ? '↑' : '↓'}</span>
-                )}
-              </th>
-              <th 
-                scope="col" 
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                onClick={() => handleSort('vendor')}
-              >
-                Vendor
-                {sortBy.field === 'vendor' && (
-                  <span className="ml-1">{sortBy.direction === 'asc' ? '↑' : '↓'}</span>
-                )}
-              </th>
-              <th 
-                scope="col" 
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                onClick={() => handleSort('totalAmount')}
-              >
-                Amount
-                {sortBy.field === 'totalAmount' && (
-                  <span className="ml-1">{sortBy.direction === 'asc' ? '↑' : '↓'}</span>
-                )}
-              </th>
-              <th 
-                scope="col" 
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                onClick={() => handleSort('status')}
-              >
-                Status
-                {sortBy.field === 'status' && (
-                  <span className="ml-1">{sortBy.direction === 'asc' ? '↑' : '↓'}</span>
-                )}
-              </th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {currentPurchases.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                  No purchases found
-                </td>
-              </tr>
-            ) : (
-              currentPurchases.map(purchase => (
-                <PurchasesRow 
-                  key={purchase.id} 
-                  purchase={purchase}
-                  onEdit={() => onEdit(purchase.id)}
-                  onDelete={() => onDelete(purchase.id)}
-                  onView={() => onView(purchase.id)}
-                />
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-      
-      <div className="border-t border-gray-200 px-4 py-2">
-        <PurchasesSummary totalAmount={totalAmount} count={totalItemsCount} />
-      </div>
-      
-      <div className="border-t border-gray-200 px-4 py-2">
-        <PurchasesPagination 
-          currentPage={effectiveCurrentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-          itemsPerPage={effectiveItemsPerPage}
-          onItemsPerPageChange={handleItemsPerPageChange}
-        />
-      </div>
+    <div className="overflow-x-auto border border-gray-200 rounded-md mb-4 text-xs font-light">
+      {selectedRows.length > 0 && (
+        <div className="flex items-center justify-between bg-blue-50 px-4 py-2 border-b border-blue-200">
+          <span className="text-sm text-blue-700">Выбрано: {selectedRows.length}</span>
+          <div className="flex space-x-2">
+            <button
+              className="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+              onClick={() => onEdit && onEdit(selectedRows[0])}
+            >
+              ✏️ Редактировать
+            </button>
+            <button
+              className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+              onClick={() => onDelete && onDelete(selectedRows)}
+            >
+              🗑️ Удалить
+            </button>
+            <button
+              className="px-2 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
+              onClick={() => console.log('Печать...')}
+            >
+              🖨️ Печать
+            </button>
+          </div>
+        </div>
+      )}
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-gray-50">
+          <tr>
+            <th className="px-3 py-1">
+              <input
+                type="checkbox"
+                checked={selectedRows.length === purchases.length}
+                onChange={handleSelectAll}
+              />
+            </th>
+            <th className="px-3 py-1 text-left text-gray-500 uppercase">Дата</th>
+            <th className="px-3 py-1 text-left text-gray-500 uppercase">Поставщик</th>
+            <th className="px-3 py-1 text-right text-gray-500 uppercase">Сумма</th>
+          </tr>
+        </thead>
+        <tbody className="bg-white divide-y divide-gray-200">
+        {purchases.map((purchase) => (
+    <PurchasesRow
+      key={purchase.id}
+      purchase={purchase}
+      expanded={expandedRowId === purchase.id}
+      onToggle={() => toggleRow(purchase.id)}
+      formatDate={formatDate}
+      formatAmount={formatAmount}
+      isSelected={selectedRows.includes(purchase.id)}
+      onSelect={() => handleSelectRow(purchase.id)}
+    />
+  ))}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colSpan={3} className="px-3 py-2 font-medium text-gray-600">Всего:</td>
+            <td className="px-3 py-2 text-right font-semibold">{formatAmount(totalAmount)} EUR</td>
+          </tr>
+        </tfoot>
+      </table>
     </div>
   );
 };
