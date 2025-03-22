@@ -6,7 +6,7 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   en: {
     translation: {
-      // Переводы для LandingPage (уже есть)
+      // Навигационное меню
       product: 'Product',
       integrations: 'Integrations',
       training: 'Training',
@@ -14,9 +14,13 @@ const resources = {
       accountingCompanies: 'Accounting Companies',
       signIn: 'Sign In',
       register: 'Register',
+
+      // Главный заголовок
       mainHeader: 'Accounting program in the cloud that unites an accountant and a director',
       startUsing: 'Start Using',
       freeTrial: '30 days free trial',
+
+      // Секция "Распознавание счетов"
       invoiceRecognitionTitle: 'Invoice recognition within 30 seconds',
       invoiceRecognitionFeatures: [
         'Full recognition within 30 seconds',
@@ -25,48 +29,15 @@ const resources = {
         'Automatic upload of the invoice to storage',
       ],
       tryRecognition: 'Try Recognition',
+
+      // Секция с котиком
       kittenText: 'Our kitten loves cookies (just like us), that’s why it uses LEANID SOLAR',
       supportKitten: 'I SUPPORT THE KITTEN',
-
-      // Переводы для LoginPage (уже есть)
-      loginTitle: 'Sign in to the system',
-      orUseLogin: 'Or use your login and password',
-      username: 'Username',
-      emailPlaceholder: 'Email',
-      password: 'Password',
-      passwordPlaceholder: 'Password',
-      signInButton: 'Sign In',
-      forgotPassword: 'Forgot password?',
-      registerLink: 'Register',
-
-      // Переводы для RegisterPage
-      registerTitle: 'Create an account',
-      companyName: 'Company Name',
-      companyNamePlaceholder: 'Enter your company name',
-      email: 'Email',
-      emailRegisterPlaceholder: 'Enter your email',
-      phone: 'Phone',
-      phonePlaceholder: 'Enter your phone number',
-      passwordRegister: 'Password',
-      passwordRegisterPlaceholder: 'Create a password',
-      registerButton: 'Register',
-      successMessage: 'Registration successful! Redirecting to onboarding...',
-      errorMessage: 'Failed to register',
-
-      // Переводы для OnboardingPage
-      onboardingTitle: 'Set up your company',
-      companyCode: 'Company Code',
-      companyCodePlaceholder: 'Enter company code',
-      directorName: 'Director Name',
-      directorNamePlaceholder: 'Enter director name',
-      completeSetup: 'Complete Setup',
-      setupSuccess: 'Company successfully set up',
-      setupError: 'Failed to complete setup',
     },
   },
   ru: {
     translation: {
-      // Переводы для LandingPage (уже есть)
+      // Навигационное меню
       product: 'Продукт',
       integrations: 'Интеграции',
       training: 'Обучение',
@@ -74,9 +45,13 @@ const resources = {
       accountingCompanies: 'Бухгалтерские компании',
       signIn: 'Войти',
       register: 'Регистрация',
+
+      // Главный заголовок
       mainHeader: 'Бухгалтерская программа в облаке, которая объединяет бухгалтера и директора',
       startUsing: 'Начать использовать',
       freeTrial: '30 дней бесплатного пробного периода',
+
+      // Секция "Распознавание счетов"
       invoiceRecognitionTitle: 'Распознавание счетов за 30 секунд',
       invoiceRecognitionFeatures: [
         'Полное распознавание за 30 секунд',
@@ -85,43 +60,10 @@ const resources = {
         'Автоматическая загрузка счета в хранилище',
       ],
       tryRecognition: 'Попробовать распознавание',
+
+      // Секция с котиком
       kittenText: 'Наш котёнок любит печенье (как и мы), поэтому он использует LEANID SOLAR',
       supportKitten: 'Я ПОДДЕРЖИВАЮ КОТЁНКА',
-
-      // Переводы для LoginPage (уже есть)
-      loginTitle: 'Вход в систему',
-      orUseLogin: 'Или используйте логин и пароль',
-      username: 'Логин',
-      emailPlaceholder: 'Email',
-      password: 'Пароль',
-      passwordPlaceholder: 'Пароль',
-      signInButton: 'Войти',
-      forgotPassword: 'Забыли пароль?',
-      registerLink: 'Регистрация',
-
-      // Переводы для RegisterPage
-      registerTitle: 'Создать аккаунт',
-      companyName: 'Название компании',
-      companyNamePlaceholder: 'Введите название вашей компании',
-      email: 'Email',
-      emailRegisterPlaceholder: 'Введите ваш email',
-      phone: 'Телефон',
-      phonePlaceholder: 'Введите ваш номер телефона',
-      passwordRegister: 'Пароль',
-      passwordRegisterPlaceholder: 'Создайте пароль',
-      registerButton: 'Зарегистрироваться',
-      successMessage: 'Регистрация прошла успешно! Перенаправляем на страницу настройки...',
-      errorMessage: 'Не удалось зарегистрироваться',
-
-      // Переводы для OnboardingPage
-      onboardingTitle: 'Настройка вашей компании',
-      companyCode: 'Код компании',
-      companyCodePlaceholder: 'Введите код компании',
-      directorName: 'Имя директора',
-      directorNamePlaceholder: 'Введите имя директора',
-      completeSetup: 'Завершить настройку',
-      setupSuccess: 'Компания успешно настроена',
-      setupError: 'Не удалось завершить настройку',
     },
   },
 };
