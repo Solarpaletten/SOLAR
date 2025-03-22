@@ -278,4 +278,4 @@ This commit ensures the application works correctly both in local development en
 ### Fixed
 - 2025-03-23: Added i18n 
 ### Fixed
-- 2025-03-23: Added i18n support for RegisterPage.tsx and OnboardingPage.tsx, updated i18n.ts with new translations. This enables multilingual support for the registration and onboarding processes, improving user accessibility.
+- 2025-03-23: Added i18n support for RegisterPage.tsx and OnboardingPage.tsx, updated i18n.ts with new translations. This enables multilingual support for the registration and onboarding processes, improving user
