@@ -273,3 +273,5 @@ This commit ensures the application works correctly both in local development en
 - 2025-03-22: Added i18n support for Russian and English languages in LandingPage.tsx and i18n.ts, fixed build error by adding i18next dependencies. This enables multilingual support for the landing page, making the application more accessible to users.
 ### Fixed
 - 2025-03-23: Added i18n support for RegisterPage.tsx and OnboardingPage.tsx, updated i18n.ts with new translations. This enables multilingual support for the registration and onboarding processes, improving user accessibility.
+### Fixed
+- 2025-03-23: Added i18n support for RegisterPage.tsx
