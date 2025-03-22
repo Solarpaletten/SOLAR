@@ -2,8 +2,11 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import LandingPage from './pages/landing/LandingPage';
 import LoginPage from './pages/auth/LoginPage';
-
+import RegisterPage from './pages/auth/RegisterPage';
+import OnboardingPage from './pages/auth/OnboardingPage';
+import CreateVendorPage from './pages/vendors/CreateVendorPage';
 
 // Импортируем компоненты layout
 import Layout from './components/layout/Layout';
@@ -20,7 +23,6 @@ import PurchasesPage from './pages/purchases/PurchasesPage';
 import PurchasesDetailPage from './pages/purchases/PurchasesDetailPage';
 import CreatePurchasesPage from './pages/purchases/CreatePurchasesPage';
 import EditPurchasesPage from './pages/purchases/EditPurchasesPage';
-
 
 // Заглушки для страниц, которые будут разработаны позже
 const Warehouse = () => (
@@ -94,7 +96,11 @@ const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <Routes>
+        {/* Публичные маршруты */}
+        <Route path="/" element={<LandingPage />} />
         <Route path="/auth/login" element={<LoginPage />} />
+        <Route path="/auth/register" element={<RegisterPage />} />
+        <Route path="/onboarding" element={<OnboardingPage />} />
 
         {/* Защищенные маршруты с использованием ProtectedRoute */}
         <Route element={<ProtectedRoute />}>
@@ -114,6 +120,7 @@ const App: React.FC = () => {
               <Route path="purchases/create" element={<CreatePurchasesPage />} />
               <Route path="purchases/edit/:id" element={<EditPurchasesPage />} />
               <Route path="purchases/:id" element={<PurchasesDetailPage />} />
+              <Route path="vendors/create" element={<CreateVendorPage />} />
               
               {/* Другие подсекции warehouse можно добавить здесь */}
               <Route path="sales" element={<Warehouse />} />
