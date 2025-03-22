@@ -265,3 +265,5 @@ This commit ensures the application works correctly both in local development en
 - 2025-03-22 "Add amount filter, reset filters button, and single purchase deletion to PurchasesPage"
 ## Fixed
 - 2025-03-22 fix: "Update registration and login pages to match design"
+## Fixed
+- 2025-03-22 "Fix routing to show LandingPage on root path"
