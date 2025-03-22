@@ -240,7 +240,7 @@ Removed import of non-existent ClientDetailPage from App.tsx
 Fixed build error "Could not resolve ./pages/clients/ClientDetailPage"
 Removed related routing and component references
 ### Fixed
-- 2025-03-19 fix: configure CORS and API proxy for local development
+- 2025-03-19 "fix: configure CORS and API proxy for local development
 
 - Set up Vite proxy to handle API requests and prevent CORS issues
 - Update axios.ts to use relative paths instead of hardcoded URLs
@@ -249,4 +249,23 @@ Removed related routing and component references
 - Resolve CORS blocking errors when running in local development
 
 This commit ensures smooth API communication between frontend and backend
-when running locally, while maintaining compatibility with production deployment.
+when running locally, while maintaining compatibility with production deployment."
+### Fixed
+- 2025-03-20 fix: update API configuration for both development and production
+- Set up environment-aware API URLs to work in both development and production
+- Update axios configuration to use VITE_API_URL in production and relative paths in development
+- Fix AdminPage component to display correct backend URL
+- Keep proper CORS settings in backend for all environments
+- Maintain proxy settings in Vite for local development
+
+This commit ensures the application works correctly both in local development environment (with proxy) and in production deployment, fixing client loading issues.
+### Fixed
+- 2025-03-21 fix: purchases
+### Fixed
+- 2025-03-22 "Add amount filter, reset filters button, and single purchase deletion to PurchasesPage"
+## Fixed
+- 2025-03-22 fix: "Update registration and login pages to match design"
+## Fixed
+- 2025-03-22 "Fix routing to show LandingPage on root path"
+## Fixed
+- 2025-03-22 LandingPage.tsx  i18n.ts Add i18n support for Russian and English languages
