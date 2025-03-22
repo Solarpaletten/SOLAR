@@ -269,3 +269,5 @@ This commit ensures the application works correctly both in local development en
 - 2025-03-22 "Fix routing to show LandingPage on root path"
 ## Fixed
 - 2025-03-22 LandingPage.tsx  i18n.ts Add i18n support for Russian and English languages
+### Fixed
+- 2025-03-22: Added i18n support for Russian and English languages in LandingPage.tsx and i18n.ts, fixed build error by adding i18next dependencies. This enables multilingual support for the landing page, making the application more accessible to users.
