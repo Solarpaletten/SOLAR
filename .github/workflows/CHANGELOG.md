@@ -267,3 +267,5 @@ This commit ensures the application works correctly both in local development en
 - 2025-03-22 fix: "Update registration and login pages to match design"
 ## Fixed
 - 2025-03-22 "Fix routing to show LandingPage on root path"
+## Fixed
+- 2025-03-22 LandingPage.tsx  i18n.ts Add i18n support for Russian and English languages
