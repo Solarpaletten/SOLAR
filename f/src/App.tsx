@@ -6,7 +6,7 @@ import LandingPage from './pages/landing/LandingPage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import OnboardingPage from './pages/auth/OnboardingPage';
-import CreateVendorPage from './pages/vendors/CreateVendorPage';
+import CreateVendorPage from './services/vendorsService';
 
 // Импортируем компоненты layout
 import Layout from './components/layout/Layout';
