@@ -46,6 +46,7 @@ export interface Purchase {
   discountAmount?: number;
   currency?: string;
   exchangeRate?: number;
+  archived?: boolean;
 }
 
 /**
@@ -65,6 +66,7 @@ export interface PurchaseFilter {
   maxAmount?: number;
   departmentId?: string;
   projectId?: string;
+  archived?: boolean;
 }
 
 /**
@@ -122,137 +124,10 @@ export enum PurchaseAction {
 }
 
 /**
- * Интерфейс событий закупки для журнала
+ * Настройки печати PDF
  */
-export interface PurchaseEvent {
-  id: string;
-  purchaseId: string;
-  timestamp: string;
-  user: {
-    id: string;
-    name: string;
-  };
-  type: 'create' | 'update' | 'delete' | 'status_change';
-  details: {
-    field?: string;
-    oldValue?: any;
-    newValue?: any;
-    message?: string;
-  };
-}
-
-/**
- * Интерфейс пропсов для компонента PurchasesTable
- */
-export interface PurchasesTableProps {
-  purchases: Purchase[];
-  isLoading: boolean;
-  error: Error | null;
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
-  onView: (id: string) => void;
-  onSearch?: (search: string) => void;
-  onPageChange?: (page: number) => void;
-  onItemsPerPageChange?: (limit: number) => void;
-  onSort?: (field: string, direction: 'asc' | 'desc') => void;
-  currentPage?: number;
-  totalItems?: number;
-  itemsPerPage?: number;
-  onExport?: () => void;
-  onImport?: (file: File) => void;
-}
-
-/**
- * Интерфейс пропсов для компонента PurchasesRow
- */
-export interface PurchasesRowProps {
-  purchase: Purchase;
-  onEdit: () => void;
-  onDelete: () => void;
-  onView: () => void;
-}
-
-/**
- * Интерфейс пропсов для компонента PurchasesSearch
- */
-export interface PurchasesSearchProps {
-  searchTerm: string;
-  onSearchChange: (value: string) => void;
-  placeholder?: string;
-  debounceTime?: number;
-}
-
-/**
- * Интерфейс пропсов для компонента PurchasesActions
- */
-export interface PurchasesActionsProps {
-  onCreateNew: () => void;
-  onExport?: () => void;
-  onImport?: (file: File) => void;
-  onBulkDelete?: (ids: string[]) => void;
-  selectedItems?: string[];
-  hasExportFeature?: boolean;
-  hasImportFeature?: boolean;
-  hasBulkActions?: boolean;
-}
-
-/**
- * Интерфейс пропсов для компонента PurchasesPagination
- */
-export interface PurchasesPaginationProps {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-  itemsPerPage: number;
-  onItemsPerPageChange?: (itemsPerPage: number) => void;
-}
-
-/**
- * Интерфейс пропсов для компонента PurchasesSummary
- */
-export interface PurchasesSummaryProps {
-  totalAmount: number;
-  count: number;
-  periodStart?: Date;
-  periodEnd?: Date;
-  currency?: string;
-}
-
-/**
- * Интерфейс пропсов для компонента PurchasesStatusBadge
- */
-export interface PurchasesStatusBadgeProps {
-  status: PurchaseStatus;
-}
-
-/**
- * Интерфейс пропсов для компонента PurchasesForm
- */
-export interface PurchasesFormProps {
-  initialData?: Purchase;
-  onSubmit: (data: Purchase) => void;
-  onCancel: () => void;
-  isSubmitting?: boolean;
-  vendors?: { id: string; name: string }[];
-}
-
-/**
- * Интерфейс пропсов для компонента PurchasesItemRow
- */
-export interface PurchasesItemRowProps {
-  item: PurchaseItem;
-  onItemChange: (itemId: string, field: keyof PurchaseItem, value: any) => void;
-  onRemoveItem: (itemId: string) => void;
-}
-
-/**
- * Интерфейс результата хука useFetchPurchases
- */
-export interface UseFetchPurchasesResult {
-  purchases: Purchase[];
-  isLoading: boolean;
-  error: Error | null;
-  totalCount: number;
-  fetchPurchases: (filters?: PurchaseFilter) => Promise<void>;
-  refetch: () => Promise<void>;
+export interface PurchasePDFOptions {
+  includeItems?: boolean;
+  includeTotals?: boolean;
+  language?: 'en' | 'ru' | 'de';
 }

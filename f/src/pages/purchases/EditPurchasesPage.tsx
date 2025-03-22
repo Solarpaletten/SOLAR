@@ -8,14 +8,13 @@ import purchasesService from '../../services/purchasesService';
 const EditPurchasesPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  
+
   const [purchase, setPurchase] = useState<Purchase | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [vendors, setVendors] = useState<{ id: string; name: string }[]>([]);
 
-  // Загрузка закупки и списка поставщиков
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -26,21 +25,14 @@ const EditPurchasesPage: React.FC = () => {
           throw new Error('ID закупки не указан');
         }
 
-        // Загрузка данных о закупке
         const purchaseData = await purchasesService.getPurchaseById(id);
         setPurchase(purchaseData);
 
-        // Загрузка списка поставщиков
-        // Это заглушка, которую нужно заменить реальным вызовом API
-        // const vendorsResponse = await vendorService.getVendors();
-        // setVendors(vendorsResponse.data);
-
-        // Временная заглушка с примерами поставщиков
         setVendors([
-          { id: '1', name: 'ООО "ТехноСнаб"' },
-          { id: '2', name: 'ИП Иванов А.А.' },
-          { id: '3', name: 'АО "Комплект"' },
-          { id: '4', name: 'ООО "Офис-Мастер"' }
+          { id: '1', name: 'ASSET LOGISTICS GMBH' },
+          { id: '2', name: 'SWAPOIL GMBH' },
+          { id: '3', name: 'ASSET BILANS SPOLKA Z O O' },
+          { id: '4', name: 'RAPSOIL OU' }
         ]);
       } catch (err: any) {
         console.error('Ошибка при загрузке данных:', err);
@@ -53,7 +45,6 @@ const EditPurchasesPage: React.FC = () => {
     fetchData();
   }, [id]);
 
-  // Обработка отправки формы
   const handleSubmit = async (formData: Purchase) => {
     if (!id) return;
 
@@ -61,7 +52,6 @@ const EditPurchasesPage: React.FC = () => {
       setIsSubmitting(true);
       setError(null);
 
-      // Преобразуем данные формы в DTO для обновления
       const purchaseDto: UpdatePurchaseDto = {
         date: formData.date,
         invoiceNumber: formData.invoiceNumber,
@@ -70,19 +60,16 @@ const EditPurchasesPage: React.FC = () => {
         items: formData.items,
         totalAmount: formData.totalAmount,
         status: formData.status,
-        // Дополнительные поля
         paymentMethod: formData.paymentMethod,
         notes: formData.notes,
         departmentId: formData.departmentId,
         projectId: formData.projectId
       };
 
-      // Вызов сервиса для обновления закупки
       const updatedPurchase = await purchasesService.updatePurchase(id, purchaseDto);
-      
-      // Перенаправление на страницу просмотра обновленной закупки
-      navigate(`/purchases/${updatedPurchase.id}`, { 
-        state: { message: 'Закупка успешно обновлена' } 
+
+      navigate(`/warehouse/purchases/${updatedPurchase.id}`, {
+        state: { message: 'Закупка успешно обновлена' }
       });
     } catch (err: any) {
       console.error('Ошибка при обновлении закупки:', err);
@@ -92,20 +79,18 @@ const EditPurchasesPage: React.FC = () => {
     }
   };
 
-  // Обработка отмены
   const handleCancel = () => {
-    navigate(`/purchases/${id}`);
+    navigate('/warehouse/purchases');
   };
 
-  // Отображение состояния загрузки
   if (isLoading) {
     return (
       <PageContainer
         title="Редактирование закупки"
         breadcrumbs={[
           { label: 'Главная', path: '/' },
-          { label: 'Закупки', path: '/purchases' },
-          { label: 'Редактирование', path: `/purchases/edit/${id}` }
+          { label: 'Закупки', path: '/warehouse/purchases' },
+          { label: 'Редактирование', path: `/warehouse/purchases/edit/${id}` }
         ]}
       >
         <div className="flex justify-center items-center p-8">
@@ -115,15 +100,14 @@ const EditPurchasesPage: React.FC = () => {
     );
   }
 
-  // Отображение ошибки, если закупка не найдена
   if (!purchase && !isLoading) {
     return (
       <PageContainer
         title="Ошибка"
         breadcrumbs={[
           { label: 'Главная', path: '/' },
-          { label: 'Закупки', path: '/purchases' },
-          { label: 'Ошибка', path: `/purchases/edit/${id}` }
+          { label: 'Закупки', path: '/warehouse/purchases' },
+          { label: 'Ошибка', path: `/warehouse/purchases/edit/${id}` }
         ]}
       >
         <div className="p-4 bg-red-50 border border-red-300 rounded-md text-red-800">
@@ -131,7 +115,7 @@ const EditPurchasesPage: React.FC = () => {
         </div>
         <div className="mt-4">
           <button
-            onClick={() => navigate('/purchases')}
+            onClick={() => navigate('/warehouse/purchases')}
             className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-gray-800"
           >
             Вернуться к списку закупок
@@ -146,9 +130,9 @@ const EditPurchasesPage: React.FC = () => {
       title={`Редактирование закупки №${purchase?.invoiceNumber}`}
       breadcrumbs={[
         { label: 'Главная', path: '/' },
-        { label: 'Закупки', path: '/purchases' },
-        { label: `Закупка №${purchase?.invoiceNumber}`, path: `/purchases/${id}` },
-        { label: 'Редактирование', path: `/purchases/edit/${id}` }
+        { label: 'Закупки', path: '/warehouse/purchases' },
+        { label: `Закупка №${purchase?.invoiceNumber}`, path: `/warehouse/purchases/${id}` },
+        { label: 'Редактирование', path: `/warehouse/purchases/edit/${id}` }
       ]}
     >
       {error && (
