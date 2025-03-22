@@ -262,4 +262,6 @@ This commit ensures the application works correctly both in local development en
 ### Fixed
 - 2025-03-21 fix: purchases
 ### Fixed
-- 2025-03-23 "Add amount filter, reset filters button, and single purchase deletion to PurchasesPage"
+- 2025-03-22 "Add amount filter, reset filters button, and single purchase deletion to PurchasesPage"
+## Fixed
+- 2025-03-22 fix: "Update registration and login pages to match design"
