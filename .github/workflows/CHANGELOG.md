@@ -334,3 +334,11 @@ feat(purchases): enable vendorName display and invoice vendorId lookup
 
 Обеспечена работоспособность фронтенда в режиме production (Render)
 
+### Fixed
+- 2025-03-19 feat(i18n): add i18n setup for multi-language support (English and Russian)
+- Добавлена настройка i18n с поддержкой английского и русского языков
+- Интегрирован язык с помощью i18next и react-i18next
+- Реализованы переводы для страниц: LandingPage, LoginPage, RegisterPage, OnboardingPage
+- Добавлена автоматическая детекция языка и fallback на английский
+- Конфигурирован основной файл i18n.ts для работы с переводами
+
