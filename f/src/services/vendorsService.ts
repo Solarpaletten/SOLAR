@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const API_URL = '/api/vendors';
 
-interface Vendor {
+export interface Vendor {
   id: string;
   name: string;
   type: string;
@@ -15,10 +15,10 @@ interface Vendor {
 }
 
 const vendorsService = {
-  getVendorsList: async (): Promise<string[]> => {
+  getVendorsList: async (): Promise<Vendor[]> => {
     try {
       const response = await axios.get<Vendor[]>(`${API_URL}?type=vendor`);
-      return response.data.map((vendor) => vendor.name);
+      return response.data;
     } catch (error) {
       throw new Error('Failed to fetch vendors');
     }

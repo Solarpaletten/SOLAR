@@ -4,6 +4,7 @@ import PurchasesStatusBadge from './PurchasesStatusBadge';
 
 const PurchasesRow: React.FC<PurchasesRowProps> = ({
   purchase,
+  vendorName,
   onEdit,
   onDelete,
   onView
@@ -26,7 +27,7 @@ const PurchasesRow: React.FC<PurchasesRowProps> = ({
         {purchase.invoiceNumber}
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-        <div className="font-medium">{purchase.vendor}</div>
+      <div className="font-medium">{vendorName}</div>
         {purchase.description && (
           <div className="text-gray-500 truncate max-w-xs">{purchase.description}</div>
         )}

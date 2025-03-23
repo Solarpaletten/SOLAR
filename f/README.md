@@ -158,3 +158,31 @@ src/
    - Поддерживает всплывающие подсказки для дополнительной информации
    - Компактный и удобный для использования в таблицах
    - Обеспечивает единообразное отображение статусов во всем приложении
+
+   ✅ 1. diff (сравнение изменений)
+Файлы, которые ты изменил:
+PurchasesTable.tsx
+
+Добавлен поиск имени поставщика:
+
+ts
+Kopiuj
+Edytuj
+const vendor = vendors.find((v) => v.id === purchase.vendorId);
+const vendorName = vendor?.name || '—';
+Передача vendorName в <PurchasesRow />.
+
+PurchasesRow.tsx
+
+Добавлено новое prop vendorName.
+
+Использовано для отображения вместо purchase.vendor.
+
+types/purchasesTypes.ts
+
+В интерфейс PurchasesRowProps добавлено:
+
+ts
+Kopiuj
+Edytuj
+vendorName: string;
