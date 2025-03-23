@@ -1,7 +1,8 @@
 # Changelog
-
 ### Fixed
-- 2025-03-23: fix i118.ts
+- 2025-03-23 fix: temporarily remove i18n usage from LandingPage"
+### Fixed
+- 2025-03-23: fix i118.ts 
 
 ## [0.2.1] - 2025-03-23
 
