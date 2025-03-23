@@ -281,3 +281,16 @@ This commit ensures the application works correctly both in local development en
 - 2025-03-23: Added i18n support for RegisterPage.tsx and OnboardingPage.tsx, updated i18n.ts with new translations. This enables multilingual support for the registration and onboarding processes, improving user
 ### Fixed
 - 2025-03-23: fix pacakage json
+### Fixed
+- 2025-03-23 fix: add i18n dependencies
+[0.2.1] - Upcoming
+Added
+Placeholder for new features
+Fixed
+2025-03-23 feat: add vendorName display in PurchasesTable using vendorId lookup
+Added vendor name lookup using vendorId in PurchasesTable
+Updated PurchasesRow component to display vendorName
+Extended PurchasesRowProps type to include vendorName
+Simplified vendor info rendering in purchase rows
+
+

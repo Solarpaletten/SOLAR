@@ -105,20 +105,26 @@ const PurchasesTable: React.FC<PurchasesTableProps> = ({
             <th className="px-3 py-1 text-right text-gray-500 uppercase">Сумма</th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-        {purchases.map((purchase) => (
-    <PurchasesRow
-      key={purchase.id}
-      purchase={purchase}
-      expanded={expandedRowId === purchase.id}
-      onToggle={() => toggleRow(purchase.id)}
-      formatDate={formatDate}
-      formatAmount={formatAmount}
-      isSelected={selectedRows.includes(purchase.id)}
-      onSelect={() => handleSelectRow(purchase.id)}
-    />
-  ))}
-        </tbody>
+<tbody className="bg-white divide-y divide-gray-200">
+  {purchases.map((purchase) => {
+    const vendor = vendors.find((v) => v.id === purchase.vendorId);
+    const vendorName = vendor?.name || '—';
+
+    return (
+      <PurchasesRow
+        key={purchase.id}
+        purchase={purchase}
+        vendorName={vendorName}
+        expanded={expandedRowId === purchase.id}
+        onToggle={() => toggleRow(purchase.id)}
+        formatDate={formatDate}
+        formatAmount={formatAmount}
+        isSelected={selectedRows.includes(purchase.id)}
+        onSelect={() => handleSelectRow(purchase.id)}
+      />
+    );
+  })}
+</tbody>
         <tfoot>
           <tr>
             <td colSpan={3} className="px-3 py-2 font-medium text-gray-600">Всего:</td>

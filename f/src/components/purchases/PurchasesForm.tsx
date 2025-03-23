@@ -1,13 +1,19 @@
 import React from 'react';
 import { Purchase } from '../../types/purchasesTypes';
 
+interface VendorOption {
+  id: string;
+  name: string;
+}
+
 interface PurchasesFormProps {
   purchase?: Purchase;
   onSubmit: (data: Purchase) => void;
   onCancel: () => void;
+  vendors?: VendorOption[];
 }
 
-const PurchasesForm: React.FC<PurchasesFormProps> = ({ purchase, onSubmit, onCancel }) => {
+const PurchasesForm: React.FC<PurchasesFormProps> = ({ purchase, onSubmit, onCancel, vendors = [] }) => {
   const [formData, setFormData] = React.useState<Purchase>(
     purchase || {
       id: '',
@@ -47,13 +53,19 @@ const PurchasesForm: React.FC<PurchasesFormProps> = ({ purchase, onSubmit, onCan
 
       <div>
         <label className="block text-sm font-medium text-gray-700">Поставщик</label>
-        <input
-          type="text"
+        <select
           name="vendor"
           value={formData.vendor}
           onChange={handleChange}
           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-        />
+        >
+          <option value="">Выберите поставщика</option>
+          {vendors.map((vendor) => (
+            <option key={vendor.id} value={vendor.id}>
+              {vendor.name}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div>

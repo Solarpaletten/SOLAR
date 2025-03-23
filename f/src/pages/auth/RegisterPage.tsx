@@ -1,23 +1,24 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import { register } from '../../api/axios';
 
 interface RegisterFormData {
-  companyName: string;
   email: string;
   phone: string;
+  name: string;
+  surname: string;
   password: string;
 }
 
 const RegisterPage: React.FC = () => {
-  const { t, i18n } = useTranslation();
   const [formData, setFormData] = useState<RegisterFormData>({
-    companyName: '',
     email: '',
     phone: '',
+    name: '',
+    surname: '',
     password: '',
   });
+  const [agree, setAgree] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -29,25 +30,26 @@ const RegisterPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!agree) {
+      setError('Пожалуйста, согласитесь с правилами LEANID SOLAR');
+      return;
+    }
     setError(null);
     setSuccessMessage(null);
 
     try {
-      await register(formData);
-      setSuccessMessage(t('successMessage'));
-      localStorage.setItem('companyName', formData.companyName);
+      const response = await register(formData.email, formData.password, formData.name);
+      // Сохраняем данные в localStorage для использования на странице онбординга
+      localStorage.setItem('companyName', formData.name);
       localStorage.setItem('email', formData.email);
       localStorage.setItem('phone', formData.phone);
+      setSuccessMessage(`Регистрация успешна! Ваш логин: ${response.login}, пароль: ${formData.password}`);
       setTimeout(() => {
         navigate('/onboarding');
-      }, 2000);
+      }, 3000);
     } catch (err: any) {
-      setError(err.message || t('errorMessage'));
+      setError(err.message || 'Не удалось зарегистрироваться');
     }
-  };
-
-  const changeLanguage = (lng: string) => {
-    i18n.changeLanguage(lng);
   };
 
   return (
@@ -56,36 +58,24 @@ const RegisterPage: React.FC = () => {
       <nav className="bg-white shadow p-4 flex justify-between items-center">
         <div className="text-2xl font-bold text-blue-600">LEANID SOLAR</div>
         <div className="flex space-x-4">
-          <a href="#" className="text-gray-600 hover:text-blue-600">{t('product')}</a>
-          <a href="#" className="text-gray-600 hover:text-blue-600">{t('integrations')}</a>
-          <a href="#" className="text-gray-600 hover:text-blue-600">{t('training')}</a>
-          <a href="#" className="text-gray-600 hover:text-blue-600">{t('prices')}</a>
-          <a href="#" className="text-gray-600 hover:text-blue-600">{t('accountingCompanies')}</a>
+          <a href="#" className="text-gray-600 hover:text-blue-600">Продукт</a>
+          <a href="#" className="text-gray-600 hover:text-blue-600">Интеграции</a>
+          <a href="#" className="text-gray-600 hover:text-blue-600">Обучение</a>
+          <a href="#" className="text-gray-600 hover:text-blue-600">Цены</a>
+          <a href="#" className="text-gray-600 hover:text-blue-600">Бухгалтерские компании</a>
         </div>
         <div className="flex space-x-2">
           <button
-            onClick={() => changeLanguage('en')}
-            className={`px-2 py-1 rounded ${i18n.language === 'en' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
-          >
-            EN
-          </button>
-          <button
-            onClick={() => changeLanguage('ru')}
-            className={`px-2 py-1 rounded ${i18n.language === 'ru' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
-          >
-            RU
-          </button>
-          <button
-            onClick={() => navigate('/auth/login')}
+            onClick={() => navigate('/login')}
             className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
           >
-            {t('signIn')}
+            Войти
           </button>
           <button
-            onClick={() => navigate('/auth/register')}
+            onClick={() => navigate('/register')}
             className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
           >
-            {t('register')}
+            Регистрация
           </button>
         </div>
       </nav>
@@ -93,7 +83,12 @@ const RegisterPage: React.FC = () => {
       {/* Форма регистрации */}
       <div className="flex-grow flex items-center justify-center">
         <div className="max-w-md w-full p-6 bg-white rounded shadow">
-          <h1 className="text-2xl font-bold mb-4 text-center">{t('registerTitle')}</h1>
+          <h1 className="text-2xl font-bold mb-4 text-center">Регистрация в IT Бухгалтерии</h1>
+          <div className="flex justify-center space-x-2 mb-4">
+            <button className="px-4 py-2 bg-blue-600 text-white rounded">Facebook</button>
+            <button className="px-4 py-2 bg-red-600 text-white rounded">Google</button>
+          </div>
+          <p className="text-center text-gray-600 mb-4">Или заполните форму регистрации</p>
           {successMessage && (
             <div className="p-2 text-sm text-green-700 bg-green-100 border border-green-300 rounded mb-4">
               {successMessage}
@@ -106,58 +101,76 @@ const RegisterPage: React.FC = () => {
           )}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">{t('companyName')} *</label>
-              <input
-                type="text"
-                name="companyName"
-                value={formData.companyName}
-                onChange={handleChange}
-                placeholder={t('companyNamePlaceholder')}
-                className="mt-1 block w-full border rounded px-3 py-2 text-sm"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">{t('email')} *</label>
+              <label className="block text-sm font-medium text-gray-700">Email *</label>
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder={t('emailRegisterPlaceholder')}
                 className="mt-1 block w-full border rounded px-3 py-2 text-sm"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">{t('phone')} *</label>
+              <label className="block text-sm font-medium text-gray-700">Телефон *</label>
               <input
-                type="tel"
+                type="text"
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                placeholder={t('phonePlaceholder')}
                 className="mt-1 block w-full border rounded px-3 py-2 text-sm"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">{t('passwordRegister')} *</label>
+              <label className="block text-sm font-medium text-gray-700">Имя *</label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                className="mt-1 block w-full border rounded px-3 py-2 text-sm"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Фамилия *</label>
+              <input
+                type="text"
+                name="surname"
+                value={formData.surname}
+                onChange={handleChange}
+                className="mt-1 block w-full border rounded px-3 py-2 text-sm"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Пароль *</label>
               <input
                 type="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder={t('passwordRegisterPlaceholder')}
                 className="mt-1 block w-full border rounded px-3 py-2 text-sm"
                 required
               />
             </div>
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                checked={agree}
+                onChange={(e) => setAgree(e.target.checked)}
+                className="mr-2"
+              />
+              <label className="text-sm text-gray-600">
+                Я согласен с <a href="#" className="text-blue-500 hover:underline">правилами LEANID SOLAR</a>
+              </label>
+            </div>
             <button
               type="submit"
-              className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              className="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
             >
-              {t('registerButton')}
+              Регистрация
             </button>
           </form>
         </div>

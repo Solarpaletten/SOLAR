@@ -55,7 +55,7 @@ const EditPurchasesPage: React.FC = () => {
       const purchaseDto: UpdatePurchaseDto = {
         date: formData.date,
         invoiceNumber: formData.invoiceNumber,
-        vendor: formData.vendor,
+        vendorId: formData.vendor,
         description: formData.description,
         items: formData.items,
         totalAmount: formData.totalAmount,

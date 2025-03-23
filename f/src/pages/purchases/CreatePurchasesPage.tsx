@@ -36,7 +36,7 @@ const CreatePurchasesPage: React.FC = () => {
       const purchaseDto: CreatePurchaseDto = {
         date: formData.date,
         invoiceNumber: formData.invoiceNumber,
-        vendor: formData.vendor,
+        vendorId: formData.vendor,
         description: formData.description,
         items: formData.items,
         totalAmount: formData.totalAmount,
