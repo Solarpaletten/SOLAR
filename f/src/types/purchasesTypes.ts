@@ -131,16 +131,17 @@ export interface PurchasePDFOptions {
   includeTotals?: boolean;
   language?: 'en' | 'ru' | 'de';
 }
-export interface PurchasesRowProps {
-  purchase: Purchase;
-  vendorName: string; // 👈 Добавлено для отображения имени поставщика
-  expanded?: boolean;
-  onToggle?: () => void;
-  onEdit?: () => void;
-  onDelete?: () => void;
-  onView?: () => void;
-  isSelected?: boolean;
-  onSelect?: () => void;
-  formatDate?: (date: string) => string;
-  formatAmount?: (amount: number) => string;
+export interface PurchasesTableProps {
+  purchases: Purchase[];
+  isLoading: boolean;
+  error: Error | null;
+  onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
+  onView?: (id: string) => void;
+  onSearch?: (term: string) => void;
+  onPageChange?: (page: number) => void;
+  currentPage?: number;
+  totalItems?: number;
+  itemsPerPage?: number;
+  onSort?: (field: keyof Purchase) => void;
 }

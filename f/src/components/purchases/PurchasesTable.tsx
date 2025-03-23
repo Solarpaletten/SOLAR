@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PurchasesTableProps } from '../../types/purchasesTypes';
 import PurchasesRow from './PurchasesRow';
+import vendorsService, { Vendor } from '../../services/vendorsService';
 
 const PurchasesTable: React.FC<PurchasesTableProps> = ({
   purchases = [],
@@ -20,6 +21,29 @@ const PurchasesTable: React.FC<PurchasesTableProps> = ({
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
+  const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [vendorsLoading, setVendorsLoading] = useState(false);
+
+  useEffect(() => {
+    const loadVendors = async () => {
+      setVendorsLoading(true);
+      try {
+        const vendorsList = await vendorsService.getVendorsList();
+        setVendors(vendorsList);
+      } catch (err) {
+        console.error('Ошибка при загрузке поставщиков:', err);
+      } finally {
+        setVendorsLoading(false);
+      }
+    };
+    
+    loadVendors();
+  }, []);
+
+  const getVendorName = (vendorId: string): string => {
+    const vendor = vendors.find(v => v.id === vendorId);
+    return vendor ? vendor.name : '—';
+  };
 
   const toggleRow = (id: string) => {
     setExpandedRowId((prev) => (prev === id ? null : id));
@@ -77,7 +101,7 @@ const PurchasesTable: React.FC<PurchasesTableProps> = ({
             </button>
             <button
               className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-              onClick={() => onDelete && onDelete(selectedRows)}
+              onClick={() => onDelete && onDelete(selectedRows[0])}
             >
               🗑️ Удалить
             </button>
@@ -105,26 +129,30 @@ const PurchasesTable: React.FC<PurchasesTableProps> = ({
             <th className="px-3 py-1 text-right text-gray-500 uppercase">Сумма</th>
           </tr>
         </thead>
-<tbody className="bg-white divide-y divide-gray-200">
-  {purchases.map((purchase) => {
-    const vendor = vendors.find((v) => v.id === purchase.vendorId);
-    const vendorName = vendor?.name || '—';
+        <tbody className="bg-white divide-y divide-gray-200">
+          {purchases.map((purchase) => {
+            const vendorName = purchase.vendorId 
+              ? getVendorName(purchase.vendorId) 
+              : purchase.vendor || '—';
 
-    return (
-      <PurchasesRow
-        key={purchase.id}
-        purchase={purchase}
-        vendorName={vendorName}
-        expanded={expandedRowId === purchase.id}
-        onToggle={() => toggleRow(purchase.id)}
-        formatDate={formatDate}
-        formatAmount={formatAmount}
-        isSelected={selectedRows.includes(purchase.id)}
-        onSelect={() => handleSelectRow(purchase.id)}
-      />
-    );
-  })}
-</tbody>
+            return (
+              <PurchasesRow
+                key={purchase.id}
+                purchase={purchase}
+                vendorName={vendorName}
+                expanded={expandedRowId === purchase.id}
+                onToggle={() => toggleRow(purchase.id)}
+                onEdit={() => onEdit && onEdit(purchase.id)}
+                onDelete={() => onDelete && onDelete(purchase.id)}
+                onView={() => onView && onView(purchase.id)}
+                formatDate={formatDate}
+                formatAmount={formatAmount}
+                isSelected={selectedRows.includes(purchase.id)}
+                onSelect={() => handleSelectRow(purchase.id)}
+              />
+            );
+          })}
+        </tbody>
         <tfoot>
           <tr>
             <td colSpan={3} className="px-3 py-2 font-medium text-gray-600">Всего:</td>
