@@ -4,6 +4,7 @@ import PageContainer from '../../components/common/PageContainer';
 import PurchasesForm from '../../components/purchases/PurchasesForm';
 import { Purchase, UpdatePurchaseDto } from '../../types/purchasesTypes';
 import purchasesService from '../../services/purchasesService';
+import clientsService, { Client } from '../../services/clientsService';
 
 const EditPurchasesPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -13,7 +14,7 @@ const EditPurchasesPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [vendors, setVendors] = useState<{ id: string; name: string }[]>([]);
+  const [suppliers, setSuppliers] = useState<Client[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -25,15 +26,13 @@ const EditPurchasesPage: React.FC = () => {
           throw new Error('ID закупки не указан');
         }
 
+        // Загружаем данные о закупке
         const purchaseData = await purchasesService.getPurchaseById(id);
         setPurchase(purchaseData);
 
-        setVendors([
-          { id: '1', name: 'ASSET LOGISTICS GMBH' },
-          { id: '2', name: 'SWAPOIL GMBH' },
-          { id: '3', name: 'ASSET BILANS SPOLKA Z O O' },
-          { id: '4', name: 'RAPSOIL OU' }
-        ]);
+        // Загружаем список поставщиков
+        const suppliersList = await clientsService.getSuppliersList();
+        setSuppliers(suppliersList);
       } catch (err: any) {
         console.error('Ошибка при загрузке данных:', err);
         setError(err.response?.data?.message || 'Произошла ошибка при загрузке данных. Пожалуйста, попробуйте еще раз.');
@@ -55,11 +54,12 @@ const EditPurchasesPage: React.FC = () => {
       const purchaseDto: UpdatePurchaseDto = {
         date: formData.date,
         invoiceNumber: formData.invoiceNumber,
-        vendorId: formData.vendor,
+        client_id: formData.client_id, // Используем client_id вместо vendorId
         description: formData.description,
         items: formData.items,
         totalAmount: formData.totalAmount,
         status: formData.status,
+        currency: formData.currency,
         paymentMethod: formData.paymentMethod,
         notes: formData.notes,
         departmentId: formData.departmentId,
@@ -147,7 +147,7 @@ const EditPurchasesPage: React.FC = () => {
           onSubmit={handleSubmit}
           onCancel={handleCancel}
           isSubmitting={isSubmitting}
-          vendors={vendors}
+          suppliers={suppliers}
         />
       )}
     </PageContainer>

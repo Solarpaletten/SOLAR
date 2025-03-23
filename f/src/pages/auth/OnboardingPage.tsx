@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import vendorsService from '../../services/vendorsService';
+import vendorsService from '../../services/clientsService';
 
 interface OnboardingFormData {
   companyCode: string;

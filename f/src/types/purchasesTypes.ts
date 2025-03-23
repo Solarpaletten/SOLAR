@@ -4,6 +4,11 @@
 export type PurchaseStatus = 'pending' | 'paid' | 'cancelled' | 'delivered' | 'completed' | 'draft';
 
 /**
+ * Типы валют
+ */
+export type Currency = 'EUR' | 'USD' | 'PLN';
+
+/**
  * Интерфейс отдельной позиции закупки
  */
 export interface PurchaseItem {
@@ -26,27 +31,31 @@ export interface Purchase {
   id: string;
   date: string;
   invoiceNumber: string;
-  vendor: string;
+  vendor?: string; // Устаревшее поле, используется для обратной совместимости
   description?: string;
   items: PurchaseItem[];
   totalAmount: number;
   status: PurchaseStatus;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
+  // Новое поле для связи с клиентом (в роли поставщика)
+  client_id?: number;
   // Опциональные поля
   paymentDate?: string;
   paymentMethod?: string;
   deliveryDate?: string;
   notes?: string;
   attachments?: string[];
+  // Устаревшее поле, используется для обратной совместимости
   vendorId?: string;
   departmentId?: string;
   projectId?: string;
   taxAmount?: number;
   discountAmount?: number;
-  currency?: string;
+  currency?: Currency;
   exchangeRate?: number;
   archived?: boolean;
+  warehouse_id?: number;
 }
 
 /**
@@ -60,6 +69,7 @@ export interface PurchaseFilter {
   endDate?: string;
   status?: PurchaseStatus | '';
   vendor?: string;
+  client_id?: number;
   sortBy?: keyof Purchase;
   sortOrder?: 'asc' | 'desc';
   minAmount?: number;
@@ -67,10 +77,12 @@ export interface PurchaseFilter {
   departmentId?: string;
   projectId?: string;
   archived?: boolean;
+  warehouse_id?: number;
 }
 
 /**
- * Интерфейс для поставщика
+ * Интерфейс для поставщика (устаревший, используйте Client с role=SUPPLIER)
+ * @deprecated
  */
 export interface Vendor {
   id: string;
@@ -86,12 +98,12 @@ export interface Vendor {
 }
 
 /**
- * Интерфейс для создания закупки (без служебных полей)
+ * Интерфейс для создания закупки
  */
 export type CreatePurchaseDto = Omit<Purchase, 'id' | 'createdAt' | 'updatedAt'>;
 
 /**
- * Интерфейс для обновления закупки (все поля опциональны)
+ * Интерфейс для обновления закупки
  */
 export type UpdatePurchaseDto = Partial<Omit<Purchase, 'id' | 'createdAt' | 'updatedAt'>>;
 
@@ -131,9 +143,13 @@ export interface PurchasePDFOptions {
   includeTotals?: boolean;
   language?: 'en' | 'ru' | 'de';
 }
+
+/**
+ * Интерфейс для пропсов строки таблицы закупок
+ */
 export interface PurchasesRowProps {
   purchase: Purchase;
-  vendorName: string; // 👈 Добавлено для отображения имени поставщика
+  supplierName: string; // Поставщик (ранее vendorName)
   expanded?: boolean;
   onToggle?: () => void;
   onEdit?: () => void;
@@ -143,4 +159,22 @@ export interface PurchasesRowProps {
   onSelect?: () => void;
   formatDate?: (date: string) => string;
   formatAmount?: (amount: number) => string;
+}
+
+/**
+ * Интерфейс для пропсов таблицы закупок
+ */
+export interface PurchasesTableProps {
+  purchases: Purchase[];
+  isLoading: boolean;
+  error: Error | null;
+  onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
+  onView?: (id: string) => void;
+  onSearch?: (term: string) => void;
+  onPageChange?: (page: number) => void;
+  currentPage?: number;
+  totalItems?: number;
+  itemsPerPage?: number;
+  onSort?: (field: keyof Purchase) => void;
 }

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import purchasesService from '../../services/purchasesService';
+import clientsService, { Client, ClientRole } from '../../services/clientsService';
 import { Purchase, PurchaseFilter, PurchaseStatus } from '../../types/purchasesTypes';
 import PurchasesTable from '../../components/purchases/PurchasesTable';
 import PurchasesActions from '../../components/purchases/PurchasesActions';
@@ -21,8 +22,8 @@ const [itemsPerPage, setItemsPerPage] = useState(10);
 const [successMessage, setSuccessMessage] = useState<string | null>(null);
 const [startDate, setStartDate] = useState<string>('');
 const [endDate, setEndDate] = useState<string>('');
-const [vendorFilter, setVendorFilter] = useState<string>('');
-const [vendors, setVendors] = useState<string[]>([]);
+const [supplierFilter, setSupplierFilter] = useState<number | null>(null);
+const [suppliers, setSuppliers] = useState<Client[]>([]);
 const [sortBy, setSortBy] = useState<keyof Purchase>('date');
 const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
@@ -39,7 +40,7 @@ const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
         limit: itemsPerPage,
         startDate: startDate,
         endDate: endDate,
-        vendor: vendorFilter,
+        client_id: supplierFilter || undefined, // Используем client_id вместо vendor
         sortBy: sortBy,
         sortOrder: sortOrder,
       };
@@ -63,22 +64,22 @@ const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   };
   
   useEffect(() => {
-    const fetchVendors = async () => {
+    const fetchSuppliers = async () => {
       try {
-        const vendorsList = await purchasesService.getVendorsList();
-        setVendors(vendorsList);
+        // Загружаем только поставщиков
+        const suppliersList = await clientsService.getSuppliersList();
+        setSuppliers(suppliersList);
       } catch (err: any) {
         setError(new Error('Не удалось загрузить список поставщиков'));
       }
     };
-    fetchVendors();
+    fetchSuppliers();
   }, []);
 
   useEffect(() => {
     fetchPurchases();
-  }, [searchTerm, statusFilter, archivedOnly, currentPage, itemsPerPage, startDate, endDate, vendorFilter, sortBy, sortOrder]);
+  }, [searchTerm, statusFilter, archivedOnly, currentPage, itemsPerPage, startDate, endDate, supplierFilter, sortBy, sortOrder]);
   
-
   const handleCreate = () => {
     navigate('/warehouse/purchases/create');
   };
@@ -93,8 +94,8 @@ const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
     setCurrentPage(1);
   };
   
-  const handleVendorChange = (vendor: string) => {
-    setVendorFilter(vendor);
+  const handleSupplierChange = (supplierId: string) => {
+    setSupplierFilter(supplierId ? parseInt(supplierId) : null);
     setCurrentPage(1);
   };
   
@@ -170,7 +171,7 @@ const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
       <div className="flex flex-wrap gap-2 items-center">
         <PurchasesSearch searchTerm={searchTerm} onSearchChange={setSearchTerm} />
         <div>
-          <label className="text-sm mr-2">Start Date:</label>
+          <label className="text-sm mr-2">Начальная дата:</label>
           <input
             type="date"
             value={startDate}
@@ -179,7 +180,7 @@ const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
           />
         </div>
         <div>
-          <label className="text-sm mr-2">End Date:</label>
+          <label className="text-sm mr-2">Конечная дата:</label>
           <input
             type="date"
             value={endDate}
@@ -189,13 +190,13 @@ const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
         </div>
         <select
           className="border rounded px-2 py-1 text-sm"
-          value={vendorFilter}
-          onChange={(e) => handleVendorChange(e.target.value)}
+          value={supplierFilter || ''}
+          onChange={(e) => handleSupplierChange(e.target.value)}
         >
           <option value="">Все поставщики</option>
-          {vendors.map((vendor) => (
-            <option key={vendor} value={vendor}>
-              {vendor}
+          {suppliers.map((supplier) => (
+            <option key={supplier.id} value={supplier.id}>
+              {supplier.name}
             </option>
           ))}
         </select>
