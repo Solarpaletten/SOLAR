@@ -4,28 +4,26 @@ import PageContainer from '../../components/common/PageContainer';
 import PurchasesForm from '../../components/purchases/PurchasesForm';
 import { Purchase, CreatePurchaseDto } from '../../types/purchasesTypes';
 import purchasesService from '../../services/purchasesService';
+import clientsService, { Client } from '../../services/clientsService';
 
 const CreatePurchasesPage: React.FC = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [vendors, setVendors] = useState<{ id: string; name: string }[]>([]);
+  const [suppliers, setSuppliers] = useState<Client[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchVendors = async () => {
+    const fetchSuppliers = async () => {
       try {
-        setVendors([
-          { id: '1', name: 'ASSET LOGISTICS GMBH' },
-          { id: '2', name: 'SWAPOIL GMBH' },
-          { id: '3', name: 'ASSET BILANS SPOLKA Z O O' },
-          { id: '4', name: 'RAPSOIL OU' }
-        ]);
+        // Загружаем только поставщиков (роль SUPPLIER)
+        const suppliersList = await clientsService.getSuppliersList();
+        setSuppliers(suppliersList);
       } catch (err) {
         console.error('Ошибка при загрузке списка поставщиков:', err);
         setError('Не удалось загрузить список поставщиков. Пожалуйста, попробуйте позже.');
       }
     };
-    fetchVendors();
+    fetchSuppliers();
   }, []);
 
   const handleSubmit = async (formData: Purchase) => {
@@ -36,11 +34,13 @@ const CreatePurchasesPage: React.FC = () => {
       const purchaseDto: CreatePurchaseDto = {
         date: formData.date,
         invoiceNumber: formData.invoiceNumber,
-        vendorId: formData.vendor,
+        client_id: formData.client_id, // Используем client_id вместо vendorId
         description: formData.description,
-        items: formData.items,
+        items: formData.items || [],
         totalAmount: formData.totalAmount,
         status: formData.status,
+        currency: formData.currency,
+        // Опциональные поля
         paymentMethod: formData.paymentMethod,
         notes: formData.notes,
         departmentId: formData.departmentId,
@@ -86,7 +86,7 @@ const CreatePurchasesPage: React.FC = () => {
         onSubmit={handleSubmit}
         onCancel={handleCancel}
         isSubmitting={isSubmitting}
-        vendors={vendors}
+        suppliers={suppliers}
       />
     </PageContainer>
   );

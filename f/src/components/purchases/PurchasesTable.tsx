@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PurchasesTableProps } from '../../types/purchasesTypes';
 import PurchasesRow from './PurchasesRow';
-import vendorsService, { Vendor } from '../../services/vendorsService';
+import clientsService, { Client, ClientRole } from '../../services/clientsService';
 
 const PurchasesTable: React.FC<PurchasesTableProps> = ({
   purchases = [],
@@ -21,28 +21,29 @@ const PurchasesTable: React.FC<PurchasesTableProps> = ({
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
-  const [vendors, setVendors] = useState<Vendor[]>([]);
-  const [vendorsLoading, setVendorsLoading] = useState(false);
+  const [suppliers, setSuppliers] = useState<Client[]>([]);
+  const [suppliersLoading, setSuppliersLoading] = useState(false);
 
   useEffect(() => {
-    const loadVendors = async () => {
-      setVendorsLoading(true);
+    const loadSuppliers = async () => {
+      setSuppliersLoading(true);
       try {
-        const vendorsList = await vendorsService.getVendorsList();
-        setVendors(vendorsList);
+        // Загружаем только поставщиков (SUPPLIER)
+        const suppliersList = await clientsService.getSuppliersList();
+        setSuppliers(suppliersList);
       } catch (err) {
         console.error('Ошибка при загрузке поставщиков:', err);
       } finally {
-        setVendorsLoading(false);
+        setSuppliersLoading(false);
       }
     };
     
-    loadVendors();
+    loadSuppliers();
   }, []);
 
-  const getVendorName = (vendorId: string): string => {
-    const vendor = vendors.find(v => v.id === vendorId);
-    return vendor ? vendor.name : '—';
+  const getSupplierName = (clientId: number): string => {
+    const supplier = suppliers.find(s => s.id === clientId);
+    return supplier ? supplier.name : '—';
   };
 
   const toggleRow = (id: string) => {
@@ -131,15 +132,15 @@ const PurchasesTable: React.FC<PurchasesTableProps> = ({
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {purchases.map((purchase) => {
-            const vendorName = purchase.vendorId 
-              ? getVendorName(purchase.vendorId) 
+            const supplierName = purchase.client_id 
+              ? getSupplierName(purchase.client_id) 
               : purchase.vendor || '—';
 
             return (
               <PurchasesRow
                 key={purchase.id}
                 purchase={purchase}
-                vendorName={vendorName}
+                supplierName={supplierName}
                 expanded={expandedRowId === purchase.id}
                 onToggle={() => toggleRow(purchase.id)}
                 onEdit={() => onEdit && onEdit(purchase.id)}

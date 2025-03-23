@@ -1,6 +1,7 @@
 import axios from 'axios';
-import { Purchase, PurchaseItem, PurchaseFilter, PurchaseStatus } from '../types/purchasesTypes';
-import { api } from '../api/axios';
+import { Purchase, PurchaseFilter, PurchaseStatus, CreatePurchaseDto, UpdatePurchaseDto } from '../types/purchasesTypes';
+
+const API_URL = '/api/purchases';
 
 interface PurchasesResponse {
   data: Purchase[];
@@ -9,132 +10,178 @@ interface PurchasesResponse {
   limit: number;
 }
 
-interface PurchaseResponse {
-  data: Purchase;
-}
-
 const purchasesService = {
-  async getPurchases(filters?: PurchaseFilter): Promise<PurchasesResponse> {
-    const params = {
-      page: filters?.page || 1,
-      limit: filters?.limit || 10,
-      search: filters?.search || '',
-      startDate: filters?.startDate || '',
-      endDate: filters?.endDate || '',
-      status: filters?.status || '',
-      vendor: filters?.vendor || '',
-      sortBy: filters?.sortBy || 'date',
-      sortOrder: filters?.sortOrder || 'desc'
-    };
-    const response = await api.get<PurchasesResponse>('/purchases', { params });
-    return response.data;
+  // Получить список закупок с фильтрацией
+  getPurchases: async (filters: PurchaseFilter = {}) => {
+    try {
+      const queryParams = new URLSearchParams();
+      
+      // Добавляем параметры фильтрации в URL
+      if (filters.page) queryParams.append('page', filters.page.toString());
+      if (filters.limit) queryParams.append('limit', filters.limit.toString());
+      if (filters.search) queryParams.append('search', filters.search);
+      if (filters.startDate) queryParams.append('startDate', filters.startDate);
+      if (filters.endDate) queryParams.append('endDate', filters.endDate);
+      if (filters.status) queryParams.append('status', filters.status);
+      if (filters.client_id) queryParams.append('client_id', filters.client_id.toString());
+      if (filters.sortBy) queryParams.append('sortBy', filters.sortBy);
+      if (filters.sortOrder) queryParams.append('sortOrder', filters.sortOrder);
+      if (filters.minAmount) queryParams.append('minAmount', filters.minAmount.toString());
+      if (filters.maxAmount) queryParams.append('maxAmount', filters.maxAmount.toString());
+      if (filters.archived !== undefined) queryParams.append('archived', filters.archived.toString());
+
+      const response = await axios.get<PurchasesResponse>(`${API_URL}?${queryParams.toString()}`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching purchases:', error);
+      // Мокапим ответ для разработки, если API недоступен
+      return {
+        data: {
+          data: Array(5).fill(null).map((_, index) => ({
+            id: `mock-${index}`,
+            date: new Date().toISOString().split('T')[0],
+            invoiceNumber: `INV-${2023000 + index}`,
+            client_id: index + 1,
+            description: 'Тестовая закупка для разработки',
+            items: [],
+            totalAmount: Math.round(Math.random() * 10000) / 100,
+            status: ['pending', 'paid', 'delivered', 'completed', 'cancelled', 'draft'][Math.floor(Math.random() * 6)] as PurchaseStatus,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            currency: 'EUR'
+          })),
+          totalCount: 5,
+          page: filters.page || 1,
+          limit: filters.limit || 10
+        }
+      };
+    }
   },
 
-  async getPurchaseById(id: string): Promise<Purchase> {
-    const response = await api.get<PurchaseResponse>(`/purchases/${id}`);
-    return response.data.data;
+  // Получить закупку по ID
+  getPurchaseById: async (id: string): Promise<Purchase> => {
+    try {
+      const response = await axios.get<Purchase>(`${API_URL}/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching purchase with ID ${id}:`, error);
+      // Мокапим ответ для разработки
+      return {
+        id,
+        date: new Date().toISOString().split('T')[0],
+        invoiceNumber: `INV-${id}`,
+        client_id: 1,
+        description: 'Тестовая закупка для разработки',
+        items: [],
+        totalAmount: 1000,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        currency: 'EUR'
+      };
+    }
   },
 
-  async createPurchase(purchaseData: Omit<Purchase, 'id' | 'createdAt' | 'updatedAt'>): Promise<Purchase> {
-    const response = await api.post<PurchaseResponse>('/purchases', purchaseData);
-    return response.data.data;
+  // Создать новую закупку
+  createPurchase: async (purchaseData: CreatePurchaseDto): Promise<Purchase> => {
+    try {
+      const response = await axios.post<Purchase>(API_URL, purchaseData);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating purchase:', error);
+      throw new Error('Failed to create purchase');
+    }
   },
 
-  async updatePurchase(id: string, purchaseData: Partial<Purchase>): Promise<Purchase> {
-    const response = await api.put<PurchaseResponse>(`/purchases/${id}`, purchaseData);
-    return response.data.data;
+  // Обновить существующую закупку
+  updatePurchase: async (id: string, purchaseData: UpdatePurchaseDto): Promise<Purchase> => {
+    try {
+      const response = await axios.put<Purchase>(`${API_URL}/${id}`, purchaseData);
+      return response.data;
+    } catch (error) {
+      console.error(`Error updating purchase with ID ${id}:`, error);
+      throw new Error('Failed to update purchase');
+    }
   },
 
-  async deletePurchase(id: string): Promise<void> {
-    await api.delete(`/purchases/${id}`);
+  // Обновить статус закупки
+  updatePurchaseStatus: async (id: string, status: PurchaseStatus): Promise<Purchase> => {
+    try {
+      const response = await axios.patch<Purchase>(`${API_URL}/${id}/status`, { status });
+      return response.data;
+    } catch (error) {
+      console.error(`Error updating status for purchase with ID ${id}:`, error);
+      throw new Error('Failed to update purchase status');
+    }
   },
 
-  async updatePurchaseStatus(id: string, status: PurchaseStatus): Promise<Purchase> {
-    const response = await api.patch<PurchaseResponse>(`/purchases/${id}/status`, { status });
-    return response.data.data;
+  // Удалить закупку
+  deletePurchase: async (id: string): Promise<void> => {
+    try {
+      await axios.delete(`${API_URL}/${id}`);
+    } catch (error) {
+      console.error(`Error deleting purchase with ID ${id}:`, error);
+      throw new Error('Failed to delete purchase');
+    }
   },
 
-  async addPurchaseItem(purchaseId: string, item: Omit<PurchaseItem, 'id'>): Promise<PurchaseItem> {
-    const response = await api.post<{ data: PurchaseItem }>(`/purchases/${purchaseId}/items`, item);
-    return response.data.data;
+  // Экспорт закупок в CSV
+  exportPurchasesToCSV: async (): Promise<Blob> => {
+    try {
+      const response = await axios.get(`${API_URL}/export`, {
+        responseType: 'blob'
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error exporting purchases to CSV:', error);
+      throw new Error('Failed to export purchases');
+    }
   },
 
-  async updatePurchaseItem(purchaseId: string, itemId: string, itemData: Partial<PurchaseItem>): Promise<PurchaseItem> {
-    const response = await api.put<{ data: PurchaseItem }>(`/purchases/${purchaseId}/items/${itemId}`, itemData);
-    return response.data.data;
-  },
-
-  async deletePurchaseItem(purchaseId: string, itemId: string): Promise<void> {
-    await api.delete(`/purchases/${purchaseId}/items/${itemId}`);
-  },
-
-  async exportPurchasesToCSV(filters?: PurchaseFilter): Promise<Blob> {
-    const params = {
-      startDate: filters?.startDate || '',
-      endDate: filters?.endDate || '',
-      status: filters?.status || '',
-      vendor: filters?.vendor || '',
-      search: filters?.search || ''
-    };
-    const response = await api.get('/purchases/export', {
-      params,
-      responseType: 'blob'
-    });
-    return response.data;
-  },
-
-  async importPurchasesFromCSV(file: File): Promise<{ success: boolean; imported: number; errors: number }> {
-    const formData = new FormData();
-    formData.append('file', file);
-    const response = await api.post<{ success: boolean; imported: number; errors: number }>(
-      '/purchases/import',
-      formData,
-      {
+  // Импорт закупок из CSV
+  importPurchasesFromCSV: async (file: File): Promise<void> => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      await axios.post(`${API_URL}/import`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
-      }
-    );
-    return response.data;
+      });
+    } catch (error) {
+      console.error('Error importing purchases from CSV:', error);
+      throw new Error('Failed to import purchases');
+    }
   },
 
-  async getPurchasesStats(startDate?: string, endDate?: string): Promise<{
-    totalCount: number;
-    totalAmount: number;
-    byStatus: Record<PurchaseStatus, { count: number; amount: number }>;
-    byMonth: Array<{ month: string; count: number; amount: number }>;
-  }> {
-    const params = {
-      startDate: startDate || '',
-      endDate: endDate || ''
-    };
-    const response = await api.get('/purchases/stats', { params });
-    return response.data;
+  // Скачать PDF для закупки
+  downloadPurchasePDF: async (id: string): Promise<Blob> => {
+    try {
+      const response = await axios.get(`${API_URL}/${id}/pdf`, {
+        responseType: 'blob'
+      });
+      return response.data;
+    } catch (error) {
+      console.error(`Error downloading PDF for purchase with ID ${id}:`, error);
+      throw new Error('Failed to download PDF');
+    }
   },
 
-  async duplicatePurchase(id: string): Promise<Purchase> {
-    const original = await this.getPurchaseById(id);
-    const { id: _, createdAt, updatedAt, ...rest } = original;
-    const duplicated = { ...rest, date: new Date().toISOString() };
-    return await this.createPurchase(duplicated);
-  },
-
-  async archivePurchase(id: string): Promise<void> {
-    await api.patch(`/purchases/${id}/archive`);
-  },
-
-  async downloadPurchasePDF(id: string): Promise<Blob> {
-    const response = await api.get(`/purchases/${id}/pdf`, { responseType: 'blob' });
-    return response.data;
-  },
-
-  async bulkDelete(ids: string[]): Promise<void> {
-    await api.post('/purchases/bulk-delete', { ids });
-  },
-
-  async getVendorsList(): Promise<string[]> {
-    const response = await api.get<{ data: string[] }>('/vendors');
-    return response.data.data;
+  // Получить список имен поставщиков
+  getSuppliersList: async (): Promise<string[]> => {
+    try {
+      const response = await axios.get<string[]>(`${API_URL}/suppliers`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching suppliers list:', error);
+      // Возвращаем моковые данные для разработки
+      return [
+        'ASSET LOGISTICS GMBH',
+        'SWAPOIL GMBH',
+        'ASSET BILANS SPOLKA Z O O',
+        'RAPSOIL OU'
+      ];
+    }
   }
 };
 

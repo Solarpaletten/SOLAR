@@ -4,6 +4,7 @@ import PageContainer from '../../components/common/PageContainer';
 import PurchasesStatusBadge from '../../components/purchases/PurchasesStatusBadge';
 import { Purchase, PurchaseStatus } from '../../types/purchasesTypes';
 import purchasesService from '../../services/purchasesService';
+import clientsService from '../../services/clientsService';
 
 const PurchasesDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -11,6 +12,7 @@ const PurchasesDetailPage: React.FC = () => {
   const location = useLocation();
 
   const [purchase, setPurchase] = useState<Purchase | null>(null);
+  const [supplierName, setSupplierName] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(
@@ -25,9 +27,23 @@ const PurchasesDetailPage: React.FC = () => {
         setError(null);
         const purchaseData = await purchasesService.getPurchaseById(id);
         setPurchase(purchaseData);
+        
+        // Если у закупки есть client_id, получаем имя поставщика
+        if (purchaseData.client_id) {
+          try {
+            const supplierData = await clientsService.getClientById(purchaseData.client_id);
+            setSupplierName(supplierData ? supplierData.name : '');
+          } catch (supplierErr) {
+            console.error('Error loading supplier data:', supplierErr);
+            // Используем поле vendor если не смогли получить имя поставщика
+            setSupplierName(purchaseData.vendor || 'Неизвестный поставщик');
+          }
+        } else {
+          setSupplierName(purchaseData.vendor || 'Неизвестный поставщик');
+        }
       } catch (err: any) {
         console.error('Error loading purchase data:', err);
-        setError(err.response?.data?.message || 'Failed to load purchase data');
+        setError(err.response?.data?.message || 'Не удалось загрузить данные закупки');
       } finally {
         setIsLoading(false);
       }
@@ -37,29 +53,29 @@ const PurchasesDetailPage: React.FC = () => {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('en-GB').format(date);
+    return new Intl.DateTimeFormat('ru-RU').format(date);
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-GB', {
+  const formatCurrency = (amount: number, currency: string = 'EUR') => {
+    return new Intl.NumberFormat('ru-RU', {
       style: 'currency',
-      currency: 'EUR',
+      currency: currency,
       minimumFractionDigits: 2
     }).format(amount);
   };
 
   const handleEdit = () => {
-    navigate(`/purchases/edit/${id}`);
+    navigate(`/warehouse/purchases/edit/${id}`);
   };
 
   const handleArchive = async () => {
-    if (!id || !window.confirm('Are you sure you want to archive this purchase?')) return;
+    if (!id || !window.confirm('Вы уверены, что хотите архивировать эту закупку?')) return;
     try {
       await purchasesService.updatePurchase(id, { archived: true });
-      navigate('/purchases', { state: { message: 'Purchase archived successfully' } });
+      navigate('/warehouse/purchases', { state: { message: 'Закупка успешно перемещена в архив' } });
     } catch (err: any) {
       console.error('Error archiving purchase:', err);
-      setError(err.response?.data?.message || 'Failed to archive purchase');
+      setError(err.response?.data?.message || 'Не удалось архивировать закупку');
     }
   };
 
@@ -68,11 +84,11 @@ const PurchasesDetailPage: React.FC = () => {
     try {
       const updatedPurchase = await purchasesService.updatePurchaseStatus(id, newStatus);
       setPurchase(updatedPurchase);
-      setSuccessMessage('Purchase status updated successfully');
+      setSuccessMessage('Статус закупки успешно обновлен');
       setTimeout(() => setSuccessMessage(null), 5000);
     } catch (err: any) {
       console.error('Error updating status:', err);
-      setError(err.response?.data?.message || 'Failed to update status');
+      setError(err.response?.data?.message || 'Не удалось обновить статус');
     }
   };
 
@@ -83,39 +99,200 @@ const PurchasesDetailPage: React.FC = () => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `purchase-${id}.pdf`;
+      link.download = `закупка-${id}.pdf`;
       link.click();
       URL.revokeObjectURL(url);
     } catch (err: any) {
       console.error('Error downloading PDF:', err);
-      setError(err.response?.data?.message || 'Failed to download PDF');
+      setError(err.response?.data?.message || 'Не удалось скачать PDF');
     }
   };
 
   if (isLoading) {
     return (
-      <PageContainer title="Purchase Details" breadcrumbs={[{ label: 'Home', path: '/' }, { label: 'Purchases', path: '/purchases' }, { label: 'Loading...', path: `/purchases/${id}` }]}> <div className="flex justify-center items-center p-8"><div className="text-gray-500">Loading data...</div></div></PageContainer>
+      <PageContainer 
+        title="Детали закупки" 
+        breadcrumbs={[
+          { label: 'Главная', path: '/' }, 
+          { label: 'Закупки', path: '/warehouse/purchases' }, 
+          { label: 'Загрузка...', path: `/warehouse/purchases/${id}` }
+        ]}
+      > 
+        <div className="flex justify-center items-center p-8">
+          <div className="text-gray-500">Загрузка данных...</div>
+        </div>
+      </PageContainer>
     );
   }
 
   if (!purchase && !isLoading) {
     return (
-      <PageContainer title="Error" breadcrumbs={[{ label: 'Home', path: '/' }, { label: 'Purchases', path: '/purchases' }, { label: 'Error', path: `/purchases/${id}` }]}> <div className="p-4 bg-red-50 border border-red-300 rounded-md text-red-800">Purchase not found or failed to load.</div><div className="mt-4"><button onClick={() => navigate('/purchases')} className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-gray-800">Back to Purchases</button></div></PageContainer>
+      <PageContainer 
+        title="Ошибка" 
+        breadcrumbs={[
+          { label: 'Главная', path: '/' }, 
+          { label: 'Закупки', path: '/warehouse/purchases' }, 
+          { label: 'Ошибка', path: `/warehouse/purchases/${id}` }
+        ]}
+      > 
+        <div className="p-4 bg-red-50 border border-red-300 rounded-md text-red-800">
+          Закупка не найдена или произошла ошибка при загрузке данных.
+        </div>
+        <div className="mt-4">
+          <button 
+            onClick={() => navigate('/warehouse/purchases')} 
+            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-gray-800"
+          >
+            Вернуться к списку закупок
+          </button>
+        </div>
+      </PageContainer>
     );
   }
 
   return (
-    <PageContainer title={`Purchase #${purchase?.invoiceNumber}`} breadcrumbs={[{ label: 'Home', path: '/' }, { label: 'Purchases', path: '/purchases' }, { label: `Purchase #${purchase?.invoiceNumber}`, path: `/purchases/${id}` }]}> 
-      {successMessage && (<div className="mb-4 p-4 bg-green-50 border border-green-300 rounded-md text-green-800">{successMessage}</div>)}
-      {error && (<div className="mb-4 p-4 bg-red-50 border border-red-300 rounded-md text-red-800">{error}</div>)}
+    <PageContainer 
+      title={`Закупка №${purchase?.invoiceNumber}`} 
+      breadcrumbs={[
+        { label: 'Главная', path: '/' }, 
+        { label: 'Закупки', path: '/warehouse/purchases' }, 
+        { label: `Закупка №${purchase?.invoiceNumber}`, path: `/warehouse/purchases/${id}` }
+      ]}
+    > 
+      {successMessage && (
+        <div className="mb-4 p-4 bg-green-50 border border-green-300 rounded-md text-green-800">
+          {successMessage}
+        </div>
+      )}
+      
+      {error && (
+        <div className="mb-4 p-4 bg-red-50 border border-red-300 rounded-md text-red-800">
+          {error}
+        </div>
+      )}
 
-      <div className="flex gap-2 mb-6">
-        <button onClick={handleEdit} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md">Edit</button>
-        <button onClick={handleArchive} className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-md">Archive</button>
-        <button onClick={handleDownloadPDF} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md">Download PDF</button>
+      <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+        <div className="px-4 py-5 sm:px-6">
+          <h3 className="text-lg leading-6 font-medium text-gray-900">Информация о закупке</h3>
+          <p className="mt-1 max-w-2xl text-sm text-gray-500">Подробные данные и статус документа</p>
+        </div>
+        <div className="border-t border-gray-200">
+          <dl>
+            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt className="text-sm font-medium text-gray-500">Номер счета</dt>
+              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                {purchase?.invoiceNumber}
+              </dd>
+            </div>
+            <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt className="text-sm font-medium text-gray-500">Поставщик</dt>
+              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                {supplierName}
+              </dd>
+            </div>
+            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt className="text-sm font-medium text-gray-500">Дата</dt>
+              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                {purchase?.date ? formatDate(purchase.date) : '—'}
+              </dd>
+            </div>
+            <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt className="text-sm font-medium text-gray-500">Сумма</dt>
+              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                {purchase ? formatCurrency(purchase.totalAmount, purchase.currency) : '—'}
+              </dd>
+            </div>
+            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt className="text-sm font-medium text-gray-500">Статус</dt>
+              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                {purchase?.status && <PurchasesStatusBadge status={purchase.status} />}
+              </dd>
+            </div>
+            <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt className="text-sm font-medium text-gray-500">Описание</dt>
+              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                {purchase?.description || 'Нет описания'}
+              </dd>
+            </div>
+          </dl>
+        </div>
       </div>
 
-      {/* Additional detail rendering would go here */}
+      <div className="flex gap-2 mb-6">
+        <button 
+          onClick={handleEdit} 
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
+        >
+          Редактировать
+        </button>
+        <button 
+          onClick={handleArchive} 
+          className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-md"
+        >
+          Архивировать
+        </button>
+        <button 
+          onClick={handleDownloadPDF} 
+          className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md"
+        >
+          Скачать PDF
+        </button>
+      </div>
+
+      {/* Раздел для элементов закупки можно добавить здесь */}
+      {purchase?.items && purchase.items.length > 0 && (
+        <div className="mt-8">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Позиции закупки</h3>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Описание
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Количество
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Цена
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Сумма
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {purchase.items.map((item) => (
+                  <tr key={item.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {item.description}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
+                      {item.quantity}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
+                      {formatCurrency(item.unitPrice, purchase.currency)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
+                      {formatCurrency(item.totalPrice, purchase.currency)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colSpan={3} className="px-6 py-4 text-right text-sm font-medium text-gray-900">
+                    Итого:
+                  </td>
+                  <td className="px-6 py-4 text-right text-sm font-bold text-gray-900">
+                    {formatCurrency(purchase.totalAmount, purchase.currency)}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      )}
     </PageContainer>
   );
 };
