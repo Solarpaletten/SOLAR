@@ -186,3 +186,88 @@ ts
 Kopiuj
 Edytuj
 vendorName: string;
+
+[0.2.1] - Upcoming
+Added
+Placeholder for new features
+Fixed
+2025-03-23 feat: add vendorName display in PurchasesTable using vendorId lookup
+Added vendor name lookup using vendorId in PurchasesTable
+Updated PurchasesRow component to display vendorName
+Extended PurchasesRowProps type to include vendorName
+Simplified vendor info rendering in purchase rows
+[0.2.1] - 2025-03-23
+Added
+Placeholder for new features
+
+Fixed
+fix: add i18n dependencies
+Добавлены зависимости для i18n и настроен мультиязычный интерфейс:
+
+Подключён i18next, react-i18next, i18next-browser-languagedetector
+
+Реализована базовая конфигурация с поддержкой английского и русского языков
+
+Добавлены переводы для LandingPage, LoginPage, RegisterPage и OnboardingPage
+
+Features
+feat(purchases): add vendorName display in PurchasesTable using vendorId lookup
+Обновлён модуль закупок:
+
+Реализован поиск имени поставщика по vendorId
+
+Обновлён компонент PurchasesRow с поддержкой vendorName
+
+Расширен тип PurchasesRowProps
+
+Упрощено отображение информации о поставщике в таблице закупок
+
+[0.2.1] - 2025-03-23
+Features
+feat(purchases): enable vendorName display and invoice vendorId lookup
+
+Добавлена поддержка отображения имени поставщика через vendorId
+
+Обновлены компоненты PurchasesTable и PurchasesRow
+
+Расширены типы PurchasesRowProps
+
+Настроен правильный выбор vendorId в формах создания и редактирования закупок
+
+Удалены устаревшие поля и упрощена логика отображения
+
+Обеспечена работоспособность фронтенда в режиме production (Render)
+
+[0.2.1] - 2025-03-23
+Features
+✨ feat(purchases): enable vendorName display and invoice vendorId lookup
+Добавлена поддержка отображения имени поставщика через vendorId
+
+Обновлены компоненты PurchasesTable и PurchasesRow
+
+Расширены типы PurchasesRowProps
+
+Настроен правильный выбор vendorId в формах создания и редактирования закупок
+
+Удалены устаревшие поля и упрощена логика отображения
+
+Обеспечена работоспособность фронтенда в режиме production (Render)
+
+🌐 feat(i18n): добавлена мультиязычная поддержка интерфейса
+Подключены зависимости: i18next, react-i18next, i18next-browser-languagedetector
+
+Создан и настроен файл i18n.ts с поддержкой:
+
+Английского (EN)
+
+Русского (RU)
+
+Реализованы переводы для:
+
+LandingPage
+
+LoginPage
+
+RegisterPage
+
+OnboardingPage
