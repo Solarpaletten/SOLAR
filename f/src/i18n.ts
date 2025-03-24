@@ -17,44 +17,44 @@ i18n
       ru: {
         translation: {
           // Дополнительные ключи для страниц
-      product: 'Продукт',
-      integrations: 'Интеграции',
-      training: 'Обучение',
-      prices: 'Цены',
-      accountingCompanies: 'Бухгалтерские компании',
-      signIn: 'Войти',
-      register: 'Регистрация',
-      mainHeader: 'Управляйте бизнесом эффективно',
-      startUsing: 'Начать использовать',
-      freeTrial: 'Бесплатный пробный период 30 дней',
-      
-      // Логин и регистрация
-      loginTitle: 'Вход в систему',
-      orUseCredentials: 'Или используйте логин и пароль',
-      username: 'Логин',
-      password: 'Пароль',
-      loggingIn: 'Вход...',
-      forgotPassword: 'Забыли пароль?',
-      
-      registerTitle: 'Регистрация в IT Бухгалтерии',
-      email: 'Email',
-      phone: 'Телефон',
-      firstName: 'Имя',
-      lastName: 'Фамилия',
-      agreeToTerms: 'Я согласен с правилами LEANID SOLAR',
-      
-      // Onboarding
-      setupYourCompany: 'Настройка вашей компании',
-      companyCode: 'Код компании',
-      directorName: 'Имя директора',
-      finishSetup: 'Завершить настройку',
-      
-      // Ошибки и сообщения
-      exportError: 'Не удалось экспортировать данные',
-      importError: 'Не удалось импортировать файл',
-      deleteError: 'Ошибка при удалении'
-      
-      // Общие термины
+          product: 'Продукт',
+          integrations: 'Интеграции',
+          training: 'Обучение',
+          prices: 'Цены',
+          accountingCompanies: 'Бухгалтерские компании',
+          signIn: 'Войти',
+          register: 'Регистрация',
+          mainHeader: 'Управляйте бизнесом эффективно',
+          startUsing: 'Начать использовать',
+          freeTrial: 'Бесплатный пробный период 30 дней',
+          
+          // Логин и регистрация
+          loginTitle: 'Вход в систему',
+          orUseCredentials: 'Или используйте логин и пароль',
+          username: 'Логин',
+          password: 'Пароль',
+          loggingIn: 'Вход...',
+          forgotPassword: 'Забыли пароль?',
+          
+          registerTitle: 'Регистрация в IT Бухгалтерии',
+          email: 'Email',
+          phone: 'Телефон',
+          firstName: 'Имя',
+          lastName: 'Фамилия',
+          agreeToTerms: 'Я согласен с правилами LEANID SOLAR',
+          
+          // Onboarding
+          setupYourCompany: 'Настройка вашей компании',
+          companyCode: 'Код компании',
+          directorName: 'Имя директора',
+          finishSetup: 'Завершить настройку',
+          
+          // Ошибки и сообщения
+          exportError: 'Не удалось экспортировать данные',
+          importError: 'Не удалось импортировать файл',
+          deleteError: 'Ошибка при удалении',
+          
+          // Общие термины
           save: 'Сохранить',
           cancel: 'Отмена',
           edit: 'Редактировать',
@@ -153,44 +153,45 @@ i18n
           
           // Table
           totalAmount: 'Total:',
-          selected: 'Selected:'
+          selected: 'Selected:',
+          
           // Дополнительные ключи для страниц (на английском)
-      product: 'Product',
-      integrations: 'Integrations',
-      training: 'Training',
-      prices: 'Prices',
-      accountingCompanies: 'Accounting Companies',
-      signIn: 'Sign In',
-      register: 'Register',
-      mainHeader: 'Manage your business efficiently',
-      startUsing: 'Start using',
-      freeTrial: 'Free 30-day trial',
-      
-      // Login and registration
-      loginTitle: 'Sign In',
-      orUseCredentials: 'Or use your credentials',
-      username: 'Username',
-      password: 'Password',
-      loggingIn: 'Signing in...',
-      forgotPassword: 'Forgot password?',
-      
-      registerTitle: 'Register in IT Accounting',
-      email: 'Email',
-      phone: 'Phone',
-      firstName: 'First name',
-      lastName: 'Last name',
-      agreeToTerms: 'I agree to LEANID SOLAR terms',
-      
-      // Onboarding
-      setupYourCompany: 'Set up your company',
-      companyCode: 'Company code',
-      directorName: 'Director name',
-      finishSetup: 'Finish setup',
-      
-      // Errors and messages
-      exportError: 'Failed to export data',
-      importError: 'Failed to import file',
-      deleteError: 'Error deleting'
+          product: 'Product',
+          integrations: 'Integrations',
+          training: 'Training',
+          prices: 'Prices',
+          accountingCompanies: 'Accounting Companies',
+          signIn: 'Sign In',
+          register: 'Register',
+          mainHeader: 'Manage your business efficiently',
+          startUsing: 'Start using',
+          freeTrial: 'Free 30-day trial',
+          
+          // Login and registration
+          loginTitle: 'Sign In',
+          orUseCredentials: 'Or use your credentials',
+          username: 'Username',
+          password: 'Password',
+          loggingIn: 'Signing in...',
+          forgotPassword: 'Forgot password?',
+          
+          registerTitle: 'Register in IT Accounting',
+          email: 'Email',
+          phone: 'Phone',
+          firstName: 'First name',
+          lastName: 'Last name',
+          agreeToTerms: 'I agree to LEANID SOLAR terms',
+          
+          // Onboarding
+          setupYourCompany: 'Set up your company',
+          companyCode: 'Company code',
+          directorName: 'Director name',
+          finishSetup: 'Finish setup',
+          
+          // Errors and messages
+          exportError: 'Failed to export data',
+          importError: 'Failed to import file',
+          deleteError: 'Error deleting'
         }
       }
     }
