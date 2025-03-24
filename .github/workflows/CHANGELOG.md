@@ -1,7 +1,8 @@
 # Changelog
 
 ## [1.0.2] - 2025-03-24
-
+### Fixed 
+- 2025-03-24 feat(purchases):f/package.json
 ### Fixed
 - Added .npmrc configuration with legacy-peer-deps=true to resolve dependency conflicts during build
 - Updated Vite configuration with proper module aliases for i18next packages
