@@ -9,6 +9,7 @@
 - **LandingPage.tsx**: Removed duplicated code with Russian and English text
 - **RegisterPage.tsx**: Fixed syntax errors and implemented translations consistently
 - **LoginPage.tsx**: Corrected duplicate code and implemented translations
+- **i18n.ts**: "Fix syntax errors in i18n.ts configuration"  
 
 ### Changed
 - Improved internationalization by replacing hardcoded Russian strings with translation function calls
