@@ -1,5 +1,6 @@
 # Changelog
-
+### Fixed 
+2025-03-23: -"Fix duplicate component declaration in PurchasesPage.tsx"
 ## [1.0.1] - 2025-03-24
 
 ### Fixed

@@ -10,29 +10,26 @@ import PurchasesSummary from '../../components/purchases/PurchasesSummary';
 import { useTranslation } from 'react-i18next';
 
 const PurchasesPage: React.FC = () => {
-const [purchases, setPurchases] = useState<Purchase[]>([]);
-const [totalItems, setTotalItems] = useState(0);
-const [isLoading, setIsLoading] = useState(false);
-const [error, setError] = useState<Error | null>(null);
-const [searchTerm, setSearchTerm] = useState('');
-const [totalAmount, setTotalAmount] = useState(0);
-const [statusFilter, setStatusFilter] = useState<PurchaseStatus | ''>('');
-const [archivedOnly, setArchivedOnly] = useState(false);
-const [currentPage, setCurrentPage] = useState(1);
-const [itemsPerPage, setItemsPerPage] = useState(10);
-const [successMessage, setSuccessMessage] = useState<string | null>(null);
-const [startDate, setStartDate] = useState<string>('');
-const [endDate, setEndDate] = useState<string>('');
-const [supplierFilter, setSupplierFilter] = useState<number | null>(null);
-const [suppliers, setSuppliers] = useState<Client[]>([]);
-const [sortBy, setSortBy] = useState<keyof Purchase>('date');
-const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-
-
-const PurchasesPage: React.FC = () => {
   const { t } = useTranslation();
-
   const navigate = useNavigate();
+  
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [statusFilter, setStatusFilter] = useState<PurchaseStatus | ''>('');
+  const [archivedOnly, setArchivedOnly] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
+  const [supplierFilter, setSupplierFilter] = useState<number | null>(null);
+  const [suppliers, setSuppliers] = useState<Client[]>([]);
+  const [sortBy, setSortBy] = useState<keyof Purchase>('date');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   const fetchPurchases = async () => {
     setIsLoading(true);
@@ -71,15 +68,14 @@ const PurchasesPage: React.FC = () => {
   useEffect(() => {
     const fetchSuppliers = async () => {
       try {
-        // Загружаем только поставщиков
         const suppliersList = await clientsService.getSuppliersList();
         setSuppliers(suppliersList);
       } catch (err: any) {
-        setError(new Error('Не удалось загрузить список поставщиков'));
+        setError(new Error(t('Failed to load suppliers list')));
       }
     };
     fetchSuppliers();
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchPurchases();
@@ -185,55 +181,6 @@ const PurchasesPage: React.FC = () => {
           />
         </div>
         <div>
-          <label className="text-sm mr-2">Конечная дата:</label>
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => handleEndDateChange(e.target.value)}
-            className="border rounded px-2 py-1 text-sm"
-          />
-        </div>
-        <select
-          className="border rounded px-2 py-1 text-sm"
-          value={supplierFilter || ''}
-          onChange={(e) => handleSupplierChange(e.target.value)}
-        >
-          <option value="">Все поставщики</option>
-          {suppliers.map((supplier) => (
-            <option key={supplier.id} value={supplier.id}>
-              {supplier.name}
-            </option>
-          ))}
-        </select>
-        <select
-          className="border rounded px-2 py-1 text-sm"
-          value={statusFilter}
-          onChange={(e) => handleStatusChange(e.target.value as PurchaseStatus | '')}
-        >
-          <option value="">Все статусы</option>
-          <option value="pending">В обработке</option>
-          <option value="paid">Оплачено</option>
-          <option value="delivered">Доставлено</option>
-          <option value="completed">Завершено</option>
-          <option value="cancelled">Отменено</option>
-          <option value="draft">Черновик</option>
-        </select>
-        <label className="text-sm flex items-center space-x-1">
-          <input type="checkbox" checked={archivedOnly} onChange={() => setArchivedOnly(!archivedOnly)} />
-          <span>Показать архивные</span>
-        </label>
-        <div className="flex flex-wrap gap-2 items-center">
-        <PurchasesSearch searchTerm={searchTerm} onSearchChange={setSearchTerm} />
-        <div>
-          <label className="text-sm mr-2">{t('startDate')}:</label>
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => handleStartDateChange(e.target.value)}
-            className="border rounded px-2 py-1 text-sm"
-          />
-        </div>
-        <div>
           <label className="text-sm mr-2">{t('endDate')}:</label>
           <input
             type="date"
@@ -271,7 +218,6 @@ const PurchasesPage: React.FC = () => {
           <input type="checkbox" checked={archivedOnly} onChange={() => setArchivedOnly(!archivedOnly)} />
           <span>{t('showArchived')}</span>
         </label>
-      </div>
       </div>
       <PurchasesTable 
         purchases={purchases} 
