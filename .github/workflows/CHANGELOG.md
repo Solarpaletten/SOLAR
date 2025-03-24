@@ -1,6 +1,12 @@
 # Changelog
-### Fixed 
-2025-03-23: -"Fix duplicate component declaration in PurchasesPage.tsx"
+
+## [1.0.2] - 2025-03-24
+
+### Fixed
+- Added .npmrc configuration with legacy-peer-deps=true to resolve dependency conflicts during build
+- Updated Vite configuration with proper module aliases for i18next packages
+- Fixed deployment issues with internationalization dependencies
+
 ## [1.0.1] - 2025-03-24
 
 ### Fixed
@@ -10,8 +16,17 @@
 - **LandingPage.tsx**: Removed duplicated code with Russian and English text
 - **RegisterPage.tsx**: Fixed syntax errors and implemented translations consistently
 - **LoginPage.tsx**: Corrected duplicate code and implemented translations
-- **i18n.ts**: "Fix syntax errors in i18n.ts configuration"  
 
+### Changed
+- Improved internationalization by replacing hardcoded Russian strings with translation function calls
+- Fixed navigation paths to use consistent pattern (`/auth/login` instead of `/login`)
+- Added LanguageSwitcher to Layout component for access from all authenticated pages
+- Cleaned up typings and imports across components
+
+### Technical Debt Resolved
+- Removed copy-paste duplications from multiple files
+- Fixed several potential runtime errors due to duplicate component declarations
+- Ensured consistent error handling across auth components
 ### Changed
 - Improved internationalization by replacing hardcoded Russian strings with translation function calls
 - Fixed navigation paths to use consistent pattern (`/auth/login` instead of `/login`)

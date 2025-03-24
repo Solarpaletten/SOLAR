@@ -19,6 +19,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
+      'i18next': 'i18next',
+      'react-i18next': 'react-i18next',
+      'i18next-browser-languagedetector': 'i18next-browser-languagedetector',
+      'i18next-http-backend': 'i18next-http-backend'
     },
   },
   server: {
