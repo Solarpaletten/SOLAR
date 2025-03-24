@@ -4,7 +4,7 @@ import PurchasesStatusBadge from './PurchasesStatusBadge';
 
 const PurchasesRow: React.FC<PurchasesRowProps> = ({
   purchase,
-  supplierName, // Переименовано с vendorName на supplierName
+  supplierName,
   onEdit,
   onDelete,
   onView,

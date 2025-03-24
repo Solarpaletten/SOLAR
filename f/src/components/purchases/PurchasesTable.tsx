@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { PurchasesTableProps } from '../../types/purchasesTypes';
 import PurchasesRow from './PurchasesRow';
-import clientsService, { Client, ClientRole } from '../../services/clientsService';
+import clientsService, { Client } from '../../services/clientsService';
 
 const PurchasesTable: React.FC<PurchasesTableProps> = ({
   purchases = [],
@@ -28,7 +28,6 @@ const PurchasesTable: React.FC<PurchasesTableProps> = ({
     const loadSuppliers = async () => {
       setSuppliersLoading(true);
       try {
-        // Загружаем только поставщиков (SUPPLIER)
         const suppliersList = await clientsService.getSuppliersList();
         setSuppliers(suppliersList);
       } catch (err) {
@@ -37,12 +36,12 @@ const PurchasesTable: React.FC<PurchasesTableProps> = ({
         setSuppliersLoading(false);
       }
     };
-    
+
     loadSuppliers();
   }, []);
 
   const getSupplierName = (clientId: number): string => {
-    const supplier = suppliers.find(s => s.id === clientId);
+    const supplier = suppliers.find((s) => s.id === clientId);
     return supplier ? supplier.name : '—';
   };
 
@@ -132,9 +131,7 @@ const PurchasesTable: React.FC<PurchasesTableProps> = ({
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {purchases.map((purchase) => {
-            const supplierName = purchase.client_id 
-              ? getSupplierName(purchase.client_id) 
-              : purchase.vendor || '—';
+            const supplierName = getSupplierName(purchase.client_id);
 
             return (
               <PurchasesRow
@@ -156,7 +153,9 @@ const PurchasesTable: React.FC<PurchasesTableProps> = ({
         </tbody>
         <tfoot>
           <tr>
-            <td colSpan={3} className="px-3 py-2 font-medium text-gray-600">Всего:</td>
+            <td colSpan={3} className="px-3 py-2 font-medium text-gray-600">
+              Всего:
+            </td>
             <td className="px-3 py-2 text-right font-semibold">{formatAmount(totalAmount)} EUR</td>
           </tr>
         </tfoot>

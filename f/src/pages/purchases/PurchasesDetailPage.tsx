@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import PageContainer from '../../components/common/PageContainer';
 import PurchasesStatusBadge from '../../components/purchases/PurchasesStatusBadge';
@@ -27,19 +27,18 @@ const PurchasesDetailPage: React.FC = () => {
         setError(null);
         const purchaseData = await purchasesService.getPurchaseById(id);
         setPurchase(purchaseData);
-        
-        // Если у закупки есть client_id, получаем имя поставщика
+
+        // Получаем имя поставщика через client_id
         if (purchaseData.client_id) {
           try {
             const supplierData = await clientsService.getClientById(purchaseData.client_id);
-            setSupplierName(supplierData ? supplierData.name : '');
+            setSupplierName(supplierData ? supplierData.name : 'Неизвестный поставщик');
           } catch (supplierErr) {
             console.error('Error loading supplier data:', supplierErr);
-            // Используем поле vendor если не смогли получить имя поставщика
-            setSupplierName(purchaseData.vendor || 'Неизвестный поставщик');
+            setSupplierName('Неизвестный поставщик');
           }
         } else {
-          setSupplierName(purchaseData.vendor || 'Неизвестный поставщик');
+          setSupplierName('Неизвестный поставщик');
         }
       } catch (err: any) {
         console.error('Error loading purchase data:', err);
@@ -60,7 +59,7 @@ const PurchasesDetailPage: React.FC = () => {
     return new Intl.NumberFormat('ru-RU', {
       style: 'currency',
       currency: currency,
-      minimumFractionDigits: 2
+      minimumFractionDigits: 2,
     }).format(amount);
   };
 
@@ -110,14 +109,14 @@ const PurchasesDetailPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <PageContainer 
-        title="Детали закупки" 
+      <PageContainer
+        title="Детали закупки"
         breadcrumbs={[
-          { label: 'Главная', path: '/' }, 
-          { label: 'Закупки', path: '/warehouse/purchases' }, 
-          { label: 'Загрузка...', path: `/warehouse/purchases/${id}` }
+          { label: 'Главная', path: '/' },
+          { label: 'Закупки', path: '/warehouse/purchases' },
+          { label: 'Загрузка...', path: `/warehouse/purchases/${id}` },
         ]}
-      > 
+      >
         <div className="flex justify-center items-center p-8">
           <div className="text-gray-500">Загрузка данных...</div>
         </div>
@@ -127,20 +126,20 @@ const PurchasesDetailPage: React.FC = () => {
 
   if (!purchase && !isLoading) {
     return (
-      <PageContainer 
-        title="Ошибка" 
+      <PageContainer
+        title="Ошибка"
         breadcrumbs={[
-          { label: 'Главная', path: '/' }, 
-          { label: 'Закупки', path: '/warehouse/purchases' }, 
-          { label: 'Ошибка', path: `/warehouse/purchases/${id}` }
+          { label: 'Главная', path: '/' },
+          { label: 'Закупки', path: '/warehouse/purchases' },
+          { label: 'Ошибка', path: `/warehouse/purchases/${id}` },
         ]}
-      > 
+      >
         <div className="p-4 bg-red-50 border border-red-300 rounded-md text-red-800">
           Закупка не найдена или произошла ошибка при загрузке данных.
         </div>
         <div className="mt-4">
-          <button 
-            onClick={() => navigate('/warehouse/purchases')} 
+          <button
+            onClick={() => navigate('/warehouse/purchases')}
             className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-gray-800"
           >
             Вернуться к списку закупок
@@ -151,20 +150,20 @@ const PurchasesDetailPage: React.FC = () => {
   }
 
   return (
-    <PageContainer 
-      title={`Закупка №${purchase?.invoiceNumber}`} 
+    <PageContainer
+      title={`Закупка №${purchase?.invoiceNumber}`}
       breadcrumbs={[
-        { label: 'Главная', path: '/' }, 
-        { label: 'Закупки', path: '/warehouse/purchases' }, 
-        { label: `Закупка №${purchase?.invoiceNumber}`, path: `/warehouse/purchases/${id}` }
+        { label: 'Главная', path: '/' },
+        { label: 'Закупки', path: '/warehouse/purchases' },
+        { label: `Закупка №${purchase?.invoiceNumber}`, path: `/warehouse/purchases/${id}` },
       ]}
-    > 
+    >
       {successMessage && (
         <div className="mb-4 p-4 bg-green-50 border border-green-300 rounded-md text-green-800">
           {successMessage}
         </div>
       )}
-      
+
       {error && (
         <div className="mb-4 p-4 bg-red-50 border border-red-300 rounded-md text-red-800">
           {error}
@@ -219,27 +218,26 @@ const PurchasesDetailPage: React.FC = () => {
       </div>
 
       <div className="flex gap-2 mb-6">
-        <button 
-          onClick={handleEdit} 
+        <button
+          onClick={handleEdit}
           className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
         >
           Редактировать
         </button>
-        <button 
-          onClick={handleArchive} 
+        <button
+          onClick={handleArchive}
           className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-md"
         >
           Архивировать
         </button>
-        <button 
-          onClick={handleDownloadPDF} 
+        <button
+          onClick={handleDownloadPDF}
           className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md"
         >
           Скачать PDF
         </button>
       </div>
 
-      {/* Раздел для элементов закупки можно добавить здесь */}
       {purchase?.items && purchase.items.length > 0 && (
         <div className="mt-8">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Позиции закупки</h3>
@@ -247,16 +245,28 @@ const PurchasesDetailPage: React.FC = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Описание
                   </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Количество
                   </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Цена
                   </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Сумма
                   </th>
                 </tr>
@@ -281,7 +291,10 @@ const PurchasesDetailPage: React.FC = () => {
               </tbody>
               <tfoot>
                 <tr>
-                  <td colSpan={3} className="px-6 py-4 text-right text-sm font-medium text-gray-900">
+                  <td
+                    colSpan={3}
+                    className="px-6 py-4 text-right text-sm font-medium text-gray-900"
+                  >
                     Итого:
                   </td>
                   <td className="px-6 py-4 text-right text-sm font-bold text-gray-900">

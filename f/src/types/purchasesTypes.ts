@@ -31,23 +31,20 @@ export interface Purchase {
   id: string;
   date: string;
   invoiceNumber: string;
-  vendor?: string; // Устаревшее поле, используется для обратной совместимости
   description?: string;
   items: PurchaseItem[];
   totalAmount: number;
   status: PurchaseStatus;
   createdAt?: string;
   updatedAt?: string;
-  // Новое поле для связи с клиентом (в роли поставщика)
-  client_id?: number;
+  // Поле для связи с клиентом (в роли поставщика)
+  client_id: number; // Сделаем обязательным, так как это основное поле
   // Опциональные поля
   paymentDate?: string;
   paymentMethod?: string;
   deliveryDate?: string;
   notes?: string;
   attachments?: string[];
-  // Устаревшее поле, используется для обратной совместимости
-  vendorId?: string;
   departmentId?: string;
   projectId?: string;
   taxAmount?: number;
@@ -68,7 +65,6 @@ export interface PurchaseFilter {
   startDate?: string;
   endDate?: string;
   status?: PurchaseStatus | '';
-  vendor?: string;
   client_id?: number;
   sortBy?: keyof Purchase;
   sortOrder?: 'asc' | 'desc';
@@ -78,23 +74,6 @@ export interface PurchaseFilter {
   projectId?: string;
   archived?: boolean;
   warehouse_id?: number;
-}
-
-/**
- * Интерфейс для поставщика (устаревший, используйте Client с role=SUPPLIER)
- * @deprecated
- */
-export interface Vendor {
-  id: string;
-  name: string;
-  contactPerson?: string;
-  email?: string;
-  phone?: string;
-  address?: string;
-  taxId?: string;
-  bankDetails?: string;
-  notes?: string;
-  isActive: boolean;
 }
 
 /**
@@ -149,7 +128,7 @@ export interface PurchasePDFOptions {
  */
 export interface PurchasesRowProps {
   purchase: Purchase;
-  supplierName: string; // Поставщик (ранее vendorName)
+  supplierName: string;
   expanded?: boolean;
   onToggle?: () => void;
   onEdit?: () => void;
