@@ -54,7 +54,7 @@ const EditPurchasesPage: React.FC = () => {
       const purchaseDto: UpdatePurchaseDto = {
         date: formData.date,
         invoiceNumber: formData.invoiceNumber,
-        client_id: formData.client_id, // Используем client_id вместо vendorId
+        client_id: formData.client_id,
         description: formData.description,
         items: formData.items,
         totalAmount: formData.totalAmount,

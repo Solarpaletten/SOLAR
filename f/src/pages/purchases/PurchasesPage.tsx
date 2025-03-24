@@ -7,6 +7,7 @@ import PurchasesTable from '../../components/purchases/PurchasesTable';
 import PurchasesActions from '../../components/purchases/PurchasesActions';
 import PurchasesSearch from '../../components/purchases/PurchasesSearch';
 import PurchasesSummary from '../../components/purchases/PurchasesSummary';
+import { useTranslation } from 'react-i18next';
 
 const PurchasesPage: React.FC = () => {
 const [purchases, setPurchases] = useState<Purchase[]>([]);
@@ -27,6 +28,10 @@ const [suppliers, setSuppliers] = useState<Client[]>([]);
 const [sortBy, setSortBy] = useState<keyof Purchase>('date');
 const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
+
+const PurchasesPage: React.FC = () => {
+  const { t } = useTranslation();
+
   const navigate = useNavigate();
 
   const fetchPurchases = async () => {
@@ -40,7 +45,7 @@ const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
         limit: itemsPerPage,
         startDate: startDate,
         endDate: endDate,
-        client_id: supplierFilter || undefined, // Используем client_id вместо vendor
+        client_id: supplierFilter || undefined,
         sortBy: sortBy,
         sortOrder: sortOrder,
       };
@@ -112,29 +117,29 @@ const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const handleExport = async () => {
     try {
       await purchasesService.exportPurchasesToCSV();
-      setSuccessMessage('Экспорт успешно завершён');
+      setSuccessMessage(t('exportSuccess'));
     } catch (error) {
-      setError(new Error('Не удалось экспортировать данные'));
+      setError(new Error(t('exportError')));
     }
   };
 
   const handleImport = async (file: File) => {
     try {
       await purchasesService.importPurchasesFromCSV(file);
-      setSuccessMessage('Импорт завершён успешно');
+      setSuccessMessage(t('importSuccess'));
       fetchPurchases();
     } catch (error) {
-      setError(new Error('Не удалось импортировать файл'));
+      setError(new Error(t('importError')));
     }
   };
 
   const handleDelete = async (id: string) => {
     try {
       await purchasesService.deletePurchase(id);
-      setSuccessMessage('Закупка удалена');
+      setSuccessMessage(t('purchaseDeleted'));
       fetchPurchases();
     } catch (error) {
-      setError(new Error('Ошибка при удалении'));
+      setError(new Error(t('deleteError')));
     }
   };
 
@@ -171,7 +176,7 @@ const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
       <div className="flex flex-wrap gap-2 items-center">
         <PurchasesSearch searchTerm={searchTerm} onSearchChange={setSearchTerm} />
         <div>
-          <label className="text-sm mr-2">Начальная дата:</label>
+          <label className="text-sm mr-2">{t('startDate')}:</label>
           <input
             type="date"
             value={startDate}
@@ -217,6 +222,56 @@ const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
           <input type="checkbox" checked={archivedOnly} onChange={() => setArchivedOnly(!archivedOnly)} />
           <span>Показать архивные</span>
         </label>
+        <div className="flex flex-wrap gap-2 items-center">
+        <PurchasesSearch searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+        <div>
+          <label className="text-sm mr-2">{t('startDate')}:</label>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => handleStartDateChange(e.target.value)}
+            className="border rounded px-2 py-1 text-sm"
+          />
+        </div>
+        <div>
+          <label className="text-sm mr-2">{t('endDate')}:</label>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => handleEndDateChange(e.target.value)}
+            className="border rounded px-2 py-1 text-sm"
+          />
+        </div>
+        <select
+          className="border rounded px-2 py-1 text-sm"
+          value={supplierFilter || ''}
+          onChange={(e) => handleSupplierChange(e.target.value)}
+        >
+          <option value="">{t('allSuppliers')}</option>
+          {suppliers.map((supplier) => (
+            <option key={supplier.id} value={supplier.id}>
+              {supplier.name}
+            </option>
+          ))}
+        </select>
+        <select
+          className="border rounded px-2 py-1 text-sm"
+          value={statusFilter}
+          onChange={(e) => handleStatusChange(e.target.value as PurchaseStatus | '')}
+        >
+          <option value="">{t('allStatuses')}</option>
+          <option value="pending">{t('pending')}</option>
+          <option value="paid">{t('paid')}</option>
+          <option value="delivered">{t('delivered')}</option>
+          <option value="completed">{t('completed')}</option>
+          <option value="cancelled">{t('cancelled')}</option>
+          <option value="draft">{t('draft')}</option>
+        </select>
+        <label className="text-sm flex items-center space-x-1">
+          <input type="checkbox" checked={archivedOnly} onChange={() => setArchivedOnly(!archivedOnly)} />
+          <span>{t('showArchived')}</span>
+        </label>
+      </div>
       </div>
       <PurchasesTable 
         purchases={purchases} 

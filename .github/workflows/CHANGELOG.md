@@ -1,4 +1,27 @@
+# Changelog
 
+## [1.0.1] - 2025-03-24
+
+### Fixed
+- **Layout.tsx**: Removed duplicate return statement and added LanguageSwitcher component
+- **PurchasesPage.tsx**: Eliminated duplicate component declaration and code duplication
+- **OnboardingPage.tsx**: Fixed duplicate component declaration and implemented translations
+- **LandingPage.tsx**: Removed duplicated code with Russian and English text
+- **RegisterPage.tsx**: Fixed syntax errors and implemented translations consistently
+- **LoginPage.tsx**: Corrected duplicate code and implemented translations
+
+### Changed
+- Improved internationalization by replacing hardcoded Russian strings with translation function calls
+- Fixed navigation paths to use consistent pattern (`/auth/login` instead of `/login`)
+- Added LanguageSwitcher to Layout component for access from all authenticated pages
+- Cleaned up typings and imports across components
+
+### Technical Debt Resolved
+- Removed copy-paste duplications from multiple files
+- Fixed several potential runtime errors due to duplicate component declarations
+- Ensured consistent error handling across auth components
+### Fixed
+- 2025-03-24: Removed deprecated vendor field from Purchase interface and unified terminology to use Supplier with client_id. Updated PurchasesDetailPage, PurchasesTable, and PurchasesForm to rely solely on client_id for supplier information.
 ### Fixed
 2025-03-23: feat(purchases): enable supplier display through client_id lookup
 ### Fixed

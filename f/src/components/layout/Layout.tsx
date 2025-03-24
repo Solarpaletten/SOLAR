@@ -4,6 +4,7 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import AppHeader from './AppHeader';
+import LanguageSwitcher from '../common/LanguageSwitcher';
 
 const Layout: React.FC = () => {
   return (
@@ -11,7 +12,10 @@ const Layout: React.FC = () => {
       <Sidebar />
       <div className="flex flex-col flex-1 overflow-hidden">
         <Header user={{ name: 'LEANID SOLAR' }} />
-        <AppHeader /> {/* Добавляем наш новый компонент */}
+        <div className="flex justify-between items-center px-4 py-2 bg-white border-b border-gray-200">
+          <AppHeader /> {/* Our app header component */}
+          <LanguageSwitcher /> {/* Added language switcher */}
+        </div>
         <main className="flex-1 p-5 overflow-auto bg-gray-50">
           <Outlet />
         </main>
