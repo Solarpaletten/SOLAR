@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   FaUsers,
   FaWarehouse,
@@ -17,6 +17,7 @@ import {
   FaSignOutAlt,
   FaChevronDown,
   FaChevronRight,
+  FaGlobe
 } from 'react-icons/fa';
 
 interface SubmenuState {
@@ -28,7 +29,7 @@ const Sidebar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [expandedMenus, setExpandedMenus] = useState<SubmenuState>({
-    warehouse: false,
+    warehouse: location.pathname.includes('/warehouse'),
     cashier: location.pathname.includes('/cashier'),
   });
 
@@ -44,9 +45,17 @@ const Sidebar: React.FC = () => {
     });
   };
 
-  const isActive = (path: string) => {
-    return location.pathname.startsWith(path);
-  };
+  // Общий стиль для активных и неактивных ссылок
+  const linkClass = ({ isActive }: { isActive: boolean }) => 
+    `flex items-center p-3 hover:bg-[#165468] transition-colors ${
+      isActive ? 'bg-[#165468]' : ''
+    }`;
+
+  // Стиль для подменю
+  const submenuLinkClass = ({ isActive }: { isActive: boolean }) => 
+    `pl-10 pr-3 py-2 block hover:bg-[#165468] ${
+      isActive ? 'bg-[#165468]' : ''
+    }`;
 
   return (
     <div className="w-64 h-screen bg-[#0f3c4c] text-white flex flex-col">
@@ -55,171 +64,141 @@ const Sidebar: React.FC = () => {
       <nav className="flex-1 overflow-y-auto">
         <ul className="p-0 m-0 list-none">
           <li>
-            <Link
-              to="/clients"
-              className={`flex items-center p-3 hover:bg-[#165468] transition-colors ${isActive('/clients') ? 'bg-[#165468]' : ''}`}
-            >
+            <NavLink to="/clients" className={linkClass}>
               <FaUsers className="mr-3" />
               <span>Clients</span>
-            </Link>
-          </li>
-
-          <li>
-  <div
-    className={`flex items-center justify-between p-3 hover:bg-[#165468] cursor-pointer transition-colors ${expandedMenus.warehouse || isActive('/warehouse') ? 'bg-[#165468]' : ''}`}
-    onClick={() => toggleSubmenu('warehouse')}
-  >
-    <div className="flex items-center">
-      <FaWarehouse className="mr-3" />
-      <span>Warehouse</span>
-    </div>
-    {expandedMenus.warehouse ? <FaChevronDown size={12} /> : <FaChevronRight size={12} />}
-  </div>
-  {expandedMenus.warehouse && (
-    <ul className="bg-[#0a2e3b] py-1">
-      <li><Link to="/warehouse/sales" className="pl-10 pr-3 py-2 block hover:bg-[#165468]">Sales</Link></li>
-      <li><Link to="/warehouse/client-prices" className="pl-10 pr-3 py-2 block hover:bg-[#165468]">Client prices</Link></li>
-      <li><Link to="/warehouse/automatic-invoicing" className="pl-10 pr-3 py-2 block hover:bg-[#165468]">Automatic invoicing</Link></li>
-      <li><Link to="/warehouse/purchases" className="pl-10 pr-3 py-2 block hover:bg-[#165468]">Purchases</Link></li>
-      <li><Link to="/warehouse/sales-returns" className="pl-10 pr-3 py-2 block hover:bg-[#165468]">Sales returns</Link></li>
-      <li><Link to="/warehouse/remaining-items" className="pl-10 pr-3 py-2 block hover:bg-[#165468]">Remaining items</Link></li>
-      <li><Link to="/warehouse/item-movement" className="pl-10 pr-3 py-2 block hover:bg-[#165468]">Item movement</Link></li>
-      <li><Link to="/warehouse/consignment-balance" className="pl-10 pr-3 py-2 block hover:bg-[#165468]">Consignment balance</Link></li>
-      <li><Link to="/warehouse/stock-taking" className="pl-10 pr-3 py-2 block hover:bg-[#165468]">Stock-taking</Link></li>
-      <li><Link to="/warehouse/revaluation" className="pl-10 pr-3 py-2 block hover:bg-[#165468]">Revaluation</Link></li>
-      <li><Link to="/warehouse/internal-movement-confirmation" className="pl-10 pr-3 py-2 block hover:bg-[#165468]">Internal movement confirmation</Link></li>
-      <li><Link to="/warehouse/e-commerce" className="pl-10 pr-3 py-2 block hover:bg-[#165468]">E-commerce</Link></li>
-      <li><Link to="/warehouse/cash-register-sales" className="pl-10 pr-3 py-2 block hover:bg-[#165468]">Cash register sales</Link></li>
-    </ul>
-  )}
-</li>
-
-
-          <li>
-            <Link
-              to="/dashboard"
-              className={`flex items-center p-3 hover:bg-[#165468] transition-colors ${isActive('/dashboard') ? 'bg-[#165468]' : ''}`}
-            >
-              <FaChartBar className="mr-3" />
-              <span>Dashboard</span>
-            </Link>
-          </li>
-
-          <li>
-            <Link
-              to="/general-ledger"
-              className={`flex items-center p-3 hover:bg-[#165468] transition-colors ${isActive('/general-ledger') ? 'bg-[#165468]' : ''}`}
-            >
-              <FaBook className="mr-3" />
-              <span>General ledger</span>
-            </Link>
+            </NavLink>
           </li>
 
           <li>
             <div
-              className={`flex items-center justify-between p-3 hover:bg-[#165468] cursor-pointer transition-colors ${expandedMenus.cashier || isActive('/cashier') ? 'bg-[#165468]' : ''}`}
+              className={`flex items-center justify-between p-3 hover:bg-[#165468] cursor-pointer transition-colors ${
+                expandedMenus.warehouse || location.pathname.startsWith('/warehouse') ? 'bg-[#165468]' : ''
+              }`}
+              onClick={() => toggleSubmenu('warehouse')}
+            >
+              <div className="flex items-center">
+                <FaWarehouse className="mr-3" />
+                <span>Warehouse</span>
+              </div>
+              {expandedMenus.warehouse ? <FaChevronDown size={12} /> : <FaChevronRight size={12} />}
+            </div>
+            {expandedMenus.warehouse && (
+              <ul className="bg-[#0a2e3b] py-1">
+                <li><NavLink to="/warehouse/sales" className={submenuLinkClass}>Sales</NavLink></li>
+                <li><NavLink to="/warehouse/client-prices" className={submenuLinkClass}>Client prices</NavLink></li>
+                <li><NavLink to="/warehouse/automatic-invoicing" className={submenuLinkClass}>Automatic invoicing</NavLink></li>
+                <li><NavLink to="/warehouse/purchases" className={submenuLinkClass}>Purchases</NavLink></li>
+                <li><NavLink to="/warehouse/sales-returns" className={submenuLinkClass}>Sales returns</NavLink></li>
+                <li><NavLink to="/warehouse/remaining-items" className={submenuLinkClass}>Remaining items</NavLink></li>
+                <li><NavLink to="/warehouse/item-movement" className={submenuLinkClass}>Item movement</NavLink></li>
+                <li><NavLink to="/warehouse/consignment-balance" className={submenuLinkClass}>Consignment balance</NavLink></li>
+                <li><NavLink to="/warehouse/stock-taking" className={submenuLinkClass}>Stock-taking</NavLink></li>
+                <li><NavLink to="/warehouse/revaluation" className={submenuLinkClass}>Revaluation</NavLink></li>
+                <li><NavLink to="/warehouse/internal-movement-confirmation" className={submenuLinkClass}>Internal movement confirmation</NavLink></li>
+                <li><NavLink to="/warehouse/e-commerce" className={submenuLinkClass}>E-commerce</NavLink></li>
+                <li><NavLink to="/warehouse/cash-register-sales" className={submenuLinkClass}>Cash register sales</NavLink></li>
+              </ul>
+            )}
+          </li>
+
+          <li>
+            <NavLink to="/solar" className={linkClass}>
+              <FaGlobe className="mr-3" />
+              <span>SOLAR Ассистент</span>
+            </NavLink>
+          </li>
+            
+          <li>
+            <NavLink to="/dashboard" className={linkClass}>
+              <FaChartBar className="mr-3" />
+              <span>Dashboard</span>
+            </NavLink>
+          </li>
+
+          <li>
+            <NavLink to="/general-ledger" className={linkClass}>
+              <FaBook className="mr-3" />
+              <span>General ledger</span>
+            </NavLink>
+          </li>
+
+          <li>
+            <div
+              className={`flex items-center justify-between p-3 hover:bg-[#165468] cursor-pointer transition-colors ${
+                expandedMenus.cashier || location.pathname.startsWith('/cashier') ? 'bg-[#165468]' : ''
+              }`}
               onClick={() => toggleSubmenu('cashier')}
             >
               <div className="flex items-center">
                 <FaCashRegister className="mr-3" />
                 <span>Cashier</span>
               </div>
-              {expandedMenus.cashier ? (
-                <FaChevronDown size={12} />
-              ) : (
-                <FaChevronRight size={12} />
-              )}
+              {expandedMenus.cashier ? <FaChevronDown size={12} /> : <FaChevronRight size={12} />}
             </div>
             {expandedMenus.cashier && (
               <ul className="bg-[#0a2e3b] py-1">
                 <li>
-                  <Link
-                    to="/cashier/transactions"
-                    className={`pl-10 pr-3 py-2 block hover:bg-[#165468] ${isActive('/cashier/transactions') ? 'bg-[#165468]' : ''}`}
-                  >
+                  <NavLink to="/cashier/transactions" className={submenuLinkClass}>
                     Transactions
-                  </Link>
+                  </NavLink>
                 </li>
                 <li>
-                  <Link
-                    to="/cashier/receipts"
-                    className={`pl-10 pr-3 py-2 block hover:bg-[#165468] ${isActive('/cashier/receipts') ? 'bg-[#165468]' : ''}`}
-                  >
+                  <NavLink to="/cashier/receipts" className={submenuLinkClass}>
                     Receipts
-                  </Link>
+                  </NavLink>
                 </li>
               </ul>
             )}
           </li>
 
           <li>
-            <Link
-              to="/reports"
-              className={`flex items-center p-3 hover:bg-[#165468] transition-colors ${isActive('/reports') ? 'bg-[#165468]' : ''}`}
-            >
+            <NavLink to="/reports" className={linkClass}>
               <FaFileAlt className="mr-3" />
               <span>Reports</span>
-            </Link>
+            </NavLink>
           </li>
 
           <li>
-            <Link
-              to="/personnel"
-              className={`flex items-center p-3 hover:bg-[#165468] transition-colors ${isActive('/personnel') ? 'bg-[#165468]' : ''}`}
-            >
+            <NavLink to="/personnel" className={linkClass}>
               <FaUserTie className="mr-3" />
               <span>Personnel</span>
-            </Link>
+            </NavLink>
           </li>
 
           <li>
-            <Link
-              to="/production"
-              className={`flex items-center p-3 hover:bg-[#165468] transition-colors ${isActive('/production') ? 'bg-[#165468]' : ''}`}
-            >
+            <NavLink to="/production" className={linkClass}>
               <FaIndustry className="mr-3" />
               <span>Production</span>
-            </Link>
+            </NavLink>
           </li>
 
           <li>
-            <Link
-              to="/assets"
-              className={`flex items-center p-3 hover:bg-[#165468] transition-colors ${isActive('/assets') ? 'bg-[#165468]' : ''}`}
-            >
+            <NavLink to="/assets" className={linkClass}>
               <FaCoins className="mr-3" />
               <span>Assets</span>
-            </Link>
+            </NavLink>
           </li>
 
           <li>
-            <Link
-              to="/documents"
-              className={`flex items-center p-3 hover:bg-[#165468] transition-colors ${isActive('/documents') ? 'bg-[#165468]' : ''}`}
-            >
+            <NavLink to="/documents" className={linkClass}>
               <FaFileInvoice className="mr-3" />
               <span>Documents</span>
-            </Link>
+            </NavLink>
           </li>
 
           <li>
-            <Link
-              to="/salary"
-              className={`flex items-center p-3 hover:bg-[#165468] transition-colors ${isActive('/salary') ? 'bg-[#165468]' : ''}`}
-            >
+            <NavLink to="/salary" className={linkClass}>
               <FaMoneyBillWave className="mr-3" />
               <span>Salary</span>
-            </Link>
+            </NavLink>
           </li>
 
           <li>
-            <Link
-              to="/declaration"
-              className={`flex items-center p-3 hover:bg-[#165468] transition-colors ${isActive('/declaration') ? 'bg-[#165468]' : ''}`}
-            >
+            <NavLink to="/declaration" className={linkClass}>
               <FaFileAlt className="mr-3" />
               <span>Declaration</span>
-            </Link>
+            </NavLink>
           </li>
         </ul>
       </nav>
@@ -227,23 +206,17 @@ const Sidebar: React.FC = () => {
       <div className="p-3 border-t border-[#165468]">
         <ul className="p-0 m-0 list-none">
           <li>
-            <Link
-              to="/admin"
-              className={`flex items-center p-3 hover:bg-[#165468] transition-colors ${isActive('/admin') ? 'bg-[#165468]' : ''}`}
-            >
+            <NavLink to="/admin" className={linkClass}>
               <FaDatabase className="mr-3" />
               <span>Admin Panel</span>
-            </Link>
+            </NavLink>
           </li>
 
           <li>
-            <Link
-              to="/settings"
-              className={`flex items-center p-3 hover:bg-[#165468] transition-colors ${isActive('/settings') ? 'bg-[#165468]' : ''}`}
-            >
+            <NavLink to="/settings" className={linkClass}>
               <FaCog className="mr-3" />
               <span>Settings</span>
-            </Link>
+            </NavLink>
           </li>
 
           <li>

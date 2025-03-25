@@ -47,6 +47,8 @@ apiRouter.use('/stats', require('./routes/statsRoutes'));
 // Добавим маршруты для продаж и покупок
 apiRouter.use('/sales', require('./routes/salesRoutes'));
 apiRouter.use('/purchases', require('./routes/purchasesRoutes'));
+// В файле app.js добавить:
+apiRouter.use('/assistant', require('./routes/assistantRoutes'));
 
 apiRouter.get('/test', (req, res) => {
   res.json({
