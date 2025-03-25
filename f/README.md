@@ -1,4 +1,85 @@
 # React + TypeScript + Vite
+Конечно! Вот готовый файл `README.md` для твоего проекта с SOLAR Assistant, красиво оформленный и готовый для загрузки на GitHub:
+
+---
+
+```markdown
+# 🤖 SOLAR Assistant — AI Voice & Translation Module
+
+SOLAR Assistant is an intelligent multilingual voice & text assistant fully integrated into the [SOLAR accounting system](#) — designed, developed, and deployed in just **3 hours** (from 9:00 to 12:00, Germany time).
+
+## ⚡ Key Features
+
+- 🎙️ **Voice Recognition** using [Whisper API](https://openai.com/research/whisper)
+- 🌍 **Multilingual Translation**: English, Russian, German, Polish
+- 🔁 **Real-time interaction** via WebSocket
+- 🧠 **Session-based message history** (text, audio, translated)
+- 📁 **Translation cache** for performance
+- 🎛️ **User preferences**: voice, language, transcription, theme
+- 🧩 **UI Integration**: floating assistant panel & full assistant page
+
+## 🛠️ Tech Stack
+
+| Frontend | Backend |
+|----------|---------|
+| React + TypeScript | Node.js (Express) |
+| Tailwind CSS | Whisper API |
+| WebSocket | Prisma ORM |
+| Vite | PostgreSQL |
+| i18n | Custom translation service |
+
+## 📂 Project Structure
+
+```
+src/
+├── components/assistant/
+│   ├── AssistantPanel.tsx
+│   ├── AssistantContext.tsx
+│   ├── SpeechRecognition.tsx
+│   ├── TranslationView.tsx
+│   └── ...
+├── pages/assistant/SolarAssistantPage.tsx
+├── services/assistantService.ts
+├── context/AssistantSessionContext.tsx
+└── types/assistantTypes.ts
+```
+
+Backend includes:
+
+```
+/api/whisperAPI.js
+/controllers/assistantController.js
+/services/translationService.js
+/services/speechToTextService.js
+/services/webSocketService.js
+/routes/assistantRoutes.js
+/uploads/audio/
+```
+
+Database schema includes models:
+- `conversation_sessions`
+- `conversation_messages`
+- `assistant_preferences`
+- `translation_cache`
+- Enums: `Language`, `MessageType`, `ConversationStatus`
+
+## 🧠 Built in 3 Hours
+
+> From concept to working prototype — backend and frontend — in just **3 hours**.  
+> This marks a personal record in rapid fullstack development.
+
+## 📸 Screenshots
+
+*(Add screenshots or GIFs of the UI here)*
+
+## 📘 License
+
+MIT — use freely with credit or contribution.
+
+---
+
+Built with love by [@leanid-solar](#) ☀️
+```
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 

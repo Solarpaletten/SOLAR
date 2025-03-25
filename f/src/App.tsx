@@ -6,7 +6,7 @@ import LandingPage from './pages/landing/LandingPage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import OnboardingPage from './pages/auth/OnboardingPage';
-import CreateVendorPage from './services/clientsService';
+import SolarAssistantPage from './pages/assistant/SolarAssistantPage';
 
 // Импортируем компоненты layout
 import Layout from './components/layout/Layout';
@@ -16,13 +16,14 @@ import ClientsPage from './pages/clients/ClientsPage';
 import ClientDetailPage from './pages/clients/ClientDetailPage';
 import NewClientPage from './pages/clients/NewClientPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
-import AdminPage from './pages/administartor/AdminPage';
+import AdminPage from './pages/administrator/AdminPage';  
 
 // Импортируем страницы закупок
 import PurchasesPage from './pages/purchases/PurchasesPage';
 import PurchasesDetailPage from './pages/purchases/PurchasesDetailPage';
 import CreatePurchasesPage from './pages/purchases/CreatePurchasesPage';
 import EditPurchasesPage from './pages/purchases/EditPurchasesPage';
+
 
 // Заглушки для страниц, которые будут разработаны позже
 const Warehouse = () => (
@@ -97,7 +98,7 @@ const App: React.FC = () => {
     <QueryClientProvider client={queryClient}>
       <Routes>
         {/* Публичные маршруты */}
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/landing" element={<LandingPage />} />
         <Route path="/auth/login" element={<LoginPage />} />
         <Route path="/auth/register" element={<RegisterPage />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
@@ -107,6 +108,9 @@ const App: React.FC = () => {
           <Route path="/" element={<Layout />}>
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<DashboardPage />} />
+
+            {/* SOLAR Ассистент как часть основного приложения */}
+      <Route path="solar" element={<SolarAssistantPage />} />
             
             {/* Маршруты для клиентов */}
             <Route path="clients" element={<ClientsPage />} />
@@ -120,7 +124,6 @@ const App: React.FC = () => {
               <Route path="purchases/create" element={<CreatePurchasesPage />} />
               <Route path="purchases/edit/:id" element={<EditPurchasesPage />} />
               <Route path="purchases/:id" element={<PurchasesDetailPage />} />
-              <Route path="vendors/create" element={<CreateVendorPage />} />
               
               {/* Другие подсекции warehouse можно добавить здесь */}
               <Route path="sales" element={<Warehouse />} />

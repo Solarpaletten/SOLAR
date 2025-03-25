@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DATABASE_URL")
 }
 
@@ -29,13 +29,12 @@ enum warehouse_status {
   Inactive
 }
 
-
 model users {
   id                  Int       @id @default(autoincrement())
   email               String    @unique
   username            String
   password_hash       String
-  role                Role  @default(USER)  // Changed from String to Role
+  role                Role      @default(USER) // Changed from String to Role
   status              String    @default("active")
   email_verified      Boolean   @default(false)
   verification_token  String?
@@ -45,43 +44,48 @@ model users {
   created_at          DateTime  @default(now())
   updated_at          DateTime  @updatedAt
 
-  clients                     clients[]
-  purchases                   purchases[]
-  sales                       sales[]
-  bank_operations            bank_operations[]
-  chart_of_accounts          chart_of_accounts[]
-  products                   products[]
-  warehouses_as_user         warehouses[] @relation("warehouses_user")
-  warehouses_as_responsible  warehouses[] @relation("warehouses_responsible_person")
-  doc_settlements            doc_settlement[]
+  clients                   clients[]
+  purchases                 purchases[]
+  sales                     sales[]
+  bank_operations           bank_operations[]
+  chart_of_accounts         chart_of_accounts[]
+  products                  products[]
+  warehouses_as_user        warehouses[]        @relation("warehouses_user")
+  warehouses_as_responsible warehouses[]        @relation("warehouses_responsible_person")
+  doc_settlements           doc_settlement[]
+
+  conversation_sessions conversation_sessions[]
+  assistant_preferences assistant_preferences?
 
   @@index([email], map: "idx_users_email") // email
-  @@index([role], map: "idx_users_role") 
+  @@index([role], map: "idx_users_role")
 }
 
 model clients {
-  id           Int             @id @default(autoincrement())
-  name         String          @db.VarChar(100)
-  email        String          @db.VarChar(100)
-  phone        String?         @db.VarChar(20)
-  role         ClientRole      @default(CLIENT) // CLIENT, SUPPLIER
-  is_active    Boolean?        @default(true)
-  code         String?         @db.VarChar(50)
-  vat_code     String?         @db.VarChar(50)
-  user_id      Int
-  created_at   DateTime?       @default(now()) @db.Timestamp(6)
-  updated_at   DateTime?       @default(now()) @db.Timestamp(6)
+  id         Int        @id @default(autoincrement())
+  name       String     @db.VarChar(100)
+  email      String     @db.VarChar(100)
+  phone      String?    @db.VarChar(20)
+  role       ClientRole @default(CLIENT) // CLIENT, SUPPLIER
+  is_active  Boolean?   @default(true)
+  code       String?    @db.VarChar(50)
+  vat_code   String?    @db.VarChar(50)
+  user_id    Int
+  created_at DateTime?  @default(now()) @db.Timestamp(6)
+  updated_at DateTime?  @default(now()) @db.Timestamp(6)
 
   // Связи с правильными названиями моделей
-  users            users             @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  purchases        purchases[]
+  users           users             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  purchases       purchases[]
   sales           sales[]
   warehouses      warehouses[]
   doc_settlements doc_settlement[]
   bank_operations bank_operations[]
 
+  conversation_sessions conversation_sessions[]
+
   @@index([created_at])
-  @@index([role]) 
+  @@index([role])
   @@index([is_active])
 }
 
@@ -91,14 +95,14 @@ model products {
   name        String    @db.VarChar(255)
   description String?   @db.Text
   unit        String    @db.VarChar(20)
-  price       Decimal   @db.Decimal(10,2)
+  price       Decimal   @db.Decimal(10, 2)
   currency    currency  @default(EUR)
   is_active   Boolean   @default(true)
   user_id     Int
   created_at  DateTime? @default(now()) @db.Timestamp(6)
   updated_at  DateTime? @default(now()) @db.Timestamp(6)
 
-  users       users     @relation(fields: [user_id], references: [id])
+  users          users            @relation(fields: [user_id], references: [id])
   // Добавьте связь с позициями закупок
   purchase_items purchase_items[]
 
@@ -107,26 +111,26 @@ model products {
 }
 
 model sales {
-  id              Int       @id @default(autoincrement())
-  doc_number      String    @db.VarChar(50)
-  doc_date        DateTime  @db.Date
-  sale_date       DateTime? @db.Date
-  user_id         Int
-  client_id       Int
-  warehouse_id    Int      
-  total_amount    Decimal   @db.Decimal(10,2)
-  currency        currency  @default(EUR)
-  status          String    @default("draft") @db.VarChar(20)
-  created_at      DateTime? @default(now()) @db.Timestamp(6)
-  updated_at      DateTime? @default(now()) @db.Timestamp(6)
-  invoice_type    String?   @db.VarChar(50)
-  invoice_number  String    @db.VarChar(50)
-  vat_rate        Decimal?  @db.Decimal(5,2)
+  id             Int       @id @default(autoincrement())
+  doc_number     String    @db.VarChar(50)
+  doc_date       DateTime  @db.Date
+  sale_date      DateTime? @db.Date
+  user_id        Int
+  client_id      Int
+  warehouse_id   Int
+  total_amount   Decimal   @db.Decimal(10, 2)
+  currency       currency  @default(EUR)
+  status         String    @default("draft") @db.VarChar(20)
+  created_at     DateTime? @default(now()) @db.Timestamp(6)
+  updated_at     DateTime? @default(now()) @db.Timestamp(6)
+  invoice_type   String?   @db.VarChar(50)
+  invoice_number String    @db.VarChar(50)
+  vat_rate       Decimal?  @db.Decimal(5, 2)
 
   // Связи
-  users          users      @relation(fields: [user_id], references: [id])
-  client         clients    @relation(fields: [client_id], references: [id])
-  warehouse      warehouses @relation(fields: [warehouse_id], references: [id])
+  users     users      @relation(fields: [user_id], references: [id])
+  client    clients    @relation(fields: [client_id], references: [id])
+  warehouse warehouses @relation(fields: [warehouse_id], references: [id])
 
   @@index([doc_date])
   @@index([client_id])
@@ -135,27 +139,27 @@ model sales {
 }
 
 model purchases {
-  id              Int       @id @default(autoincrement())
-  doc_number      String    @db.VarChar(50)
-  doc_date        DateTime  @db.Date
-  purchase_date   DateTime? @db.Date
-  user_id         Int
-  client_id       Int
-  warehouse_id    Int      
-  total_amount    Decimal   @db.Decimal(10,2)
-  currency        currency  @default(EUR)
-  status          String    @default("draft") @db.VarChar(20)
-  created_at      DateTime? @default(now()) @db.Timestamp(6)
-  updated_at      DateTime? @default(now()) @db.Timestamp(6)
-  invoice_type    String?   @db.VarChar(50)
-  invoice_number  String    @db.VarChar(50)
-  vat_rate        Decimal?  @db.Decimal(5,2)
+  id             Int       @id @default(autoincrement())
+  doc_number     String    @db.VarChar(50)
+  doc_date       DateTime  @db.Date
+  purchase_date  DateTime? @db.Date
+  user_id        Int
+  client_id      Int
+  warehouse_id   Int
+  total_amount   Decimal   @db.Decimal(10, 2)
+  currency       currency  @default(EUR)
+  status         String    @default("draft") @db.VarChar(20)
+  created_at     DateTime? @default(now()) @db.Timestamp(6)
+  updated_at     DateTime? @default(now()) @db.Timestamp(6)
+  invoice_type   String?   @db.VarChar(50)
+  invoice_number String    @db.VarChar(50)
+  vat_rate       Decimal?  @db.Decimal(5, 2)
 
   // Связи
-  users          users      @relation(fields: [user_id], references: [id])
-  client         clients    @relation(fields: [client_id], references: [id])
-  warehouse      warehouses @relation(fields: [warehouse_id], references: [id])
-  items         purchase_items[]
+  users     users            @relation(fields: [user_id], references: [id])
+  client    clients          @relation(fields: [client_id], references: [id])
+  warehouse warehouses       @relation(fields: [warehouse_id], references: [id])
+  items     purchase_items[]
 
   @@index([doc_date])
   @@index([client_id])
@@ -164,61 +168,61 @@ model purchases {
 }
 
 model purchase_items {
-  id            Int       @id @default(autoincrement())
-  purchase_id   Int
-  product_id    Int
-  quantity      Decimal   @db.Decimal(10,2)
-  unit_price    Decimal   @db.Decimal(10,2)
-  amount        Decimal   @db.Decimal(10,2)
-  created_at    DateTime? @default(now()) @db.Timestamp(6)
-  updated_at    DateTime? @default(now()) @db.Timestamp(6)
+  id          Int       @id @default(autoincrement())
+  purchase_id Int
+  product_id  Int
+  quantity    Decimal   @db.Decimal(10, 2)
+  unit_price  Decimal   @db.Decimal(10, 2)
+  amount      Decimal   @db.Decimal(10, 2)
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+  updated_at  DateTime? @default(now()) @db.Timestamp(6)
 
   // Связи
-  purchase      purchases @relation(fields: [purchase_id], references: [id], onDelete: Cascade)
-  product       products  @relation(fields: [product_id], references: [id])
+  purchase purchases @relation(fields: [purchase_id], references: [id], onDelete: Cascade)
+  product  products  @relation(fields: [product_id], references: [id])
 
   @@index([purchase_id])
   @@index([product_id])
 }
 
 model warehouses {
-  id                  Int              @id @default(autoincrement())
-  name                String           @db.VarChar(100)
-  code                String?          @db.VarChar(50)
-  address             String?          @db.VarChar(255)
-  status              warehouse_status @default(Active)
-  client_id           Int?
-  user_id             Int
+  id                    Int              @id @default(autoincrement())
+  name                  String           @db.VarChar(100)
+  code                  String?          @db.VarChar(50)
+  address               String?          @db.VarChar(255)
+  status                warehouse_status @default(Active)
+  client_id             Int?
+  user_id               Int
   responsible_person_id Int?
-  created_at          DateTime?        @default(now()) @db.Timestamp(6)
-  updated_at          DateTime?        @default(now()) @db.Timestamp(6)
+  created_at            DateTime?        @default(now()) @db.Timestamp(6)
+  updated_at            DateTime?        @default(now()) @db.Timestamp(6)
 
   // Связи
-  users               users    @relation("warehouses_user", fields: [user_id], references: [id])
-  responsible_person  users?   @relation("warehouses_responsible_person", fields: [responsible_person_id], references: [id])
-  client              clients? @relation(fields: [client_id], references: [id])
-  sales               sales[]
-  purchases           purchases[]
+  users              users       @relation("warehouses_user", fields: [user_id], references: [id])
+  responsible_person users?      @relation("warehouses_responsible_person", fields: [responsible_person_id], references: [id])
+  client             clients?    @relation(fields: [client_id], references: [id])
+  sales              sales[]
+  purchases          purchases[]
 
   @@index([status])
   @@index([client_id])
 }
 
 model bank_operations {
-  id              Int       @id @default(autoincrement())
-  date            DateTime  @db.Date
-  description     String    @db.VarChar(255)
-  amount          Decimal   @db.Decimal(10,2)
-  type            String    @db.VarChar(20)  // debit/credit  
-  account_id      Int  
-  user_id         Int
-  client_id       Int?                      
-  created_at      DateTime? @default(now()) @db.Timestamp(6)
-  updated_at      DateTime? @default(now()) @db.Timestamp(6)
+  id          Int       @id @default(autoincrement())
+  date        DateTime  @db.Date
+  description String    @db.VarChar(255)
+  amount      Decimal   @db.Decimal(10, 2)
+  type        String    @db.VarChar(20) // debit/credit  
+  account_id  Int
+  user_id     Int
+  client_id   Int?
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+  updated_at  DateTime? @default(now()) @db.Timestamp(6)
 
   // Связи
-  users           users     @relation(fields: [user_id], references: [id])
-  client          clients?  @relation(fields: [client_id], references: [id])
+  users  users    @relation(fields: [user_id], references: [id])
+  client clients? @relation(fields: [client_id], references: [id])
 
   @@index([date])
   @@index([type])
@@ -227,8 +231,8 @@ model bank_operations {
 model chart_of_accounts {
   id           Int       @id @default(autoincrement())
   code         String    @db.VarChar(20)
-  name         String    @db.VarChar(255) 
-  type         String    @db.VarChar(50) 
+  name         String    @db.VarChar(255)
+  type         String    @db.VarChar(50)
   account_type String    @db.VarChar(50) // asset, liability, equity, revenue, expense
   parent_code  String?   @db.VarChar(20)
   is_active    Boolean   @default(true)
@@ -236,7 +240,7 @@ model chart_of_accounts {
   created_at   DateTime? @default(now()) @db.Timestamp(6)
   updated_at   DateTime? @default(now()) @db.Timestamp(6)
 
-  users        users     @relation(fields: [user_id], references: [id])
+  users users @relation(fields: [user_id], references: [id])
 
   @@index([code])
   @@index([type])
@@ -249,7 +253,7 @@ model doc_settlement {
   doc_date     DateTime  @db.Date
   client_id    Int
   status       String    @default("draft") @db.VarChar(20)
-  amount       Decimal   @db.Decimal(10,2)
+  amount       Decimal   @db.Decimal(10, 2)
   created_at   DateTime? @default(now()) @db.Timestamp(6)
   updated_at   DateTime? @default(now()) @db.Timestamp(6)
   period_start DateTime  @db.Date
@@ -257,10 +261,108 @@ model doc_settlement {
   user_id      Int
 
   // Связи
-  client       clients   @relation(fields: [client_id], references: [id])
-  users        users     @relation(fields: [user_id], references: [id])
+  client clients @relation(fields: [client_id], references: [id])
+  users  users   @relation(fields: [user_id], references: [id])
 
   @@index([doc_date])
   @@index([client_id])
   @@index([status])
+}
+
+// Модели для ассистента SOLAR
+
+enum ConversationStatus {
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum MessageType {
+  TEXT
+  AUDIO
+  TRANSLATED
+}
+
+// Языки для перевода
+enum Language {
+  ENGLISH
+  RUSSIAN
+  GERMAN
+  POLISH
+  // Другие языки по мере необходимости
+}
+
+// Модель для хранения сессий разговора
+model conversation_sessions {
+  id                 Int                @id @default(autoincrement())
+  name               String?            @db.VarChar(100)
+  status             ConversationStatus @default(ACTIVE)
+  start_time         DateTime           @default(now())
+  end_time           DateTime?
+  primary_language   Language
+  secondary_language Language
+  user_id            Int
+  client_id          Int?
+  created_at         DateTime           @default(now()) @db.Timestamp(6)
+  updated_at         DateTime           @updatedAt @db.Timestamp(6)
+
+  // Связи
+  user     users                   @relation(fields: [user_id], references: [id])
+  client   clients?                @relation(fields: [client_id], references: [id])
+  messages conversation_messages[]
+
+  @@index([user_id])
+  @@index([client_id])
+  @@index([status])
+}
+
+// Модель для сообщений в разговоре
+model conversation_messages {
+  id                 Int         @id @default(autoincrement())
+  session_id         Int
+  sender_type        String      @db.VarChar(20) // user, client, assistant
+  message_type       MessageType @default(TEXT)
+  original_content   String      @db.Text
+  translated_content String?     @db.Text
+  source_language    Language
+  target_language    Language
+  audio_file_path    String?     @db.VarChar(255)
+  created_at         DateTime    @default(now()) @db.Timestamp(6)
+
+  // Связи
+  session conversation_sessions @relation(fields: [session_id], references: [id], onDelete: Cascade)
+
+  @@index([session_id])
+  @@index([message_type])
+}
+
+// Модель для предпочтений пользователя по ассистенту
+model assistant_preferences {
+  id                  Int      @id @default(autoincrement())
+  user_id             Int      @unique
+  default_language    Language @default(ENGLISH)
+  voice_enabled       Boolean  @default(true)
+  translation_enabled Boolean  @default(true)
+  assistant_theme     String?  @db.VarChar(50)
+  auto_transcribe     Boolean  @default(true)
+  created_at          DateTime @default(now()) @db.Timestamp(6)
+  updated_at          DateTime @updatedAt @db.Timestamp(6)
+
+  // Связи
+  user users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+// Модель для кэширования частых переводов
+model translation_cache {
+  id              Int      @id @default(autoincrement())
+  original_text   String   @db.Text
+  translated_text String   @db.Text
+  source_language Language
+  target_language Language
+  usage_count     Int      @default(1)
+  last_used       DateTime @default(now())
+  created_at      DateTime @default(now()) @db.Timestamp(6)
+
+  @@unique([original_text, source_language, target_language])
+  @@index([source_language, target_language])
 }
