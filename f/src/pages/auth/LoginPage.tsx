@@ -14,7 +14,6 @@ const LoginPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Проверка, авторизован ли пользователь
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -31,33 +30,24 @@ const LoginPage: React.FC = () => {
       const response = await login(email, password);
       console.log('Login successful:', response);
 
-      // Сохраняем токен и данные пользователя
       localStorage.setItem('token', response.token);
       if (response.user) {
         localStorage.setItem('user', JSON.stringify(response.user));
       }
 
       try {
-        // Получаем список компаний через clientsService
         const companies = await clientsService.getMyCompanies();
-
+        
         if (companies && companies.length > 0) {
-          // Берем ID первой компании или последней использованной
           const lastUsedCompanyId = localStorage.getItem('lastUsedCompanyId');
           const defaultCompanyId = lastUsedCompanyId || companies[0].id;
-          
-          // Сохраняем ID выбранной компании
           localStorage.setItem('lastUsedCompanyId', defaultCompanyId.toString());
-          
-          // Перенаправляем на страницу компании
           navigate(`/clients/${defaultCompanyId}`);
         } else {
-          // Если компаний нет, отправляем на онбординг
           navigate('/onboarding');
         }
       } catch (compErr) {
         console.error('Error fetching companies:', compErr);
-        // В случае ошибки перенаправляем на стандартный dashboard
         navigate('/dashboard');
       }
     } catch (err: any) {
@@ -125,7 +115,7 @@ const LoginPage: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">{('password')} *</label>
+              <label className="block text-sm font-medium text-gray-700">{t('password')} *</label>
               <input
                 type="password"
                 placeholder={t('password')}
