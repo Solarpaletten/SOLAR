@@ -14,4 +14,7 @@ router.post('/', auth, clientsController.createClient);
 router.put('/:id', auth, clientsController.updateClient);
 router.delete('/:id', auth, clientsController.deleteClient);
 
+// Новый маршрут для получения компаний
+router.get('/companies', auth, clientsController.getMyCompanies);
+
 module.exports = router;

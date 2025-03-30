@@ -1,8 +1,7 @@
-// src/pages/auth/OnboardingPage.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import clientsService from '../../services/clientsService';
+import onboardingService from '../../services/onboardingService';
 
 interface OnboardingFormData {
   companyCode: string;
@@ -30,19 +29,21 @@ const OnboardingPage: React.FC = () => {
     setSuccessMessage(null);
 
     try {
-      // Creating the first counterparty (client's own company)
-      await clientsService.createVendor({
-        name: localStorage.getItem('companyName') || t('My Company'), 
-        type: 'self', // Type "own company"
-        email: localStorage.getItem('email') || '',
-        phone: localStorage.getItem('phone') || '',
+      // Используем новый onboardingService вместо clientsService
+      await onboardingService.setupCompany({
         companyCode: formData.companyCode,
         directorName: formData.directorName,
+        name: localStorage.getItem('companyName') || t('My Company'),
+        email: localStorage.getItem('email') || '',
+        phone: localStorage.getItem('phone') || '',
       });
-      setSuccessMessage(t('Company setup successful'));
-      setTimeout(() => {
-        navigate('/warehouse/purchases');
-      }, 2000);
+
+      
+        setSuccessMessage(t('Company setup successful'));
+        localStorage.removeItem('needsOnboarding'); // Удаляем флаг необходимости онбординга
+        setTimeout(() => {
+         navigate('/dashboard');
+}, 2000);
     } catch (err: any) {
       setError(err.message || t('Failed to complete setup'));
     }

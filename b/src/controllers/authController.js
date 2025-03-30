@@ -174,14 +174,25 @@ class AuthController {
         return res.status(400).json({ error: 'All fields are required' });
       }
 
+          // Добавляем подробное логирование
+    logger.info('Регистрация нового пользователя:', {
+      email,
+      username,
+      passwordLength: password ? password.length : 0
+    });
+
+    // Проверка на существующего пользователя
+
       const existingUser = await prisma.users.findUnique({
         where: { email },
       });
 
       if (existingUser) {
+        logger.warn('Попытка регистрации с уже существующим email:', email);
         return res.status(400).json({ error: 'Email already registered' });
       }
 
+      // Хэширование пароля и создание пользователя
       const salt = await bcrypt.genSalt(10);
       const passwordHash = await bcrypt.hash(password, salt);
 
@@ -208,11 +219,21 @@ class AuthController {
         }
       }
 
+      logger.info('Пользователь успешно создан:', {
+        userId: user.id,
+        email: user.email
+      });
+
       const token = jwt.sign(
         { id: user.id, email: user.email, role: user.role },
         process.env.JWT_SECRET,
         { expiresIn: '24h' }
       );
+
+      logger.info('Сгенерирован токен для пользователя:', {
+        userId: user.id,
+        tokenLength: token.length
+      });
 
       res.status(201).json({
         token,

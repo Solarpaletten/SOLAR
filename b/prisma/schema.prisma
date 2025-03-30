@@ -43,6 +43,7 @@ model users {
   reset_token_expires DateTime?
   created_at          DateTime  @default(now())
   updated_at          DateTime  @updatedAt
+  onboarding_completed Boolean @default(false)
 
   clients                   clients[]
   purchases                 purchases[]
@@ -56,6 +57,10 @@ model users {
 
   conversation_sessions conversation_sessions[]
   assistant_preferences assistant_preferences?
+
+  companies companies[] // Добавляем связь с компаниями
+
+  
 
   @@index([email], map: "idx_users_email") // email
   @@index([role], map: "idx_users_role")
@@ -290,6 +295,22 @@ enum Language {
   GERMAN
   POLISH
   // Другие языки по мере необходимости
+}
+
+model companies {
+  id                Int       @id @default(autoincrement())
+  code              String    @unique
+  director_name     String
+  user_id           Int
+  is_active         Boolean   @default(true)
+  setup_completed   Boolean   @default(false)
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+
+  // Связь с пользователем
+  user              users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  @@index([user_id])
 }
 
 // Модель для хранения сессий разговора

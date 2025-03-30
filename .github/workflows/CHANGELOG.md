@@ -1,4 +1,32 @@
 # Changelog
+Changelog: Обновление логики навигации и исправление ошибок
+Backend:
+
+Исправление ошибки в app.js:
+Удалён импорт несуществующего модуля companiesRoutes из ./routes/companiesRoutes.
+Убедились, что все маршруты из папки routes корректно импортированы (authRoutes, clientsRoutes, onboardingRoutes, purchasesRoutes, salesRoutes, statsRoutes, userRoutes, assistantRoutes).
+Проверено, что маршрут /api/clients/companies обрабатывается в clientsRoutes.js через контроллер clientsController.getMyCompanies.
+Frontend:
+
+Обновление clientsService.ts:
+Заменён импорт axios на api из ../api/axios, чтобы запросы отправлялись с токеном авторизации.
+В методе getMyCompanies изменена обработка ошибок: вместо возврата пустого массива [] теперь выбрасывается ошибка throw new Error('Failed to fetch companies'), чтобы LoginPage.tsx мог корректно обработать ошибку.
+Обновление LoginPage.tsx:
+Заменён прямой вызов api.get('/clients/companies') на использование clientsService.getMyCompanies() для унификации кода.
+Убрана проверка companiesResponse.data.companies, так как getMyCompanies возвращает массив Client[].
+Заменён редирект через window.location.href на navigate('/clients/${defaultCompanyId}'), чтобы использовать возможности React Router.
+Добавлено сохранение lastUsedCompanyId в localStorage перед редиректом.
+Обновление ProtectedRoute.tsx:
+Добавлен useLocation для получения текущего пути и предотвращения лишних редиректов.
+Добавлена проверка: если пользователь уже авторизован и пытается зайти на /auth/login или /auth/register, он перенаправляется на /dashboard.
+Добавлена проверка location.pathname !== '/onboarding', чтобы избежать конфликтов с логикой LoginPage.tsx при перенаправлении на онбординг.
+Добавлен state={{ from: location }} в Navigate, чтобы сохранить путь для редиректа после логина.
+Дополнительно:
+
+Подготовлена структура для будущего многооконного интерфейса (будет реализована в следующем коммите):
+Создан контекст WindowContext.tsx для управления окнами.
+Создан компонент Window.tsx с поддержкой перемещения (react-draggable) и изменения размера (react-resizable).
+Подготовлен слайд для PDF-презентации, описывающий улучшенную логику навигации (будет включён в финальную версию презентации).
 # Changelog
 
 Все значимые изменения проекта фиксируются в этом документе.

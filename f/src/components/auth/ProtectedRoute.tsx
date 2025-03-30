@@ -1,5 +1,6 @@
+// src/components/auth/ProtectedRoute.tsx
 import React, { ReactNode, useEffect, useState } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { api } from '../../api/axios';
 
 interface ProtectedRouteProps {
@@ -9,6 +10,8 @@ interface ProtectedRouteProps {
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const location = useLocation();
+  const needsOnboarding = localStorage.getItem('needsOnboarding') === 'true';
 
   useEffect(() => {
     const validateToken = async () => {
@@ -24,7 +27,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
         if (response.data.valid) {
           setIsAuthenticated(true);
         } else {
-          // Токен недействителен - удаляем его
           localStorage.removeItem('token');
           setIsAuthenticated(false);
         }
@@ -41,14 +43,25 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }, []);
 
   if (isLoading) {
-    return <div>Loading...</div>; // или ваш компонент загрузки
+    return <div>Loading...</div>;
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/auth/login" replace />;
+    return <Navigate to="/auth/login" replace state={{ from: location }} />;
   }
 
-  return children ? children : <Outlet />;
+  // Если пользователь уже авторизован и пытается зайти на страницу логина или регистрации,
+  // перенаправляем его на дашборд
+  if (['/auth/login', '/auth/register'].includes(location.pathname)) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // Проверяем необходимость онбординга, но не перенаправляем, если пользователь уже на странице онбординга
+  if (needsOnboarding && location.pathname !== '/onboarding') {
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  return children ? <>{children}</> : <Outlet />;
 };
 
 export { ProtectedRoute };

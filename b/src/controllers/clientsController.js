@@ -113,10 +113,27 @@ const deleteClient = async (req, res) => {
   }
 };
 
+const getMyCompanies = async (req, res) => {
+  try {
+    // Здесь должна быть логика получения компаний пользователя из базы данных
+    // Например, через Prisma
+    const companies = [
+      { id: 1, name: 'Company A', email: 'companya@example.com', role: 'CLIENT' },
+      { id: 2, name: 'Company B', email: 'companyb@example.com', role: 'CLIENT' },
+    ]; // Моковые данные для теста
+    res.status(200).json(companies);
+  } catch (error) {
+    console.error('Error fetching companies:', error);
+    res.status(500).json({ message: 'Failed to fetch companies' });
+  }
+};
+
+
 module.exports = {
   getAllClients, // Получение всех клиентов
   getClientById, // Получение клиента по ID
   createClient, // Создание клиента
   updateClient, // Обновление клиента
   deleteClient, // Удаление клиента
+  getMyCompanies // Добавленная функция
 };
