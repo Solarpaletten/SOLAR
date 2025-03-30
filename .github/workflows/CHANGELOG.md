@@ -1,6 +1,6 @@
 # Changelog
 # fix 
-31 01 2025 - (navigation): clientsService.ts resolve companiesRoutes import error and improve login flow
+31 01 2025 - (navigation): resolve companiesRoutes import error and improve login flow
 
 - Fixed MODULE_NOT_FOUND error in app.js by removing invalid companiesRoutes import
 - Updated clientsService.ts to use api instance with token and throw error on getMyCompanies failure
