@@ -1,4 +1,12 @@
 # Changelog
+# fix 
+31 01 2025 - (navigation): clientsService.ts resolve companiesRoutes import error and improve login flow
+
+- Fixed MODULE_NOT_FOUND error in app.js by removing invalid companiesRoutes import
+- Updated clientsService.ts to use api instance with token and throw error on getMyCompanies failure
+- Refactored LoginPage.tsx to use clientsService and navigate for redirects
+- Enhanced ProtectedRoute.tsx with location checks and redirect state
+- Prepared groundwork for multi-window interface (to be implemented)
 Changelog: Обновление логики навигации и исправление ошибок
 Backend:
 

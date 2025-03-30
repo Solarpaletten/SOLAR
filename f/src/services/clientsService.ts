@@ -1,5 +1,5 @@
 // src/services/clientsService.ts
-import axios from 'axios';
+import { api } from '../api/axios';
 
 const API_URL = '/api/clients';
 
@@ -24,7 +24,7 @@ export interface Client {
 const clientsService = {
   getClientsList: async (): Promise<Client[]> => {
     try {
-      const response = await axios.get<Client[]>(`${API_URL}`);
+      const response = await api.get<Client[]>(`${API_URL}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching clients:', error);
@@ -39,7 +39,7 @@ const clientsService = {
 
   getSuppliersList: async (): Promise<Client[]> => {
     try {
-      const response = await axios.get<Client[]>(`${API_URL}?role=SUPPLIER`);
+      const response = await api.get<Client[]>(`${API_URL}?role=SUPPLIER`);
       return response.data;
     } catch (error) {
       console.error('Error fetching suppliers:', error);
@@ -54,7 +54,7 @@ const clientsService = {
 
   getClientById: async (id: number): Promise<Client | null> => {
     try {
-      const response = await axios.get<Client>(`${API_URL}/${id}`);
+      const response = await api.get<Client>(`${API_URL}/${id}`);
       return response.data;
     } catch (error) {
       console.error(`Error fetching client with ID ${id}:`, error);
@@ -70,7 +70,7 @@ const clientsService = {
 
   createClient: async (clientData: Omit<Client, 'id' | 'created_at' | 'updated_at'>): Promise<Client> => {
     try {
-      const response = await axios.post<Client>(API_URL, clientData);
+      const response = await api.post<Client>(API_URL, clientData);
       return response.data;
     } catch (error) {
       console.error('Error creating client:', error);
@@ -80,7 +80,7 @@ const clientsService = {
 
   updateClient: async (id: number, clientData: Partial<Client>): Promise<Client> => {
     try {
-      const response = await axios.put<Client>(`${API_URL}/${id}`, clientData);
+      const response = await api.put<Client>(`${API_URL}/${id}`, clientData);
       return response.data;
     } catch (error) {
       console.error(`Error updating client with ID ${id}:`, error);
@@ -90,7 +90,7 @@ const clientsService = {
 
   getMyCompanies: async (): Promise<Client[]> => {
     try {
-      const response = await axios.get<Client[]>(`${API_URL}/companies`);
+      const response = await api.get<Client[]>(`${API_URL}/companies`);
       return response.data;
     } catch (error) {
       console.error('Error fetching companies:', error);
