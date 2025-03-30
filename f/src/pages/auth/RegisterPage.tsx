@@ -43,11 +43,24 @@ const RegisterPage: React.FC = () => {
 
     try {
       const response = await register(formData.email, formData.password, formData.name);
-      // Save data to localStorage for use on the onboarding page
+      
+      console.log('Registration response:', response); // Для отладки
+      
+      // Сохраняем токен в localStorage
+      if (response.token) {
+        localStorage.setItem('token', response.token);
+      } else {
+        console.error('No token received in registration response');
+      }
+      
+      // Сохраняем другие данные
       localStorage.setItem('companyName', formData.name);
       localStorage.setItem('email', formData.email);
       localStorage.setItem('phone', formData.phone);
-      setSuccessMessage(`${t('Registration successful')}! ${t('Your login')}: ${response.login}, ${t('password')}: ${formData.password}`);
+      // После регистрации, внутри блока try после сохранения токена
+      localStorage.setItem('needsOnboarding', 'true');
+      
+      setSuccessMessage(`${t('Registration successful')}! ${t('Your login')}: ${formData.email}, ${t('password')}: ${formData.password}`);
       setTimeout(() => {
         navigate('/onboarding');
       }, 3000);

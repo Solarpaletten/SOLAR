@@ -42,7 +42,11 @@ app.use((req, res, next) => {
 const apiRouter = express.Router();
 apiRouter.use('/auth', require('./routes/authRoutes'));
 apiRouter.use('/clients', require('./routes/clientsRoutes'));
+apiRouter.use('/companies', require('./routes/clientsRoutes'));
 apiRouter.use('/stats', require('./routes/statsRoutes'));
+
+// Добавить новый маршрут для онбординга
+apiRouter.use('/onboarding', require('./routes/onboardingRoutes'));
 
 // Добавим маршруты для продаж и покупок
 apiRouter.use('/sales', require('./routes/salesRoutes'));

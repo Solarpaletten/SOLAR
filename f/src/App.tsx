@@ -1,3 +1,4 @@
+// src/App.tsx
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -7,25 +8,18 @@ import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import OnboardingPage from './pages/auth/OnboardingPage';
 import SolarAssistantPage from './pages/assistant/SolarAssistantPage';
-
-// Импортируем компоненты layout
 import Layout from './components/layout/Layout';
-
-// Импортируем страницы клиентов правильно
 import ClientsPage from './pages/clients/ClientsPage';
 import ClientDetailPage from './pages/clients/ClientDetailPage';
 import NewClientPage from './pages/clients/NewClientPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
-import AdminPage from './pages/administrator/AdminPage';  
-
-// Импортируем страницы закупок
+import AdminPage from './pages/administrator/AdminPage';
 import PurchasesPage from './pages/purchases/PurchasesPage';
 import PurchasesDetailPage from './pages/purchases/PurchasesDetailPage';
 import CreatePurchasesPage from './pages/purchases/CreatePurchasesPage';
 import EditPurchasesPage from './pages/purchases/EditPurchasesPage';
 
-
-// Заглушки для страниц, которые будут разработаны позже
+// Заглушки для остальных страниц
 const Warehouse = () => (
   <div className="p-6">
     <h1 className="text-2xl font-semibold">Warehouse</h1>
@@ -82,7 +76,6 @@ const Settings = () => (
   </div>
 );
 
-// Создание экземпляра QueryClient для React Query
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -106,11 +99,11 @@ const App: React.FC = () => {
         {/* Защищенные маршруты с использованием ProtectedRoute */}
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Layout />}>
-            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route index element={<Navigate to="/dashboard" />} />
             <Route path="dashboard" element={<DashboardPage />} />
-
+            
             {/* SOLAR Ассистент как часть основного приложения */}
-      <Route path="solar" element={<SolarAssistantPage />} />
+            <Route path="solar" element={<SolarAssistantPage />} />
             
             {/* Маршруты для клиентов */}
             <Route path="clients" element={<ClientsPage />} />
@@ -119,13 +112,10 @@ const App: React.FC = () => {
             
             {/* Маршруты для warehouse */}
             <Route path="warehouse">
-              {/* Внутри warehouse разные подсекции, включая закупки */}
               <Route path="purchases" element={<PurchasesPage />} />
               <Route path="purchases/create" element={<CreatePurchasesPage />} />
               <Route path="purchases/edit/:id" element={<EditPurchasesPage />} />
               <Route path="purchases/:id" element={<PurchasesDetailPage />} />
-              
-              {/* Другие подсекции warehouse можно добавить здесь */}
               <Route path="sales" element={<Warehouse />} />
               <Route path="client-prices" element={<Warehouse />} />
               <Route path="automatic-invoicing" element={<Warehouse />} />
@@ -134,16 +124,12 @@ const App: React.FC = () => {
               <Route path="item-movement" element={<Warehouse />} />
               <Route path="consignment-balance" element={<Warehouse />} />
               <Route path="stock-taking" element={<Warehouse />} />
-              <Route path="revaluation" element={<Warehouse />} />
-              <Route path="internal-movement-confirmation" element={<Warehouse />} />
-              <Route path="e-commerce" element={<Warehouse />} />
-              <Route path="cash-register-sales" element={<Warehouse />} />
+              <Route path="*" element={<Warehouse />} />
             </Route>
-            
-            <Route path="admin" element={<AdminPage />} />
 
+            {/* Другие маршруты */}
             <Route path="general-ledger" element={<GeneralLedger />} />
-            <Route path="cashier/*" element={<Cashier />} />
+            <Route path="cashier" element={<Cashier />} />
             <Route path="reports" element={<Reports />} />
             <Route path="personnel" element={<Personnel />} />
             <Route path="production" element={<Production />} />
@@ -152,9 +138,11 @@ const App: React.FC = () => {
             <Route path="salary" element={<Salary />} />
             <Route path="declaration" element={<Declaration />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="administrator" element={<AdminPage />} />
           </Route>
         </Route>
 
+        {/* Обработка неизвестных маршрутов */}
         <Route path="*" element={<Navigate to="/auth/login" replace />} />
       </Routes>
     </QueryClientProvider>

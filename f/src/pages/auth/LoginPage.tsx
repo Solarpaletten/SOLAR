@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { login } from '../../api/axios';
 import LanguageSwitcher from '../../components/common/LanguageSwitcher';
+import clientsService from '../../services/clientsService';
 
 const LoginPage: React.FC = () => {
   const { t } = useTranslation();
@@ -13,7 +14,7 @@ const LoginPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Check if user is already authorized when loading the component
+  // Проверка, авторизован ли пользователь
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -30,16 +31,35 @@ const LoginPage: React.FC = () => {
       const response = await login(email, password);
       console.log('Login successful:', response);
 
-      // Save token in localStorage
+      // Сохраняем токен и данные пользователя
       localStorage.setItem('token', response.token);
-
-      // If the response contains user data, save it too
       if (response.user) {
         localStorage.setItem('user', JSON.stringify(response.user));
       }
 
-      // Redirect to dashboard
-      navigate('/dashboard');
+      try {
+        // Получаем список компаний через clientsService
+        const companies = await clientsService.getMyCompanies();
+
+        if (companies && companies.length > 0) {
+          // Берем ID первой компании или последней использованной
+          const lastUsedCompanyId = localStorage.getItem('lastUsedCompanyId');
+          const defaultCompanyId = lastUsedCompanyId || companies[0].id;
+          
+          // Сохраняем ID выбранной компании
+          localStorage.setItem('lastUsedCompanyId', defaultCompanyId.toString());
+          
+          // Перенаправляем на страницу компании
+          navigate(`/clients/${defaultCompanyId}`);
+        } else {
+          // Если компаний нет, отправляем на онбординг
+          navigate('/onboarding');
+        }
+      } catch (compErr) {
+        console.error('Error fetching companies:', compErr);
+        // В случае ошибки перенаправляем на стандартный dashboard
+        navigate('/dashboard');
+      }
     } catch (err: any) {
       console.error('Login error:', err);
       setError(err.message || t('Network error'));
@@ -50,7 +70,6 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
-      {/* Navigation bar */}
       <nav className="bg-white shadow p-4 flex justify-between items-center">
         <div className="text-2xl font-bold text-blue-600">LEANID SOLAR</div>
         <div className="flex space-x-4">
@@ -79,7 +98,6 @@ const LoginPage: React.FC = () => {
         </div>
       </nav>
 
-      {/* Login form */}
       <div className="flex-grow flex items-center justify-center">
         <div className="max-w-md w-full p-6 bg-white rounded shadow">
           <h1 className="text-2xl font-bold mb-4 text-center">{t('loginTitle')}</h1>
@@ -107,7 +125,7 @@ const LoginPage: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">{t('password')} *</label>
+              <label className="block text-sm font-medium text-gray-700">{('password')} *</label>
               <input
                 type="password"
                 placeholder={t('password')}
