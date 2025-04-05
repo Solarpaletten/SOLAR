@@ -39,23 +39,32 @@ const LoginPage: React.FC = () => {
         const companies = await clientsService.getMyCompanies();
         
         if (companies && companies.length > 0) {
+          // Если у пользователя есть компании, отправляем на страницу клиентов
           const lastUsedCompanyId = localStorage.getItem('lastUsedCompanyId');
           const defaultCompanyId = lastUsedCompanyId || companies[0].id;
           localStorage.setItem('lastUsedCompanyId', defaultCompanyId.toString());
           navigate(`/clients/${defaultCompanyId}`);
         } else {
-          navigate('/onboarding');
+          // Если у пользователя нет компаний, отправляем на страницу регистрации
+          // Возможно, стоит показать сообщение о необходимости создать компанию
+          localStorage.removeItem('token'); // Очищаем токен, чтобы пользователь мог заново зарегистрироваться
+          navigate('/auth/register', { state: { message: 'Для работы в системе необходимо создать компанию. Пожалуйста, зарегистрируйтесь.' } });
         }
       } catch (compErr) {
         console.error('Error fetching companies:', compErr);
-        navigate('/dashboard');
+        // В случае ошибки также отправляем на регистрацию
+        localStorage.removeItem('token');
+        navigate('/auth/register');
       }
     } catch (err: any) {
       console.error('Login error:', err);
-      setError(err.message || t('Network error'));
-    } finally {
-      setIsLoading(false);
+      if (err.response && err.response.status === 401) {
+        setError(t('Invalid email or password'));
+      } else {
+        setError(t('Login failed. Please try again.'));
+      }
     }
+    setIsLoading(false);
   };
 
   return (
