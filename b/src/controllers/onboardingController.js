@@ -67,7 +67,24 @@ exports.setupCompany = async (req, res) => {
     });
   } catch (error) {
     logger.error('Ошибка при настройке компании:', error);
-    res.status(500).json({ error: 'Не удалось настроить компанию' });
+    
+    // Проверяем, является ли ошибка нарушением уникальности
+    if (error.code === 'P2002' && error.meta?.target?.includes('code')) {
+      return res.status(409).json({ 
+        error: 'Код компании уже используется. Пожалуйста, выберите другой код.',
+        code: 'DUPLICATE_CODE'
+      });
+    }
+    
+    // Другие специфические ошибки Prisma
+    if (error.code?.startsWith('P')) {
+      return res.status(400).json({ 
+        error: `Ошибка базы данных: ${error.message}`,
+        code: error.code
+      });
+    }
+    
+    res.status(500).json({ error: 'Не удалось настроить компанию', details: error.message });
   }
 };
 

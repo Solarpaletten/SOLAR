@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { PurchasesTableProps } from '../../types/purchasesTypes';
 import PurchasesRow from './PurchasesRow';
-import clientsService, { Client } from '../../services/clientsService';
+import clientsService, { Client } from '../../../../services/clientsService';
 
 const PurchasesTable: React.FC<PurchasesTableProps> = ({
   purchases = [],

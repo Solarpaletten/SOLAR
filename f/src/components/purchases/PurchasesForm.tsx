@@ -1,6 +1,6 @@
 import React from 'react';
 import { Purchase } from '../../types/purchasesTypes';
-import { Client } from '../../services/clientsService';
+import { Client } from '../../../../services/clientsService';
 import { useTranslation } from 'react-i18next';
 
 interface PurchasesFormProps {

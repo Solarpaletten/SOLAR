@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Purchase, PurchaseFilter, UseFetchPurchasesResult } from '../types/purchasesTypes';
-import purchasesService from '../services/purchasesService';
+import purchasesService from '../../../services/purchasesService';
 
 /**
  * Хук для загрузки данных о закупках с возможностью фильтрации

@@ -1,5 +1,17 @@
 # Changelog
 # fix 
+06 04 2025 - fix(onboarding): comprehensive fix for company registration issues
+
+- Fix duplicate routes in clientsRoutes.js to ensure proper API endpoint access
+- Standardize error logging in clientsController.js (console.error → logger.error)
+- Enhance onboardingController.js to handle Prisma-specific errors (P2002 for unique constraint violations)
+- Completely rewrite onboardingService.ts to add automatic unique company code generation
+- Improve error handling with detailed error messages for all error scenarios (500, 409, 400)
+- Fix formatting issues and remove unnecessary comments
+- Add comprehensive logging for better debugging
+- Ensure proper transaction handling in database operations
+
+# fix 
 05 04 2025 - fix(LoginPage.tsx RegisterPage.tsx )
 # fix 
 05 04 2025 - fix(onboarding): resolve company setup failure on Render

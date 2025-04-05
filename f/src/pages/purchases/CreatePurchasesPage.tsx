@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import PageContainer from '../../components/common/PageContainer';
 import PurchasesForm from '../../components/purchases/PurchasesForm';
 import { Purchase, CreatePurchaseDto } from '../../types/purchasesTypes';
-import purchasesService from '../../services/purchasesService';
-import clientsService, { Client } from '../../services/clientsService';
+import purchasesService from '../../../../services/purchasesService';
+import clientsService, { Client } from '../../../../services/clientsService';
 
 const CreatePurchasesPage: React.FC = () => {
   const navigate = useNavigate();

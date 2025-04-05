@@ -3,8 +3,8 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import PageContainer from '../../components/common/PageContainer';
 import PurchasesStatusBadge from '../../components/purchases/PurchasesStatusBadge';
 import { Purchase, PurchaseStatus } from '../../types/purchasesTypes';
-import purchasesService from '../../services/purchasesService';
-import clientsService from '../../services/clientsService';
+import purchasesService from '../../../../services/purchasesService';
+import clientsService from '../../../../services/clientsService';
 
 const PurchasesDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();

@@ -24,6 +24,6 @@
     "eslint.config.js",
     "tailwind.config.js",
     "vite.config.ts"
-  ],
+, "../services"  ],
   "exclude": ["node_modules", "dist"]
 }
