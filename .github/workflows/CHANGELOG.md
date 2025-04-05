@@ -1,11 +1,23 @@
 # Changelog
+
+# fix 
+05 04 2025 - fix(onboarding): resolve company setup failure on Render
+
+- Remove unused axios import from onboardingService.ts
+- Generate unique company codes in production environment to prevent duplication
+- Improve error handling with detailed error messages for different scenarios
+- Add specific handling for 409 (conflict) and 500 (server error) responses
+
+This resolves the "Failed to setup company" error that occurred specifically in the 
+Render deployment but not in local development.
+
 # fix
-05 04 2025 - (regflow): fix client registration and company onboarding issues
+ts05 04 2025 - (regflow): fix client registration and company onboarding issues
 
 - Fixed duplicate route in clientsRoutes.js - removed extra router.get('/:id', ...) definition that was conflicting with companies route
 - Corrected logging in clientsController.js - replaced console.error with logger.error in getMyCompanies for consistent error handling
 - Improved error handling in onboarding process with better error messages when company already exists
-- Ensured proper order of routes in clientsRoutes.js (/companies before /:id) to prevent route conflicts
+- Ensured proper order of routes in clientsRoutes.js (/companies before /:id) to prevent route conflic
 
 # fix 
 31 01 2025 - (navigation): resolve companiesRoutes import error and improve login flow
