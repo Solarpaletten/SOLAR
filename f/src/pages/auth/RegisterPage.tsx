@@ -1,6 +1,6 @@
 // src/pages/auth/RegisterPage.tsx
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { register } from '../../api/axios';
 import LanguageSwitcher from '../../components/common/LanguageSwitcher';
@@ -13,8 +13,12 @@ interface RegisterFormData {
   password: string;
 }
 
+
 const RegisterPage: React.FC = () => {
   const { t } = useTranslation();
+  const location = useLocation();
+  const messageFromLocation = location.state?.message || null;
+
   const [formData, setFormData] = useState<RegisterFormData>({
     email: '',
     phone: '',
@@ -62,7 +66,7 @@ const RegisterPage: React.FC = () => {
       
       setSuccessMessage(`${t('Registration successful')}! ${t('Your login')}: ${formData.email}, ${t('password')}: ${formData.password}`);
       setTimeout(() => {
-        navigate('/onboarding');
+        navigate('/onboarding', { replace: true });
       }, 3000);
     } catch (err: any) {
       setError(err.message || t('Failed to register'));
@@ -104,6 +108,13 @@ const RegisterPage: React.FC = () => {
       <div className="flex-grow flex items-center justify-center">
         <div className="max-w-md w-full p-6 bg-white rounded shadow">
           <h1 className="text-2xl font-bold mb-4 text-center">{t('registerTitle')}</h1>
+          
+          {messageFromLocation && (
+            <div className="p-2 text-sm text-green-700 bg-green-100 border border-green-300 rounded mb-4">
+              {messageFromLocation}
+            </div>
+          )}
+
           <div className="flex justify-center space-x-2 mb-4">
             <button className="px-4 py-2 bg-blue-600 text-white rounded">Facebook</button>
             <button className="px-4 py-2 bg-red-600 text-white rounded">Google</button>

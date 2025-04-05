@@ -1,5 +1,6 @@
 # Changelog
-
+# fix 
+05 04 2025 - fix(LoginPage.tsx RegisterPage.tsx )
 # fix 
 05 04 2025 - fix(onboarding): resolve company setup failure on Render
 
