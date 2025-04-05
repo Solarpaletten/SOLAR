@@ -1,6 +1,5 @@
 // src/services/clientsService.ts
-import { api } from '../f/src/api/axios';
-
+import { api } from '../api/axios';
 const API_URL = '/api/clients';
 
 export enum ClientRole {

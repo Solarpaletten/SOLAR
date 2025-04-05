@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { login } from '../../api/axios';
 import LanguageSwitcher from '../../components/common/LanguageSwitcher';
-import clientsService from '../../../../services/clientsService';
+import clientsService from '../../services/clientsService';
 
 const LoginPage: React.FC = () => {
   const { t } = useTranslation();
