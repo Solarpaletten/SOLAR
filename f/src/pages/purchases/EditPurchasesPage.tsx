@@ -3,8 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import PageContainer from '../../components/common/PageContainer';
 import PurchasesForm from '../../components/purchases/PurchasesForm';
 import { Purchase, UpdatePurchaseDto } from '../../types/purchasesTypes';
-import purchasesService from '../../services/purchasesService';
-import clientsService, { Client } from '../../services/clientsService';
+import purchasesService from '../../../../services/purchasesService';
+import clientsService, { Client } from '../../../../services/clientsService';
 
 const EditPurchasesPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();

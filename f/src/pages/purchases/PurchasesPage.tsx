@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import purchasesService from '../../services/purchasesService';
-import clientsService, { Client, ClientRole } from '../../services/clientsService';
+import purchasesService from '../../../../services/purchasesService';
+import clientsService, { Client, ClientRole } from '../../../../services/clientsService';
 import { Purchase, PurchaseFilter, PurchaseStatus } from '../../types/purchasesTypes';
 import PurchasesTable from '../../components/purchases/PurchasesTable';
 import PurchasesActions from '../../components/purchases/PurchasesActions';

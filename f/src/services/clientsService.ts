@@ -1,5 +1,5 @@
 // src/services/clientsService.ts
-import { api } from '../api/axios';
+import { api } from '../f/src/api/axios';
 
 const API_URL = '/api/clients';
 
