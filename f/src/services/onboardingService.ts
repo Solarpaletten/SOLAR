@@ -1,6 +1,6 @@
 // src/services/onboardingService.ts
 import { api } from '../api/axios';
-import axios from 'axios'; // Добавьте этот импорт
+// Удалите неиспользуемый импорт axios
 
 interface OnboardingData {
   companyCode: string;
@@ -17,16 +17,34 @@ const onboardingService = {
       console.log('Отправка запроса на онбординг:', data);
       console.log('Токен:', localStorage.getItem('token'));
       
-      // Используйте api, а не axios напрямую
+      // Генерируем уникальный код компании для предотвращения дублирования
+      // Например, добавляем временную метку, если это production среда
+      if (window.location.hostname.includes('onrender.com')) {
+        data.companyCode = `${data.companyCode}_${Date.now().toString().slice(-4)}`;
+      }
+      
       const response = await api.post('/onboarding/setup', data);
       
       console.log('Ответ от онбординга:', response.data);
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Подробности ошибки:', error);
-      throw new Error('Failed to setup company');
+      
+      // Более детальная обработка ошибок
+      if (error.response) {
+        if (error.response.status === 500) {
+          throw new Error('Server error during company setup. Please try again later.');
+        } else if (error.response.status === 409) {
+          throw new Error('Company code already exists. Please try a different code.');
+        }
+      }
+      
+      throw new Error('Failed to setup company. ' + (error.message || ''));
     }
   }
 };
 
 export default onboardingService;
+
+
+
