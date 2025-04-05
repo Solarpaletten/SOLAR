@@ -115,19 +115,27 @@ const deleteClient = async (req, res) => {
 
 const getMyCompanies = async (req, res) => {
   try {
-    // Здесь должна быть логика получения компаний пользователя из базы данных
-    // Например, через Prisma
-    const companies = [
-      { id: 1, name: 'Company A', email: 'companya@example.com', role: 'CLIENT' },
-      { id: 2, name: 'Company B', email: 'companyb@example.com', role: 'CLIENT' },
-    ]; // Моковые данные для теста
-    res.status(200).json(companies);
+    const userCompanies = await prismaManager.prisma.companies.findMany({
+      where: { user_id: req.user.id },
+      include: {
+        user: true
+      }
+    });
+
+    // Также получаем записи клиентов, связанные с этим пользователем
+    const userClients = await prismaManager.prisma.clients.findMany({
+      where: {
+        user_id: req.user.id,
+        code: { not: null } // только клиенты с кодом (которые могут быть компаниями)
+      }
+    });
+
+    res.status(200).json(userCompanies.length > 0 ? userCompanies : userClients);
   } catch (error) {
-    console.error('Error fetching companies:', error);
+    logger.error('Error fetching companies:', error);
     res.status(500).json({ message: 'Failed to fetch companies' });
   }
 };
-
 
 module.exports = {
   getAllClients, // Получение всех клиентов

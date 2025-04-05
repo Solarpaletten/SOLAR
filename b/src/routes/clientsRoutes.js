@@ -9,12 +9,11 @@ logger.info('Clients routes initialized');
 
 // Маршруты с проверкой аутентификации
 router.get('/', auth, clientsController.getAllClients);
+router.get('/companies', auth, clientsController.getMyCompanies);
 router.get('/:id', auth, clientsController.getClientById);
 router.post('/', auth, clientsController.createClient);
 router.put('/:id', auth, clientsController.updateClient);
 router.delete('/:id', auth, clientsController.deleteClient);
 
-// Новый маршрут для получения компаний
-router.get('/companies', auth, clientsController.getMyCompanies);
 
 module.exports = router;

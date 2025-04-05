@@ -1,4 +1,12 @@
 # Changelog
+# fix
+05 04 2025 - (regflow): fix client registration and company onboarding issues
+
+- Fixed duplicate route in clientsRoutes.js - removed extra router.get('/:id', ...) definition that was conflicting with companies route
+- Corrected logging in clientsController.js - replaced console.error with logger.error in getMyCompanies for consistent error handling
+- Improved error handling in onboarding process with better error messages when company already exists
+- Ensured proper order of routes in clientsRoutes.js (/companies before /:id) to prevent route conflicts
+
 # fix 
 31 01 2025 - (navigation): resolve companiesRoutes import error and improve login flow
 
