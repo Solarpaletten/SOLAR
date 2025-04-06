@@ -1,4 +1,6 @@
 # Changelog
+# fix 
+06 04 2025 - prisma schema companies
 # fix
 06 04 2025 - feat(onboarding): add logout button to onboarding page
 - Add logout functionality to clear user data from localStorage
