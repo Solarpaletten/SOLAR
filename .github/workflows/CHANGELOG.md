@@ -1,4 +1,10 @@
 # Changelog
+# fix
+06 04 2025 - feat(onboarding): add logout button to onboarding page
+- Add logout functionality to clear user data from localStorage
+- Add red logout button alongside setup completion button
+- Fix incorrect JSX comment causing build errors
+- Improve user experience by providing escape route from onboarding
 # fix 
 06 04 2025 - fix(onboarding): comprehensive fix for company registration issues
 
