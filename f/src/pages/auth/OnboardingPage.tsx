@@ -8,6 +8,8 @@ interface OnboardingFormData {
   directorName: string;
 }
 
+
+
 const OnboardingPage: React.FC = () => {
   const { t } = useTranslation();
   const [formData, setFormData] = useState<OnboardingFormData>({
@@ -49,6 +51,17 @@ const OnboardingPage: React.FC = () => {
     }
   };
 
+  const handleLogout = () => {
+    // Очистить токен и другие данные пользователя
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('lastUsedCompanyId');
+    localStorage.removeItem('needsOnboarding');
+    
+    // Перенаправить на страницу входа
+    navigate('/auth/login', { replace: true });
+  };
+
   return (
     <div className="max-w-md mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">{t('setupYourCompany')}</h1>
@@ -85,15 +98,25 @@ const OnboardingPage: React.FC = () => {
             required
           />
         </div>
-        <button
-          type="submit"
-          className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          {t('finishSetup')}
-        </button>
+        <div className="flex justify-between space-x-4">
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="w-full px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+          >
+            {t('logout')}
+          </button>
+          <button
+            type="submit"
+            className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            {t('finishSetup')}
+          </button>
+        </div>
       </form>
     </div>
   );
-};
+}
+
 
 export default OnboardingPage;
