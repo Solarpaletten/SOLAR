@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { register } from '../../api/axios';
+import authService from '../../services/authService';
 import LanguageSwitcher from '../../components/common/LanguageSwitcher';
 
 interface RegisterFormData {
@@ -46,7 +46,7 @@ const RegisterPage: React.FC = () => {
     setSuccessMessage(null);
 
     try {
-      const response = await register(formData.email, formData.password, formData.name);
+      const response = await authService.register({email: formData.email, password: formData.password, username: formData.name, name: formData.name, phone: formData.phone, surname: formData.surname});
       
       console.log('Registration response:', response); // Для отладки
       

@@ -1,5 +1,7 @@
 # Changelog
 # fix 
+10 04 2025 -f/src/services/authService.ts
+# fix 
 06 04 2025 - prisma schema companies
 git commit -m"# fix
 # fix

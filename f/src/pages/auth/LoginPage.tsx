@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { login } from '../../api/axios';
+import authService from '../../services/authService';
 import LanguageSwitcher from '../../components/common/LanguageSwitcher';
 import clientsService from '../../services/clientsService';
 
@@ -27,7 +27,7 @@ const LoginPage: React.FC = () => {
     setError('');
 
     try {
-      const response = await login(email, password);
+      const response = await authService.login(email, password);
       console.log('Login successful:', response);
 
       localStorage.setItem('token', response.token);
