@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import onboardingService from '../../services/onboardingService'; 
+import authService from '../../services/authService'; 
 
 interface OnboardingFormData {
   companyCode: string;
@@ -31,8 +31,8 @@ const OnboardingPage: React.FC = () => {
     setSuccessMessage(null);
 
     try {
-      // Используем новый onboardingService вместо clientsService
-      await onboardingService.setupCompany({
+      // Используем authService
+      await authService.setupCompany({
         companyCode: formData.companyCode,
         directorName: formData.directorName,
         name: localStorage.getItem('companyName') || t('My Company'),
