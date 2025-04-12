@@ -112,13 +112,16 @@ const authService = {
    */
   setupCompany: async (data: CompanySetupData): Promise<{ company: Company, client: any, redirectTo?: string }> => {
     try {
-      // Делаем компанию уникальной, добавляя временную метку
-      const timestamp = Date.now().toString().slice(-6);
-      const uniqueCompanyCode = `${data.companyCode}_${timestamp}`;
+      // Если компания уже содержит суффикс с _ (например, "14926445_525518"),
+      // извлекаем только основную часть кода
+      let companyCode = data.companyCode;
+      if (companyCode.includes('_')) {
+        [companyCode] = companyCode.split('_');
+      }
       
       const requestData = {
         ...data,
-        companyCode: uniqueCompanyCode
+        companyCode
       };
       
       const response = await api.post('/onboarding/setup', requestData);

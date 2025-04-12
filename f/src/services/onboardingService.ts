@@ -20,13 +20,16 @@ const onboardingService = {
         throw new Error('Код компании и имя директора обязательны');
       }
       
-      // Всегда добавляем уникальный суффикс к коду компании для предотвращения дублирования
-      const timestamp = Date.now().toString().slice(-6);
-      const uniqueCompanyCode = `${data.companyCode}_${timestamp}`;
+      // Если компания уже содержит суффикс с _ (например, "14926445_525518"),
+      // извлекаем только основную часть кода
+      let companyCode = data.companyCode;
+      if (companyCode.includes('_')) {
+        [companyCode] = companyCode.split('_');
+      }
       
       const requestData = {
         ...data,
-        companyCode: uniqueCompanyCode
+        companyCode
       };
       
       console.log('Отправляемые данные с уникальным кодом:', requestData);
