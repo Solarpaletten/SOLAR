@@ -13,7 +13,7 @@ exports.setupCompany = async (req, res) => {
     });
     
     // Проверяем, существует ли уже компания для этого пользователя
-    const existingCompany = await prismaManager.prisma.companies.findFirst({
+    const existingCompany = await prismaManager.prisma.company.findFirst({
       where: { user_id: userId }
     });
     
@@ -39,7 +39,7 @@ exports.setupCompany = async (req, res) => {
       });
       
       // Создаем компанию
-      const company = await prisma.companies.create({
+      const company = await prisma.company.create({
         data: {
           code: companyCode,
           director_name: directorName,

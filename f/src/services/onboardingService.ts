@@ -15,6 +15,11 @@ const onboardingService = {
     try {
       console.log('Отправка запроса на онбординг:', data);
 
+      // Валидация данных перед отправкой
+      if (!data.companyCode || !data.directorName) {
+        throw new Error('Код компании и имя директора обязательны');
+      }
+      
       // Всегда добавляем уникальный суффикс к коду компании для предотвращения дублирования
       const timestamp = Date.now().toString().slice(-6);
       const uniqueCompanyCode = `${data.companyCode}_${timestamp}`;

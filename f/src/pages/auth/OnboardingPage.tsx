@@ -29,6 +29,16 @@ const OnboardingPage: React.FC = () => {
     e.preventDefault();
     setError(null);
     setSuccessMessage(null);
+    
+    // Валидация данных перед отправкой
+    if (!formData.companyCode.trim()) {
+      setError(t('Company code is required'));
+      return;
+    }
+    if (!formData.directorName.trim()) {
+      setError(t('Director name is required'));
+      return;
+    }
 
     try {
       // Используем authService
