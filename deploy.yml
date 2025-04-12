@@ -45,9 +45,11 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
       
-      - name: Create test schema directly (skip migrations)
+      - name: Reset failed migrations and create test schema
         run: |
           cd ./b
+          echo "Resetting any failed migrations in test database..."
+          node scripts/reset-test-migrations.js
           echo "Creating test schema directly with db push..."
           npx prisma db push --schema=prisma/schema_t.prisma --force-reset
           echo "Test schema created with db push"
