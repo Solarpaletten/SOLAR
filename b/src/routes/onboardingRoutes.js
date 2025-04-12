@@ -5,6 +5,7 @@ const onboardingController = require('../controllers/onboardingController');
 const auth = require('../middleware/auth');
 const { companyValidators } = require('../middleware/validators');
 const { logger } = require('../config/logger');
+const { standardizeCompanyCodeMiddleware } = require('../utils/companyUtils');
 
 // Добавим отладку
 logger.info('Onboarding routes initialized');
@@ -21,6 +22,8 @@ router.post('/setup',
     });
     next();
   },
+  // Добавляем middleware для стандартизации кода компании до валидации
+  standardizeCompanyCodeMiddleware,
   companyValidators.setupCompany,
   onboardingController.setupCompany
 );
