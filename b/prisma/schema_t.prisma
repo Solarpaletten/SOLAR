@@ -54,6 +54,7 @@ model usersT {
   warehouses_as_user        warehousesT[]        @relation("warehouses_user")
   warehouses_as_responsible warehousesT[]        @relation("warehouses_responsible_person")
   doc_settlements           doc_settlementT[]
+  companies                 companiesT[]
 
   @@index([email], map: "idx_users_email") // email
   @@index([role], map: "idx_users_role")
@@ -242,4 +243,23 @@ model doc_settlementT {
   @@index([doc_date])
   @@index([client_id])
   @@index([status])
+}
+
+// Модель для компаний - соответствует companies в основной схеме
+model companiesT {
+  id                Int       @id @default(autoincrement())
+  code              String    @unique
+  name              String    @db.VarChar(100)
+  director_name     String
+  user_id           Int
+  is_active         Boolean   @default(true)
+  setup_completed   Boolean   @default(false)
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+
+  // Связь с пользователем
+  user              usersT    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  @@index([user_id])
+  @@index([name])
 }

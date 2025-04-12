@@ -31,15 +31,19 @@ describe('Companies API', () => {
 
   afterAll(async () => {
     // Очищаем созданные данные
-    await prisma.companiesT.deleteMany({
-      where: { user_id: testUser.id }
-    });
-    await prisma.clientsT.deleteMany({
-      where: { user_id: testUser.id }
-    });
-    await prisma.usersT.delete({
-      where: { id: testUser.id }
-    });
+    try {
+      await prisma.companiesT.deleteMany({
+        where: { user_id: testUser.id }
+      });
+      await prisma.clientsT.deleteMany({
+        where: { user_id: testUser.id }
+      });
+      await prisma.usersT.delete({
+        where: { id: testUser.id }
+      });
+    } catch (error) {
+      console.error('Error cleaning up test data:', error);
+    }
   });
 
   describe('POST /api/onboarding/setup', () => {
