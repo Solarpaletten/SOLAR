@@ -1,15 +1,24 @@
 // controllers/onboardingController.js
 const prismaManager = require('../utils/prismaManager');
 const { logger } = require('../config/logger');
+const { standardizeCompanyCode } = require('../utils/companyUtils');
 
 exports.setupCompany = async (req, res) => {
   try {
-    const { companyCode, directorName } = req.body;
+    // Получаем данные из запроса
+    let { companyCode, directorName } = req.body;
     const userId = req.user.id;
     
+    // Дополнительная стандартизация кода компании в контроллере
+    // Это защитный слой, если middleware по какой-то причине не сработал
+    const originalCode = companyCode;
+    companyCode = standardizeCompanyCode(companyCode);
+    
+    // Подробное логирование для отладки
     logger.info('Настройка компании через онбординг', {
       userId,
-      companyCode
+      originalCompanyCode: originalCode,
+      standardizedCompanyCode: companyCode
     });
     
     // Проверяем, существует ли уже компания для этого пользователя

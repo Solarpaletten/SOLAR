@@ -1,5 +1,6 @@
 // src/services/authService.ts
 import { api } from '../api/axios';
+import { standardizeCompanyCode } from '../utils/companyUtils';
 
 export interface Company {
   id: number;
@@ -112,16 +113,18 @@ const authService = {
    */
   setupCompany: async (data: CompanySetupData): Promise<{ company: Company, client: any, redirectTo?: string }> => {
     try {
-      // Если компания уже содержит суффикс с _ (например, "14926445_525518"),
-      // извлекаем только основную часть кода
-      let companyCode = data.companyCode;
-      if (companyCode.includes('_')) {
-        [companyCode] = companyCode.split('_');
-      }
+      // Стандартизируем код компании, удаляя возможный суффикс
+      const cleanCompanyCode = standardizeCompanyCode(data.companyCode);
+      
+      // Логируем для отладки оригинальный и очищенный код
+      console.log('Company code standardization:', {
+        original: data.companyCode,
+        standardized: cleanCompanyCode
+      });
       
       const requestData = {
         ...data,
-        companyCode
+        companyCode: cleanCompanyCode
       };
       
       const response = await api.post('/onboarding/setup', requestData);

@@ -1,5 +1,6 @@
 // src/services/onboardingService.ts
 import { api } from '../api/axios';
+import { standardizeCompanyCode } from '../utils/companyUtils';
 
 interface OnboardingData {
   companyCode: string;
@@ -20,19 +21,20 @@ const onboardingService = {
         throw new Error('Код компании и имя директора обязательны');
       }
       
-      // Если компания уже содержит суффикс с _ (например, "14926445_525518"),
-      // извлекаем только основную часть кода
-      let companyCode = data.companyCode;
-      if (companyCode.includes('_')) {
-        [companyCode] = companyCode.split('_');
-      }
+      // Стандартизируем код компании, удаляя возможный суффикс
+      const cleanCompanyCode = standardizeCompanyCode(data.companyCode);
+      
+      console.log('Стандартизация кода компании:', {
+        оригинальный: data.companyCode,
+        стандартизированный: cleanCompanyCode
+      });
       
       const requestData = {
         ...data,
-        companyCode
+        companyCode: cleanCompanyCode
       };
       
-      console.log('Отправляемые данные с уникальным кодом:', requestData);
+      console.log('Отправляемые данные:', requestData);
       
       const response = await api.post('/onboarding/setup', requestData);
       
