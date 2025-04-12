@@ -8,6 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATABASE_URL_TEST_VERCEL: ${{ secrets.DATABASE_URL_TEST_VERCEL }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
     steps:
       - name: Checkout code
@@ -36,34 +37,46 @@ jobs:
         env:
           CI: true
 
-      - name: Apply database migrations for tests
+      - name: Apply database migrations for main and test schemas
         run: |
           cd ./b
           npx prisma migrate deploy --schema=prisma/schema.prisma
+          echo "Main schema migrations applied"
+          npx prisma migrate deploy --schema=prisma/schema_t.prisma
+          echo "Test schema migrations applied"
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL_TEST_VERCEL: ${{ secrets.DATABASE_URL_TEST_VERCEL }}
 
       - name: Debug Environment Variables
         run: |
           echo "DATABASE_URL=$DATABASE_URL"
+          echo "DATABASE_URL_TEST_VERCEL exists: $([[ -n $DATABASE_URL_TEST_VERCEL ]] && echo 'Yes' || echo 'No')"
+          echo "Generating test client..."
+          npx prisma generate --schema=prisma/schema_t.prisma
         working-directory: ./b
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL_TEST_VERCEL: ${{ secrets.DATABASE_URL_TEST_VERCEL }}
 
       - name: Run b
         run: npm test
         working-directory: ./b
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL_TEST_VERCEL: ${{ secrets.DATABASE_URL_TEST_VERCEL }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           NODE_ENV: test
 
       - name: Check Database Connection
         run: |
           cd ./b
-          npx prisma db push
+          npx prisma db push --schema=prisma/schema.prisma
+          echo "Checking test database connection..."
+          npx prisma db push --schema=prisma/schema_t.prisma
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL_TEST_VERCEL: ${{ secrets.DATABASE_URL_TEST_VERCEL }}
 
       # Frontend (`f`)
       - name: Install f
