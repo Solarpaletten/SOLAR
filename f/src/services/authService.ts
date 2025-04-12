@@ -2,14 +2,19 @@
 import { api } from '../api/axios';
 
 export interface Company {
-  id: string;
+  id: number;
   code: string;
   name: string;
-  directorName: string;
+  director_name: string;
+  user_id: number;
+  is_active: boolean;
+  setup_completed: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface AuthUser {
-  id: string;
+  id: number;
   email: string;
   role: string;
   username?: string;
@@ -133,7 +138,7 @@ const authService = {
       
       // Если пришел ID компании, сохраняем его
       if (response.data.company && response.data.company.id) {
-        localStorage.setItem('selectedCompanyId', response.data.company.id);
+        localStorage.setItem('selectedCompanyId', response.data.company.id.toString());
       }
       
       return response.data;
@@ -184,7 +189,7 @@ const authService = {
    * Выбор компании пользователя - запрос на сервер для обновления токена
    * с информацией о выбранной компании + сохранение ID в localStorage
    */
-  selectCompany: async (companyId: string): Promise<void> => {
+  selectCompany: async (companyId: number | string): Promise<void> => {
     try {
       // Отправляем запрос на сервер для выбора компании и обновления токена
       const response = await api.post(`/auth/companies/${companyId}/select`);
@@ -195,7 +200,7 @@ const authService = {
       }
       
       // Сохраняем ID выбранной компании
-      localStorage.setItem('selectedCompanyId', companyId);
+      localStorage.setItem('selectedCompanyId', companyId.toString());
       
       // Проверяем, есть ли указание для редиректа
       if (response.data.redirectTo) {
@@ -229,8 +234,9 @@ const authService = {
   /**
    * Получение ID выбранной компании
    */
-  getSelectedCompanyId: (): string | null => {
-    return localStorage.getItem('selectedCompanyId');
+  getSelectedCompanyId: (): number | null => {
+    const id = localStorage.getItem('selectedCompanyId');
+    return id ? parseInt(id, 10) : null;
   },
 
   /**

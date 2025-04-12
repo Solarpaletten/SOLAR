@@ -300,6 +300,7 @@ enum Language {
 model companies {
   id                Int       @id @default(autoincrement())
   code              String    @unique
+  name              String    @db.VarChar(100)
   director_name     String
   user_id           Int
   is_active         Boolean   @default(true)
@@ -311,6 +312,7 @@ model companies {
   user              users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
   
   @@index([user_id])
+  @@index([name])
 }
 
 // Модель для хранения сессий разговора
