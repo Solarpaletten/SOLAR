@@ -37,15 +37,21 @@ jobs:
         env:
           CI: true
 
-      - name: Apply database migrations for main and test schemas
+      - name: Apply database migrations for main schema
         run: |
           cd ./b
           npx prisma migrate deploy --schema=prisma/schema.prisma
           echo "Main schema migrations applied"
-          npx prisma migrate deploy --schema=prisma/schema_t.prisma
-          echo "Test schema migrations applied"
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      
+      - name: Create test schema directly (skip migrations)
+        run: |
+          cd ./b
+          echo "Creating test schema directly with db push..."
+          npx prisma db push --schema=prisma/schema_t.prisma --force-reset
+          echo "Test schema created with db push"
+        env:
           DATABASE_URL_TEST_VERCEL: ${{ secrets.DATABASE_URL_TEST_VERCEL }}
 
       - name: Debug Environment Variables
@@ -71,9 +77,10 @@ jobs:
       - name: Check Database Connection
         run: |
           cd ./b
-          npx prisma db push --schema=prisma/schema.prisma
-          echo "Checking test database connection..."
-          npx prisma db push --schema=prisma/schema_t.prisma
+          echo "Main DB connection status:"
+          npx prisma db pull --schema=prisma/schema.prisma --print
+          echo "Test DB connection status:"
+          npx prisma db pull --schema=prisma/schema_t.prisma --print
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           DATABASE_URL_TEST_VERCEL: ${{ secrets.DATABASE_URL_TEST_VERCEL }}
