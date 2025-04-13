@@ -1,6 +1,16 @@
-# Backend Development Progress
+# Deployment and Infrastructure
 
-## Current Version (v0.1.0)
+## Version 2.0.0 (2025-04-13)
+
+### Infrastructure & Deployment ✅
+
+- Terraform infrastructure setup and validation
+- Ecosystem configuration for PM2 moved to `/s`
+- Backend service running via PM2 with `pm2 save`
+- CI/CD workflow with GitHub Actions
+  - Triple deployment to Render frontend and backend
+  - SSH deployment to standalone server
+- SSH key generation and secured in GitHub Secrets
 
 ### Authentication ✅
 
@@ -28,7 +38,7 @@
 - Logging system
 - Test environment
 
-## Next Steps (v0.2.0)
+## Next Steps (v2.1.0)
 
 ### Products Module (Next Priority)
 

@@ -36,6 +36,101 @@ src/
 ├── main.tsx
 └── index.css
 
+# SOLAR - Full Stack Accounting Solution
+
+## 📋 Project Overview
+
+SOLAR is a comprehensive accounting system designed for small to medium businesses. It combines modern frontend technologies with a robust backend to deliver a seamless accounting experience.
+
+## 🚀 Deployment Guide
+
+### Backend Deployment
+
+#### Option 1: Deploy via Render
+The backend is automatically deployed to Render via GitHub Actions when changes are pushed to the main branch.
+
+#### Option 2: Deploy on your own server
+1. Clone the repository
+2. Set up environment variables
+3. Install PM2 globally: `npm install -g pm2`
+4. Navigate to the project root
+5. Run the backend with PM2: `pm2 start s/ecosystem.config.js`
+6. Save the PM2 configuration: `pm2 save`
+
+### Frontend Deployment
+
+#### Option 1: Deploy via Render
+The frontend is automatically deployed to Render via GitHub Actions when changes are pushed to the main branch.
+
+#### Option 2: Manual Build and Deploy
+1. Navigate to the frontend directory: `cd s/f`
+2. Install dependencies: `npm install`
+3. Build the project: `npm run build`
+4. Deploy the contents of the `dist` folder to your web server
+
+## 🔄 CI/CD Pipeline
+
+Our deployment process is fully automated with GitHub Actions:
+
+1. **Build & Test**: Runs tests for both frontend and backend
+2. **Triple Deployment**:
+   - Deploys backend to Render
+   - Deploys frontend to Render
+   - Deploys to our dedicated server via SSH
+
+### GitHub Secrets Configuration
+The following secrets must be configured in your GitHub repository:
+- `DATABASE_URL`: Production database connection string
+- `DATABASE_URL_TEST_VERCEL`: Test database connection string
+- `JWT_SECRET`: Secret for JWT token generation
+- `RENDER_API_KEY_B`: API key for backend service on Render
+- `RENDER_API_KEY_F`: API key for frontend service on Render
+- `HOST`: SSH host for server deployment
+- `SSH_PRIVATE_KEY`: Private key for SSH authentication
+
+## 🤖 Using Claude on the Server
+
+Claude is available on the server for advanced AI-assisted operations:
+
+1. SSH into the server
+2. Navigate to the project directory: `cd /var/www/solar`
+3. Use Claude directly: `claude -c "Your query here"`
+4. For file operations: `claude -f path/to/file`
+
+## 💻 Development Environment
+
+### Backend (Node.js/Express)
+```bash
+cd s/b
+npm install
+npm run dev
+```
+
+### Frontend (React/TypeScript)
+```bash
+cd s/f
+npm install
+npm run dev
+```
+
+When developing locally, the frontend communicates with the backend through a Vite proxy configuration, so both need to be running for full functionality.
+
+## ⚙️ Terraform Infrastructure
+
+The project uses Terraform for infrastructure management. The main configuration files are:
+- `main.tf`: Defines the main infrastructure resources
+- `variables.tf`: Defines variables used in the configuration
+- `terraform.tfvars`: Contains the actual values for the variables
+
+To manage infrastructure:
+1. Initialize Terraform: `terraform init`
+2. Plan changes: `terraform plan`
+3. Apply changes: `terraform apply`
+
+## 📘 Documentation
+
+More detailed documentation is available in the `docs/` directory.
+
 # Backend Development Progress
 
 ## Current Version (v0.1.0)
@@ -194,6 +289,40 @@ Error: P3009 migrate found failed migrations in the target database
 All notable changes to the LEANID SOLAR project will be documented in this file.
 
 ## [Unreleased]
+
+## [1.5.3] - 2025-04-12
+
+### 🟥 CI / Deploy
+
+- Автоматический деплой релиза `1.5.3` завершился ошибкой (P3009)
+- Миграция `add_onboarding_completed_to_users_t` была удалена вручную
+- CI был переписан для использования `db push --force-reset`
+- Подготовлена финальная ветка `release/1.5.3-finish`, но потребуется ручное подтверждение
+
+### 📘 Документация
+
+- Добавлена секция о разработке в `zsh` в `README.md`
+- Обновлён `CHANGELOG.md` с информацией о различиях `zsh` и `bash`
+- Добавлена расширенная документация по работе с тестовой инфраструктурой
+
+### Added
+- Поле `name` добавлено в модель `companies` для более информативного представления
+- Валидация данных компаний на бэкенде с использованием express-validator
+- Валидация формы создания компании во фронтенде с использованием Formik и Yup
+- Подробная документация API для работы с компаниями (docs/api/companies.md)
+- Интеграционные тесты для проверки функциональности компаний
+- `test:` привязка всех тестов к `schema_t.prisma` с корректными моделями
+- `feat:` мок-контроллер `mockOnboardingController.js` для изолированного тестирования
+- `infra:` скрипт `reset-test-migrations.js` для очистки проблемных миграций
+- `ci:` настройка CI для использования `db push --force-reset` вместо миграций для тестовой БД
+
+### Fixed
+- Исправлены несоответствия между схемой Prisma и кодом, использующим модель companies
+- Корректные типы данных для ID в интерфейсах TypeScript и обработка преобразований
+- Улучшена обработка ошибок в API компаний
+- `fix:` устранение ошибки P3009 с проблемными миграциями в тестовой базе данных
+- `fix:` удалена проблемная миграция 20250412112641_add_onboarding_completed_to_users_t
+- Повышена устойчивость тестов к различиям между локальной средой и CI
 
 ## [0.1.0] - 2025-03-03
 
@@ -394,4 +523,16 @@ when running locally, while maintaining compatibility with production deployment
 - Fix AdminPage component to display correct backend URL
 - Keep proper CORS settings in backend for all environments
 - Maintain proxy settings in Vite for local development
+
 This commit ensures the application works correctly both in local development environment (with proxy) and in production deployment, fixing client loading issues.
+### Fixed
+- 2025-03-21 fix: purchases
+### Fixed
+- 2025-03-22 "Add amount filter, reset filters button, and single purchase deletion to PurchasesPage"
+## Fixed
+- 2025-03-22 fix: "Update registration and login pages to match design"
+## Fixed
+- 2025-03-22 "Fix routing to show LandingPage on root path"
+## Fixed
+- 2025-03-22 LandingPage.tsx  i18n.ts Add i18n support for Russian and English languages
+- 2025-04-12 Fix onboarding company setup error with correct Prisma model name and enhanced validation
