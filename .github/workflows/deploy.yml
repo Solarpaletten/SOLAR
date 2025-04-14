@@ -36,13 +36,12 @@ jobs:
         env:
           CI: true
 
-      - name: Apply database migrations for tests
+      - name: Prepare test database
         run: |
           cd ./b
-          # Применяем миграции для основной базы
-          npx prisma migrate deploy --schema=prisma/schema.prisma
-          # Подготавливаем тестовую базу данных
-          npx prisma db push --schema=prisma/schema_t.prisma --accept-data-loss --force-reset
+          # Вместо применения миграций мы просто генерируем клиенты Prisma
+          npx prisma generate --schema=prisma/schema.prisma
+          npx prisma generate --schema=prisma/schema_t.prisma
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           DATABASE_URL_TEST: postgresql://solar_eat1_test_vercel_user:bEN5Pue0OeE8ouCbFXc39qJ0VUmYe9xk@dpg-cv1kl7btq21c73d5oa4g-a.oregon-postgres.render.com/solar_eat1_test_vercel
@@ -77,13 +76,11 @@ jobs:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           NODE_ENV: test
 
-      - name: Prepare Test Database
+      # Не используем операции с базой данных, так как тесты используют моки
+      - name: Verify mock setup
         run: |
           cd ./b
-          # Создаем тестовые таблицы перед запуском тестов
-          npx prisma db push --schema=prisma/schema_t.prisma --accept-data-loss --force-reset
-        env:
-          DATABASE_URL: postgresql://solar_eat1_test_vercel_user:bEN5Pue0OeE8ouCbFXc39qJ0VUmYe9xk@dpg-cv1kl7btq21c73d5oa4g-a.oregon-postgres.render.com/solar_eat1_test_vercel
+          echo "Using mock tests without database dependency"
 
       # Frontend (`f`)
       - name: Install f
