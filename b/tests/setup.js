@@ -5,7 +5,7 @@ const { PrismaClient } = require('../prisma/generated/test');
 const prisma = new PrismaClient({
   datasources: {
     db: {
-      url: process.env.DATABASE_URL_TEST_VERCEL,
+      url: process.env.DATABASE_URL,
     },
   },
 });
