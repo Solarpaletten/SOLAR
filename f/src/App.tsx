@@ -7,6 +7,7 @@ import LandingPage from './pages/landing/LandingPage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import OnboardingPage from './pages/auth/OnboardingPage';
+import EmailConfirmPage from './pages/auth/EmailConfirmPage';
 import SolarAssistantPage from './pages/assistant/SolarAssistantPage';
 import Layout from './components/layout/Layout';
 import ClientsPage from './pages/clients/ClientsPage';
@@ -14,6 +15,7 @@ import ClientDetailPage from './pages/clients/ClientDetailPage';
 import NewClientPage from './pages/clients/NewClientPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
 import AdminPage from './pages/administrator/AdminPage';
+import AdminAnalyticsPage from './pages/administrator/AdminAnalyticsPage';
 import PurchasesPage from './pages/purchases/PurchasesPage';
 import PurchasesDetailPage from './pages/purchases/PurchasesDetailPage';
 import CreatePurchasesPage from './pages/purchases/CreatePurchasesPage';
@@ -94,6 +96,7 @@ const App: React.FC = () => {
         <Route path="/landing" element={<LandingPage />} />
         <Route path="/auth/login" element={<LoginPage />} />
         <Route path="/auth/register" element={<RegisterPage />} />
+        <Route path="/auth/confirm" element={<EmailConfirmPage />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
 
         {/* Защищенные маршруты с использованием ProtectedRoute */}
@@ -139,6 +142,7 @@ const App: React.FC = () => {
             <Route path="declaration" element={<Declaration />} />
             <Route path="settings" element={<Settings />} />
             <Route path="administrator" element={<AdminPage />} />
+            <Route path="administrator/analytics" element={<AdminAnalyticsPage />} />
           </Route>
         </Route>
 

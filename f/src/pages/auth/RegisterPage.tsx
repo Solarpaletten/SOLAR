@@ -64,7 +64,14 @@ const RegisterPage: React.FC = () => {
       // После регистрации, внутри блока try после сохранения токена
       localStorage.setItem('needsOnboarding', 'true');
       
-      setSuccessMessage(`${t('Registration successful')}! ${t('Your login')}: ${formData.email}, ${t('password')}: ${formData.password}`);
+      // Проверяем, было ли отправлено письмо с подтверждением email
+      if (response.emailVerificationSent) {
+        setSuccessMessage(response.message || t('Registration successful! Please check your email to confirm your account before logging in.'));
+      } else {
+        setSuccessMessage(`${t('Registration successful')}! ${t('Your login')}: ${formData.email}`);
+      }
+      
+      // Перенаправляем на онбординг с небольшой задержкой
       setTimeout(() => {
         navigate('/onboarding', { replace: true });
       }, 3000);

@@ -310,9 +310,9 @@ const authService = {
   /**
    * Подтверждение email по токену
    */
-  verifyEmail: async (token: string): Promise<{ redirectTo?: string }> => {
+  verifyEmail: async (token: string): Promise<{ message: string, redirectTo?: string }> => {
     try {
-      const response = await api.get(`/auth/verify-email/${token}`);
+      const response = await api.get(`/auth/confirm?token=${token}`);
       return response.data;
     } catch (error: any) {
       if (error.response?.data?.error) {

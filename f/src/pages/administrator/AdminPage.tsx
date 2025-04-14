@@ -75,12 +75,107 @@ const AdminPage: React.FC = () => {
     );
   }
 
+  // Добавляем состояние для хранения статуса компаний
+  const [companies, setCompanies] = useState<any[]>([]);
+  const [loadingCompanies, setLoadingCompanies] = useState(false);
+  
+  // Получаем список компаний и их статус email-подтверждения
+  useEffect(() => {
+    if (isAdmin) {
+      const fetchCompanies = async () => {
+        setLoadingCompanies(true);
+        try {
+          const response = await api.get('/admin/companies');
+          setCompanies(response.data);
+        } catch (err) {
+          console.error('Error fetching companies:', err);
+        } finally {
+          setLoadingCompanies(false);
+        }
+      };
+      
+      fetchCompanies();
+    }
+  }, [isAdmin]);
+
   return (
     <div className="p-6">
       <h1 className="text-2xl font-semibold mb-6">Database Administration</h1>
 
+      {/* Навигация по административным функциям */}
+      <div className="mb-6 flex space-x-2">
+        <a 
+          href="/administrator/analytics" 
+          className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded"
+        >
+          Session Analytics Dashboard
+        </a>
+      </div>
+
       {/* Компонент отладки */}
       <DebugInfo />
+      
+      {/* Секция статуса подтверждения email */}
+      <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+        <h2 className="text-xl font-medium mb-4">Company Email Verification Status</h2>
+        
+        {loadingCompanies ? (
+          <div className="animate-pulse">Loading company data...</div>
+        ) : (
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Company Name
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Company Code
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  User Email
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Email Verification Status
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {companies.length > 0 ? (
+                companies.map((company: any) => (
+                  <tr key={company.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {company.name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {company.code}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {company.user?.email}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {company.is_email_confirmed ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          Verified
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                          Not Verified
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500">
+                    No companies found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        )}
+      </div>
 
       {dbInfo && (
         <>
