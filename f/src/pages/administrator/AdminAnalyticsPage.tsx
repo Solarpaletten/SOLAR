@@ -1,6 +1,6 @@
 import React from 'react';
 import AdminAnalyticsPanel from '../../components/administrator/AdminAnalyticsPanel';
-import { PageContainer } from '../../components/common/PageContainer';
+import PageContainer from '../../components/common/PageContainer';
 
 const AdminAnalyticsPage: React.FC = () => {
   return (
