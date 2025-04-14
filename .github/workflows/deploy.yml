@@ -46,12 +46,15 @@ jobs:
       - name: Debug Environment Variables
         run: |
           echo "DATABASE_URL=$DATABASE_URL"
+          echo "DATABASE_URL_TEST=$DATABASE_URL_TEST"
           echo "NODE_ENV=$NODE_ENV"
           echo "Creating .env.test file..."
-          echo "DATABASE_URL=$DATABASE_URL" > .env.test
-          echo "DATABASE_URL_TEST_VERCEL=$DATABASE_URL" >> .env.test
+          echo "DATABASE_URL=$DATABASE_URL_TEST" > .env.test
+          echo "DATABASE_URL_TEST_VERCEL=$DATABASE_URL_TEST" >> .env.test
+          echo "DATABASE_SSL=true" >> .env.test
           echo "JWT_SECRET=$JWT_SECRET" >> .env.test
           echo "NODE_ENV=test" >> .env.test
+          echo "JWT_EXPIRES_IN=24h" >> .env.test
           echo "EMAIL_HOST=smtp.gmail.com" >> .env.test
           echo "EMAIL_PORT=465" >> .env.test
           echo "EMAIL_USER=test@example.com" >> .env.test
@@ -62,13 +65,15 @@ jobs:
         working-directory: ./b
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL_TEST: ${{ secrets.DATABASE_URL_TEST }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
       - name: Run b
         run: npm test
         working-directory: ./b
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL_TEST }}
+          DATABASE_URL_TEST_VERCEL: ${{ secrets.DATABASE_URL_TEST }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           NODE_ENV: test
 
