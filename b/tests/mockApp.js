@@ -1,7 +1,6 @@
 // Мок-версия приложения для тестов
 const express = require('express');
 const cors = require('cors');
-const prisma = require('./setup'); // Тестовый Prisma клиент
 
 // Импортируем мок-маршруты
 const createMockOnboardingRoutes = require('./routes/mockOnboardingRoutes');
@@ -14,7 +13,7 @@ app.use(express.json());
 app.use(cors());
 
 // Настраиваем маршруты для тестов
-const mockOnboardingRoutes = createMockOnboardingRoutes(prisma);
+const mockOnboardingRoutes = createMockOnboardingRoutes();
 app.use('/api/onboarding', mockOnboardingRoutes);
 
 module.exports = app;

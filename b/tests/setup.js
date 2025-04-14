@@ -1,26 +1,25 @@
 require('dotenv').config({ path: '.env.test' });
 
-// Важно: используем клиент, сгенерированный из schema_t.prisma
-const { PrismaClient } = require('../prisma/generated/test');
-const prisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL,
-    },
+// Мокаем Prisma клиент для тестов
+const mockPrisma = {
+  $connect: async () => Promise.resolve(),
+  $disconnect: async () => Promise.resolve(),
+  
+  // Для совместимости со старым кодом
+  usersT: {
+    deleteMany: async () => Promise.resolve({ count: 0 }),
+    delete: async () => Promise.resolve({ id: 999 }),
+    findUnique: async () => Promise.resolve({ id: 999, email: 'test@example.com' }),
+    create: async (data) => Promise.resolve({ id: 999, ...data.data }),
   },
-});
+};
 
 beforeAll(async () => {
-  console.log('Connecting to database...');
-  await prisma.$connect();
-
-  // Очищаем тестовую базу данных перед тестами
-  await prisma.usersT.deleteMany();
+  console.log('Using mock database connection');
 });
 
 afterAll(async () => {
-  console.log('Disconnecting from database...');
-  await prisma.$disconnect();
+  console.log('Mock test complete');
 });
 
-module.exports = prisma;
+module.exports = mockPrisma;
