@@ -7,6 +7,9 @@ const WebSocketService = require('./services/webSocketService');
 // Создаем HTTP сервер
 const server = http.createServer(app);
 
+// Глобальная переменная для доступа к сервису WebSocket из других модулей
+let webSocketService;
+
 // Проверка состояния базы данных и запуск сервера
 async function startServer() {
   try {
@@ -14,7 +17,7 @@ async function startServer() {
     logger.info('Database connected successfully');
 
     // Инициализируем WebSocket-сервис
-    const webSocketService = new WebSocketService(server);
+    webSocketService = new WebSocketService(server);
     
     // Сохраняем экземпляр WebSocketService в приложении для использования в контроллерах
     app.set('webSocketService', webSocketService);
@@ -29,5 +32,11 @@ async function startServer() {
     process.exit(1);
   }
 }
+
+// Экспортируем webSocketService для использования в других модулях
+module.exports = {
+  webSocketService: () => webSocketService,
+  getWebSocketService: () => webSocketService // Альтернативный способ получения сервиса
+};
 
 startServer();

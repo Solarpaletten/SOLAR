@@ -12,4 +12,8 @@ router.post('/validate-token', authController.validateToken);
 router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password', authController.resetPassword);
 
+// Маршруты для подтверждения email
+router.get('/verify-email/:token', authController.verifyEmail);
+router.get('/confirm', authController.confirmEmail);
+
 module.exports = router;

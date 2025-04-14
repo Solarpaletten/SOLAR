@@ -58,8 +58,15 @@ const LoginPage: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Login error:', err);
-      if (err.response && err.response.status === 401) {
-        setError(t('Invalid email or password'));
+      if (err.response) {
+        if (err.response.status === 401) {
+          setError(t('Invalid email or password'));
+        } else if (err.response.status === 403 && err.response.data.needsEmailConfirmation) {
+          // Если требуется подтверждение email
+          setError(t('Please confirm your email before logging in. Check your inbox for the confirmation link.'));
+        } else {
+          setError(err.response.data.message || t('Login failed. Please try again.'));
+        }
       } else {
         setError(t('Login failed. Please try again.'));
       }
