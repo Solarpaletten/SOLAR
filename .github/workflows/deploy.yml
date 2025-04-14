@@ -39,9 +39,13 @@ jobs:
       - name: Apply database migrations for tests
         run: |
           cd ./b
+          # Применяем миграции для основной базы
           npx prisma migrate deploy --schema=prisma/schema.prisma
+          # Подготавливаем тестовую базу данных
+          npx prisma db push --schema=prisma/schema_t.prisma --accept-data-loss --force-reset
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL_TEST: postgresql://solar_eat1_test_vercel_user:bEN5Pue0OeE8ouCbFXc39qJ0VUmYe9xk@dpg-cv1kl7btq21c73d5oa4g-a.oregon-postgres.render.com/solar_eat1_test_vercel
 
       - name: Debug Environment Variables
         run: |
@@ -73,10 +77,11 @@ jobs:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           NODE_ENV: test
 
-      - name: Check Database Connection
+      - name: Prepare Test Database
         run: |
           cd ./b
-          npx prisma db push --schema=prisma/schema_t.prisma --accept-data-loss
+          # Создаем тестовые таблицы перед запуском тестов
+          npx prisma db push --schema=prisma/schema_t.prisma --accept-data-loss --force-reset
         env:
           DATABASE_URL: postgresql://solar_eat1_test_vercel_user:bEN5Pue0OeE8ouCbFXc39qJ0VUmYe9xk@dpg-cv1kl7btq21c73d5oa4g-a.oregon-postgres.render.com/solar_eat1_test_vercel
 
