@@ -6,4 +6,8 @@ module.exports = {
   clearMocks: true,
   restoreMocks: true,
   resetMocks: true,
+  // Игнорируем модули, которые могут пытаться запустить сервер
+  modulePathIgnorePatterns: ['<rootDir>/src/index.js'],
+  // Запрещаем автоматическую загрузку модулей, не указанных явно в тестах
+  automock: false,
 };
