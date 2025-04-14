@@ -305,6 +305,7 @@ model companies {
   user_id           Int
   is_active         Boolean   @default(true)
   setup_completed   Boolean   @default(false)
+  is_email_confirmed Boolean  @default(false)
   created_at        DateTime  @default(now())
   updated_at        DateTime  @updatedAt
 
@@ -313,6 +314,7 @@ model companies {
   
   @@index([user_id])
   @@index([name])
+  @@index([is_email_confirmed])
 }
 
 // Модель для хранения сессий разговора

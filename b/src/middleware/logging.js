@@ -1,4 +1,9 @@
 const logger = (req, res, next) => {
+  // Обновляем время последней активности в сессии
+  if (req.session) {
+    req.session.lastActivity = Date.now();
+  }
+  
   const start = Date.now();
   res.on('finish', () => {
     const duration = Date.now() - start;

@@ -3,6 +3,11 @@ const { logger } = require('../config/logger');
 
 const auth = (req, res, next) => {
   try {
+    // Обновляем время последней активности в сессии
+    if (req.session) {
+      req.session.lastActivity = Date.now();
+    }
+    
     // Извлекаем токен из заголовка Authorization
     const authHeader = req.header('Authorization');
     logger.info('Received Authorization header:', authHeader); // Логируем заголовок

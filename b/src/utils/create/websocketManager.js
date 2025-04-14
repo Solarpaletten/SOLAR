@@ -20,6 +20,7 @@ class WebSocketManager {
         channels: new Set(),
         ip: req.socket.remoteAddress,
         connectTime: new Date(),
+        lastActivity: Date.now(), // Время последней активности
       };
 
       this.clients.set(clientId, clientInfo);
@@ -55,10 +56,13 @@ class WebSocketManager {
         });
       });
 
-      // Отправка приветственного сообщения
+      // Отправка приветственного сообщения с информацией о тайм-ауте сессии
       this.send(ws, {
         type: 'welcome',
-        data: { clientId },
+        data: { 
+          clientId,
+          sessionTimeout: 5 * 60, // таймаут сессии в секундах
+        },
       });
     });
 
@@ -72,6 +76,9 @@ class WebSocketManager {
   handleMessage(clientId, message) {
     const client = this.clients.get(clientId);
     if (!client) return;
+    
+    // Обновляем время последней активности при каждом сообщении
+    client.lastActivity = Date.now();
 
     switch (message.type) {
       case 'subscribe':
@@ -182,13 +189,30 @@ class WebSocketManager {
     logger.info('WebSocket client disconnected:', { clientId });
   }
 
-  // Проверка соединений
+  // Проверка соединений и закрытие неактивных
   checkConnections() {
+    const now = Date.now();
+    const INACTIVE_TIMEOUT = 5 * 60 * 1000; // 5 минут неактивности
+    let closedCount = 0;
+    
     this.clients.forEach((client, clientId) => {
+      // Проверка на закрытые соединения
       if (client.ws.readyState === WebSocket.CLOSED) {
         this.handleDisconnect(clientId);
+        closedCount++;
+      } 
+      // Проверка на неактивные соединения
+      else if (now - client.lastActivity > INACTIVE_TIMEOUT) {
+        logger.info(`Closing inactive connection for client ${clientId}, inactive for ${Math.round((now - client.lastActivity) / 1000 / 60)} minutes`);
+        client.ws.close(4000, 'Session timeout due to inactivity');
+        this.handleDisconnect(clientId);
+        closedCount++;
       }
     });
+    
+    if (closedCount > 0) {
+      logger.info(`Cleaned up ${closedCount} connections (closed or inactive)`);
+    }
   }
 
   // Получение статистики

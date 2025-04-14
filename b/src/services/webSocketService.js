@@ -13,7 +13,18 @@ class WebSocketService {
     this.wss = new WebSocket.Server({ server });
     this.clients = new Map(); // userId -> WebSocket
     this.sessions = new Map(); // sessionId -> {userIds: []}
+    this.lastActivity = new Map(); // userId -> timestamp
+    this.INACTIVE_TIMEOUT = 5 * 60 * 1000; // 5 минут в миллисекундах
+    
+    // Статистика сессий и активности
+    this.stats = {
+      activeSessions: 0,
+      closedSessions: 0,
+      history: []
+    };
     this.initializeWebSocket();
+    this.startInactiveSessionsCheck();
+    this.startStatsCollection();
 
       // Создаем директорию для аудиофайлов, если она не существует
       const uploadsDir = path.join(__dirname, '../uploads/audio');
@@ -22,6 +33,90 @@ class WebSocketService {
       }
     
     logger.info('WebSocket service initialized');
+  }
+  
+  // Запуск таймера для проверки неактивных сессий
+  startInactiveSessionsCheck() {
+    setInterval(() => {
+      this.checkInactiveSessions();
+    }, 60000); // Проверка каждую минуту
+    logger.info('Inactive sessions check timer started');
+  }
+  
+  // Проверка и закрытие неактивных сессий
+  checkInactiveSessions() {
+    const now = Date.now();
+    let closedCount = 0;
+    
+    this.lastActivity.forEach((lastActivityTime, userId) => {
+      if (now - lastActivityTime > this.INACTIVE_TIMEOUT) {
+        const ws = this.clients.get(userId);
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.close(4000, 'Session timeout due to inactivity');
+          logger.info(`Closed inactive session for user ${userId}, inactive for ${Math.round((now - lastActivityTime) / 1000 / 60)} minutes`);
+          closedCount++;
+          // Обновляем статистику закрытых сессий
+          this.stats.closedSessions++;
+        }
+        this.lastActivity.delete(userId);
+      }
+    });
+    
+    if (closedCount > 0) {
+      logger.info(`Closed ${closedCount} inactive sessions during scheduled check`);
+    }
+  }
+  
+  // Сбор статистики активности сессий
+  startStatsCollection() {
+    // Обновляем историю активности каждую минуту
+    setInterval(() => {
+      // Обновляем количество активных сессий
+      this.stats.activeSessions = this.clients.size;
+      
+      // Добавляем текущую статистику в историю
+      this.stats.history.push({
+        timestamp: new Date().toISOString(),
+        active: this.stats.activeSessions,
+        closed: this.stats.closedSessions
+      });
+      
+      // Ограничиваем историю последними 24 часами (1440 минут)
+      if (this.stats.history.length > 1440) {
+        this.stats.history = this.stats.history.slice(-1440);
+      }
+      
+      logger.debug(`Updated session stats: ${this.stats.activeSessions} active, ${this.stats.closedSessions} closed`);
+    }, 60000); // Каждую минуту
+  }
+  
+  // Получение текущей статистики для API с поддержкой разных временных диапазонов
+  getSessionMetrics(timeRange = 'hour') {
+    // Определение количества записей для возврата на основе timeRange
+    let recordsCount;
+    switch (timeRange) {
+      case 'day':
+        recordsCount = 24 * 60; // 24 часа * 60 минут
+        break;
+      case 'week':
+        recordsCount = 7 * 24 * 60; // 7 дней * 24 часа * 60 минут
+        break;
+      case 'hour':
+      default:
+        recordsCount = 60; // 1 час = 60 минут
+        break;
+    }
+    
+    return {
+      activeSessions: this.stats.activeSessions,
+      closedSessions: this.stats.closedSessions,
+      history: this.stats.history.slice(-recordsCount)
+    };
+  }
+  
+  // Обновление времени последней активности пользователя
+  updateUserActivity(userId) {
+    this.lastActivity.set(userId, Date.now());
   }
 
   initializeWebSocket() {
@@ -46,17 +141,27 @@ class WebSocketService {
         // Сохранить соединение
         this.clients.set(userId, ws);
         
+        // Обновляем статистику активных сессий
+        this.stats.activeSessions = this.clients.size;
+        
         logger.info(`WebSocket connection established for user ${userId}`);
+        
+        // Инициализируем время активности
+        this.updateUserActivity(userId);
         
         // Отправить подтверждение подключения
         ws.send(JSON.stringify({
           type: 'CONNECTION_ESTABLISHED',
-          userId: userId
+          userId: userId,
+          sessionTimeout: this.INACTIVE_TIMEOUT / 1000 // в секундах
         }));
         
         // Обработка сообщений
         ws.on('message', async (message) => {
           try {
+            // Обновляем время активности при каждом сообщении
+            this.updateUserActivity(userId);
+            
             const data = JSON.parse(message.toString());
             await this.handleMessage(userId, data, ws);
           } catch (error) {
@@ -72,6 +177,12 @@ class WebSocketService {
         ws.on('close', () => {
           this.clients.delete(userId);
           logger.info(`WebSocket connection closed for user ${userId}`);
+          
+          // Удалить пользователя из кэша активности
+          this.lastActivity.delete(userId);
+          
+          // Обновляем статистику активных сессий
+          this.stats.activeSessions = this.clients.size;
           
           // Удалить пользователя из всех активных сессий
           for (const [sessionId, sessionData] of this.sessions.entries()) {
@@ -130,6 +241,9 @@ class WebSocketService {
 
   async handleJoinSession(userId, sessionId, ws) {
     try {
+      // Обновляем активность при присоединении к сессии
+      this.updateUserActivity(userId);
+      
       // Проверить существование сессии
       const session = await prisma.conversation_sessions.findUnique({
         where: { id: parseInt(sessionId) },
@@ -219,6 +333,9 @@ class WebSocketService {
 
   async handleTextMessage(userId, data) {
     try {
+      // Обновляем активность при отправке текстового сообщения
+      this.updateUserActivity(userId);
+      
       const { sessionId, content, sourceLanguage, targetLanguage } = data;
       
       // Получить данные сессии
@@ -278,6 +395,9 @@ class WebSocketService {
 
   async handleAudioMessage(userId, data) {
     try {
+      // Обновляем активность при отправке аудио сообщения
+      this.updateUserActivity(userId);
+      
       const { sessionId, audioData, sourceLanguage, targetLanguage } = data;
       
       // Получить данные сессии
@@ -355,6 +475,9 @@ class WebSocketService {
   }
 
   async broadcastTypingIndicator(userId, sessionId, isTyping) {
+    // Обновляем активность при наборе текста
+    this.updateUserActivity(userId);
+    
     this.broadcastToSession(sessionId, {
       type: 'TYPING_INDICATOR',
       userId,

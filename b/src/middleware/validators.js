@@ -41,6 +41,24 @@ const companyValidators = {
       .isLength({ min: 7, max: 20 }).withMessage('Номер телефона должен содержать от 7 до 20 символов'),
     
     validate
+  ],
+  
+  // Валидация при создании компании
+  createCompany: [
+    body('code')
+      .notEmpty().withMessage('Код компании обязателен')
+      .isLength({ min: 3, max: 50 }).withMessage('Код компании должен содержать от 3 до 50 символов')
+      .matches(/^[a-zA-Z0-9_-]+$/).withMessage('Код компании может содержать только буквы, цифры, дефис и подчеркивание'),
+    
+    body('name')
+      .notEmpty().withMessage('Название компании обязательно')
+      .isLength({ min: 2, max: 100 }).withMessage('Название компании должно содержать от 2 до 100 символов'),
+    
+    body('director_name')
+      .notEmpty().withMessage('Имя директора обязательно')
+      .isLength({ min: 2, max: 100 }).withMessage('Имя директора должно содержать от 2 до 100 символов'),
+    
+    validate
   ]
 };
 

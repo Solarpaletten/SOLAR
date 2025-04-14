@@ -19,6 +19,9 @@ class EmailService {
 
   async sendVerificationEmail(to, token) {
     try {
+      // Формируем ссылку для подтверждения
+      const confirmUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth/confirm?token=${token}`;
+      
       const result = await this.transporter.sendMail({
         from: process.env.SMTP_USER,
         to: to,
@@ -26,14 +29,20 @@ class EmailService {
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #333;">Verify Your Email</h2>
-            <p>Thank you for registering! Please verify your email address by using the following verification token:</p>
-            <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
-              <code style="font-size: 16px; color: #333;">${token}</code>
+            <p>Thank you for registering! Please verify your email address by clicking the button below:</p>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${confirmUrl}" style="background-color: #4CAF50; color: white; padding: 12px 20px; text-decoration: none; border-radius: 4px; font-weight: bold;">
+                Confirm Registration
+              </a>
+            </div>
+            <p>Or copy and paste this link in your browser:</p>
+            <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0; word-break: break-all;">
+              <a href="${confirmUrl}" style="color: #333; text-decoration: none;">${confirmUrl}</a>
             </div>
             <p>If you didn't request this verification, please ignore this email.</p>
           </div>
         `,
-        text: `Your verification token is: ${token}`,
+        text: `Please confirm your registration by visiting this link: ${confirmUrl}`,
       });
 
       console.log('Verification email sent successfully');

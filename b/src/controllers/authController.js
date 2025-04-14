@@ -20,6 +20,9 @@ class AuthController {
             gt: new Date(),
           },
         },
+        include: {
+          companies: true
+        }
       });
 
       if (!user) {
@@ -28,6 +31,7 @@ class AuthController {
           .json({ error: 'Invalid or expired verification token' });
       }
 
+      // Обновляем пользователя - устанавливаем email_verified
       await prisma.users.update({
         where: { id: user.id },
         data: {
@@ -37,10 +41,81 @@ class AuthController {
         },
       });
 
-      res.json({ message: 'Email verified successfully' });
+      // Обновляем все компании пользователя - подтверждаем email
+      if (user.companies && user.companies.length > 0) {
+        await prisma.companies.updateMany({
+          where: { user_id: user.id },
+          data: {
+            is_email_confirmed: true
+          }
+        });
+      }
+
+      // Возвращаем успешный ответ с редиректом на страницу входа
+      res.json({ 
+        message: 'Email verified successfully',
+        redirectTo: '/auth/login'
+      });
     } catch (error) {
       logger.error('Email verification error:', error);
       res.status(500).json({ error: 'Email verification failed' });
+    }
+  }
+  
+  async confirmEmail(req, res) {
+    try {
+      const { token } = req.query;
+
+      if (!token) {
+        return res.status(400).json({ error: 'Token is required' });
+      }
+
+      const user = await prisma.users.findFirst({
+        where: {
+          verification_token: token,
+          token_expires: {
+            gt: new Date(),
+          },
+        },
+        include: {
+          companies: true
+        }
+      });
+
+      if (!user) {
+        return res
+          .status(400)
+          .json({ error: 'Invalid or expired verification token' });
+      }
+
+      // Обновляем пользователя
+      await prisma.users.update({
+        where: { id: user.id },
+        data: {
+          email_verified: true,
+          verification_token: null,
+          token_expires: null,
+        },
+      });
+
+      // Обновляем статус компаний пользователя
+      if (user.companies && user.companies.length > 0) {
+        await prisma.companies.updateMany({
+          where: { user_id: user.id },
+          data: {
+            is_email_confirmed: true
+          }
+        });
+      }
+
+      // Успешный ответ
+      res.json({ 
+        message: 'Email confirmed successfully',
+        redirectTo: '/auth/login'
+      });
+    } catch (error) {
+      logger.error('Email confirmation error:', error);
+      res.status(500).json({ error: 'Email confirmation failed' });
     }
   }
 
@@ -174,15 +249,14 @@ class AuthController {
         return res.status(400).json({ error: 'All fields are required' });
       }
 
-          // Добавляем подробное логирование
-    logger.info('Регистрация нового пользователя:', {
-      email,
-      username,
-      passwordLength: password ? password.length : 0
-    });
+      // Добавляем подробное логирование
+      logger.info('Регистрация нового пользователя:', {
+        email,
+        username,
+        passwordLength: password ? password.length : 0
+      });
 
-    // Проверка на существующего пользователя
-
+      // Проверка на существующего пользователя
       const existingUser = await prisma.users.findUnique({
         where: { email },
       });
@@ -196,24 +270,31 @@ class AuthController {
       const salt = await bcrypt.genSalt(10);
       const passwordHash = await bcrypt.hash(password, salt);
 
+      // Создаем токен для подтверждения email
+      const verificationToken = crypto.randomBytes(32).toString('hex');
+      const tokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 часа
+
       const user = await prisma.users.create({
         data: {
           email,
           username,
           password_hash: passwordHash,
-          verification_token: crypto.randomBytes(32).toString('hex'),
-          token_expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+          verification_token: verificationToken,
+          token_expires: tokenExpires,
           role: 'USER',
+          // В тестовом режиме сразу подтверждаем email
           email_verified: process.env.NODE_ENV === 'test',
         },
       });
 
+      // Отправляем email с подтверждением, если не тестовый режим
       if (process.env.NODE_ENV !== 'test') {
         try {
-          await emailService.sendVerification(
+          await emailService.sendVerificationEmail(
             user.email,
-            user.verification_token
+            verificationToken
           );
+          logger.info('Отправлено письмо для подтверждения email:', { email: user.email });
         } catch (error) {
           logger.error('Failed to send verification email:', error);
         }
@@ -221,9 +302,11 @@ class AuthController {
 
       logger.info('Пользователь успешно создан:', {
         userId: user.id,
-        email: user.email
+        email: user.email,
+        emailVerified: user.email_verified
       });
 
+      // Создаем токен для ответа
       const token = jwt.sign(
         { id: user.id, email: user.email, role: user.role },
         process.env.JWT_SECRET,
@@ -235,6 +318,7 @@ class AuthController {
         tokenLength: token.length
       });
 
+      // Возвращаем ответ с флагом emailVerificationSent
       res.status(201).json({
         token,
         user: {
@@ -242,6 +326,8 @@ class AuthController {
           email: user.email,
           role: user.role,
         },
+        emailVerificationSent: true,
+        message: 'На ваш email отправлена ссылка для подтверждения регистрации. Пожалуйста, подтвердите, чтобы войти.'
       });
     } catch (error) {
       logger.error('Registration error:', {
@@ -277,11 +363,15 @@ class AuthController {
         return res.status(401).json({ message: 'Неверный пароль' });
       }
 
+      // Проверка на подтверждение email
       if (!user.email_verified) {
         logger.warn('Login failed: Email not verified', { email });
         return res
           .status(403)
-          .json({ message: 'Пожалуйста, подтвердите email' });
+          .json({ 
+            message: 'Пожалуйста, подтвердите email перед входом в систему. Проверьте почту для активации аккаунта.',
+            needsEmailConfirmation: true 
+          });
       }
 
       logger.info('Login success:', { email });
