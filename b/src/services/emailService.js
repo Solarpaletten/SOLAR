@@ -4,12 +4,12 @@ require('dotenv').config();
 class EmailService {
   constructor() {
     this.transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,
+      host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+      port: process.env.EMAIL_PORT || 465,
       secure: true,
       auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
       tls: {
         rejectUnauthorized: false,
@@ -21,9 +21,10 @@ class EmailService {
     try {
       // Формируем ссылку для подтверждения
       const confirmUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth/confirm?token=${token}`;
+      console.log('🔗 Email confirmation link:', confirmUrl);
       
       const result = await this.transporter.sendMail({
-        from: process.env.SMTP_USER,
+        from: process.env.EMAIL_FROM,
         to: to,
         subject: 'Email Verification - Solar System',
         html: `
@@ -56,7 +57,7 @@ class EmailService {
   async sendTemporaryPassword(to, tempPassword) {
     try {
       const result = await this.transporter.sendMail({
-        from: process.env.SMTP_USER,
+        from: process.env.EMAIL_FROM,
         to: to,
         subject: 'Your Temporary Password - Solar System',
         html: `
@@ -89,7 +90,7 @@ class EmailService {
   async sendCompanyCreatedEmail(to, companyName) {
     try {
       const result = await this.transporter.sendMail({
-        from: process.env.SMTP_USER,
+        from: process.env.EMAIL_FROM,
         to: to,
         subject: 'Company Created Successfully - Solar System',
         html: `
@@ -111,6 +112,42 @@ class EmailService {
       return result;
     } catch (error) {
       console.error('Error sending company creation email:', error);
+      throw error;
+    }
+  }
+
+  async sendPasswordReset(to, token) {
+    try {
+      const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth/reset-password?token=${token}`;
+      console.log('🔗 Password reset link:', resetUrl);
+      
+      const result = await this.transporter.sendMail({
+        from: process.env.EMAIL_FROM,
+        to: to,
+        subject: 'Password Reset - Solar System',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #333;">Reset Your Password</h2>
+            <p>We received a request to reset your password. Click the button below to create a new password:</p>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${resetUrl}" style="background-color: #4CAF50; color: white; padding: 12px 20px; text-decoration: none; border-radius: 4px; font-weight: bold;">
+                Reset Password
+              </a>
+            </div>
+            <p>Or copy and paste this link in your browser:</p>
+            <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0; word-break: break-all;">
+              <a href="${resetUrl}" style="color: #333; text-decoration: none;">${resetUrl}</a>
+            </div>
+            <p>If you didn't request this password reset, please ignore this email.</p>
+          </div>
+        `,
+        text: `Reset your password by visiting this link: ${resetUrl}`,
+      });
+
+      console.log('Password reset email sent successfully');
+      return result;
+    } catch (error) {
+      console.error('Error sending password reset email:', error);
       throw error;
     }
   }
