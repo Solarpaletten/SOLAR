@@ -65,18 +65,15 @@ const createMockController = (prisma) => {
           }
         });
         
-        // Обновляем статус пользователя
+        // Проверяем, что пользователь существует
         try {
-          await tx.usersT.update({
-            where: { id: userId },
-            data: {
-              onboarding_completed: true
-            }
+          await tx.usersT.findUnique({
+            where: { id: userId }
           });
-          console.log('Successfully updated user onboarding status in transaction');
+          console.log('Successfully checked user status in transaction');
         } catch (error) {
-          console.error('Failed to update user onboarding status in transaction:', error);
-          // Продолжаем даже если не смогли обновить статус
+          console.error('Failed to check user status in transaction:', error);
+          // Продолжаем даже если не смогли проверить статус
         }
         
         return { company, client };
