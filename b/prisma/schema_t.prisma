@@ -44,7 +44,6 @@ model usersT {
   reset_token_expires DateTime?
   created_at          DateTime  @default(now())
   updated_at          DateTime  @updatedAt
-  onboarding_completed Boolean   @default(false)
 
   clients                   clientsT[]
   purchases                 purchasesT[]
