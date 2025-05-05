@@ -129,3 +129,15 @@ jobs:
           curl -X POST \
             -H "Authorization: Bearer $RENDER_API_KEY_FRONTEND" \
             https://api.render.com/deploy/srv-cv1lt9ij1k6c73957uk0?key=FU1hKmmHjdU
+      # 🧩 Параллельно: деплой на **свой сервер** по SSH
+      - name: Deploy to own server via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/solar
+            git pull origin main
+            pm2 restart all
+

@@ -5,43 +5,41 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Build/Test Commands
 
 ### Backend (b/)
-- Start development: `npm run dev`
-- Run tests: `npm test`
-- Run single test: `jest tests/path/to/test.test.js`
-- Lint code: `npm run lint`
-- Format code: `npm run format`
+- Development: `npm run dev`
+- Tests: `npm test` (all), `jest tests/path/to/test.test.js` (single)
+- Watch tests: `npm run test:watch`
+- Coverage: `npm run test:coverage`
+- Lint: `npm run lint`, Fix lint: `npm run lint:fix`
+- Format: `npm run format`, Check format: `npm run check-format`
+- Prisma: `npm run prisma:generate`, `npm run prisma:studio`
 
 ### Frontend (f/)
-- Start development: `npm run dev`
-- Build for production: `npm run build`
-- Lint code: `npm run lint`
-- Format code: `npm run format`
+- Development: `npm run dev`
+- Build: `npm run build`
+- Preview: `npm run preview`
+- Lint: `npm run lint`, Check lint: `npm run check-lint`
+- Format: `npm run format`, Check format: `npm run check-format`
 
 ## Code Style Guidelines
 
 ### General
-- Use single quotes for strings
-- Use semicolons at the end of statements
-- 2-space indentation
-- No trailing spaces
-- No multiple empty lines
+- Single quotes for strings, semicolons required
+- 2-space indentation, no trailing spaces
+- Prettier for formatting
 
 ### Backend (JavaScript)
-- Import modules using CommonJS (`require()`)
-- Use async/await for asynchronous operations
-- Error handling with try/catch blocks
-- Use Prisma Client for database operations
-- Use Jest for testing with supertest for API testing
+- CommonJS imports (`require()`)
+- Async/await for async operations
+- Error handling with try/catch
+- Jest for testing with supertest for API tests
 
 ### Frontend (TypeScript/React)
-- Import React components and hooks at the top
-- Use TypeScript types/interfaces for props and state
-- Functional components with React hooks
-- Use React Router for navigation
-- Use i18next for internationalization
-- Use Tailwind CSS for styling
+- ES modules, TypeScript with strict mode
+- React functional components with hooks
+- Use TypeScript types/interfaces
+- Tailwind CSS for styling
 
 ### Naming Conventions
-- CamelCase for variables and functions
+- camelCase for variables and functions
 - PascalCase for React components and classes
-- Use descriptive names for variables and functions
+- Descriptive names for all identifiers
