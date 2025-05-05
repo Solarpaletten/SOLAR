@@ -7,7 +7,7 @@ const mime = require('mime-types');
 const { transcribeAudio } = require('./whisperService');
 const { replyWithVoice } = require('./dashkaVoiceReply');
 
-const token = process.env.TELEGRAM_MAIN_DASHKA_BOT || '7576023649:AAGxnwjJfEMPzwNsEwZZ9d6vt8xnWwXJpZc';
+const token = process.env.TELEGRAM_MAIN_DASHKA_BOT
 const bot = new TelegramBot(token, { polling: true });
 
 const baseDir = '/var/www/solar/s/b';

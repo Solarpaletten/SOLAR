@@ -10,7 +10,7 @@ const { speakText } = require('./textToSpeechService');
 const tmpDir = path.join(__dirname, '../../tmp');
 fs.mkdirSync(tmpDir, { recursive: true });
 
-const token = process.env.TELEGRAM_EN_RU_BOT || '7716350274:AAFjMLdKOztnOW5ftf5ZT4logNo-wWpH_a0';
+const token = process.env.TELEGRAM_EN_RU_BOT
 const bot = new TelegramBot(token, { polling: true });
 
 const userSettings = new Map(); // chatId -> { direction: 'en-ru' | 'ru-en', lastTranslation: string }

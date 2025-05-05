@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const { transcribeAudio } = require('./whisperService'); // подключаем модуль распознавания речи
 
-const token = process.env.TELEGRAM_JIMMY_BOT || '7576023649:AAGxnwjJfEMPzwNsEwZZ9d6vt8xnWwXJpZc';
+const token = process.env.TELEGRAM_JIMMY_BOT
 const bot = new TelegramBot(token, { polling: true });
 
 const baseDir = '/var/www/solar/s/b';
