@@ -1,17 +1,93 @@
 const prismaManager = require('../utils/prismaManager');
 const { logger } = require('../config/logger');
+const { transformToApiFormat, transformToDbFormat } = require('../utils/apiUtils');
+const { validateCreateSale, validateUpdateSale } = require('../validation/salesValidation');
 
 const getAllSales = async (req, res) => {
   try {
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      startDate,
+      endDate,
+      status,
+      client_id,
+      sortBy = 'doc_date',
+      sortOrder = 'desc',
+      minAmount,
+      maxAmount,
+      archived
+    } = req.query;
+
+    // Формируем условия фильтрации
+    const where = { user_id: req.user.id };
+
+    // Поиск по нескольким полям
+    if (search) {
+      where.OR = [
+        { doc_number: { contains: search, mode: 'insensitive' } },
+        { invoice_number: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+
+    // Фильтр по диапазону дат
+    if (startDate || endDate) {
+      where.doc_date = {};
+      if (startDate) where.doc_date.gte = new Date(startDate);
+      if (endDate) where.doc_date.lte = new Date(endDate);
+    }
+
+    // Фильтр по статусу
+    if (status) {
+      where.status = status;
+    }
+
+    // Фильтр по клиенту
+    if (client_id) {
+      where.client_id = parseInt(client_id);
+    }
+
+    // Фильтр по сумме
+    if (minAmount || maxAmount) {
+      where.total_amount = {};
+      if (minAmount) where.total_amount.gte = parseFloat(minAmount);
+      if (maxAmount) where.total_amount.lte = parseFloat(maxAmount);
+    }
+
+    // Определяем сортировку
+    const orderBy = { [sortBy]: sortOrder };
+
+    // Получаем общее количество записей
+    const totalCount = await prismaManager.prisma.sales.count({ where });
+
+    // Получаем данные с пагинацией
     const sales = await prismaManager.prisma.sales.findMany({
-      where: { user_id: req.user.id },
+      where,
       include: {
         client: true,
         warehouse: true,
+        items: {
+          include: {
+            product: true
+          }
+        }
       },
-      orderBy: { doc_date: 'desc' },
+      orderBy,
+      skip: (parseInt(page) - 1) * parseInt(limit),
+      take: parseInt(limit)
     });
-    res.json(sales);
+
+    // Преобразуем данные в API формат (ID как строки и camelCase)
+    const apiData = transformToApiFormat(sales);
+
+    res.json({
+      data: apiData,
+      totalCount,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      totalPages: Math.ceil(totalCount / parseInt(limit))
+    });
   } catch (error) {
     logger.error('Error fetching sales:', error);
     res.status(500).json({ error: 'Failed to fetch sales' });
@@ -45,6 +121,15 @@ const getSaleById = async (req, res) => {
 
 const createSale = async (req, res) => {
   try {
+    // Преобразуем данные из camelCase в snake_case если нужно
+    const dbData = transformToDbFormat(req.body);
+
+    // Валидация входных данных
+    const validation = validateCreateSale(dbData);
+    if (!validation.isValid) {
+      return res.status(400).json({ errors: validation.errors });
+    }
+
     const {
       doc_number,
       doc_date,
@@ -57,26 +142,64 @@ const createSale = async (req, res) => {
       invoice_type,
       invoice_number,
       vat_rate,
-    } = req.body;
+      items // Массив позиций
+    } = dbData;
 
-    const sale = await prismaManager.prisma.sales.create({
-      data: {
-        doc_number,
-        doc_date: new Date(doc_date),
-        sale_date: sale_date ? new Date(sale_date) : null,
-        client_id: parseInt(client_id),
-        warehouse_id: parseInt(warehouse_id),
-        total_amount,
-        currency,
-        status: status || 'draft',
-        invoice_type,
-        invoice_number,
-        vat_rate,
-        user_id: req.user.id,
-      },
+    // Создаем продажу с позициями в одной транзакции
+    const sale = await prismaManager.prisma.$transaction(async (prisma) => {
+      // Создание записи о продаже
+      const newSale = await prisma.sales.create({
+        data: {
+          doc_number,
+          doc_date: new Date(doc_date),
+          sale_date: sale_date ? new Date(sale_date) : null,
+          client_id: parseInt(client_id),
+          warehouse_id: parseInt(warehouse_id),
+          total_amount,
+          currency,
+          status: status || 'draft',
+          invoice_type,
+          invoice_number,
+          vat_rate,
+          user_id: req.user.id,
+        },
+      });
+
+      // Если есть позиции, создаем их
+      if (items && items.length > 0) {
+        for (const item of items) {
+          await prisma.sale_items.create({
+            data: {
+              sale_id: newSale.id,
+              product_id: parseInt(item.product_id),
+              quantity: parseFloat(item.quantity),
+              unit_price: parseFloat(item.unit_price),
+              amount: parseFloat(item.amount),
+              vat: item.vat ? parseFloat(item.vat) : null,
+            }
+          });
+        }
+      }
+
+      // Возвращаем созданную продажу со всеми позициями
+      return await prisma.sales.findUnique({
+        where: { id: newSale.id },
+        include: {
+          client: true,
+          warehouse: true,
+          items: {
+            include: {
+              product: true
+            }
+          }
+        }
+      });
     });
 
-    res.status(201).json(sale);
+    // Преобразуем данные в API формат
+    const apiData = transformToApiFormat(sale);
+
+    res.status(201).json(apiData);
   } catch (error) {
     logger.error('Error creating sale:', error);
     res.status(500).json({ error: 'Failed to create sale' });
@@ -86,7 +209,17 @@ const createSale = async (req, res) => {
 const updateSale = async (req, res) => {
   try {
     const { id } = req.params;
-    const updateData = req.body;
+
+    // Преобразуем данные из camelCase в snake_case если нужно
+    const dbData = transformToDbFormat(req.body);
+
+    // Валидация входных данных
+    const validation = validateUpdateSale(dbData);
+    if (!validation.isValid) {
+      return res.status(400).json({ errors: validation.errors });
+    }
+
+    const updateData = dbData;
 
     // Преобразование строковых дат в объекты Date
     if (updateData.doc_date) {

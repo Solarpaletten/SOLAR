@@ -133,9 +133,10 @@ model sales {
   vat_rate       Decimal?  @db.Decimal(5, 2)
 
   // Связи
-  users     users      @relation(fields: [user_id], references: [id])
-  client    clients    @relation(fields: [client_id], references: [id])
-  warehouse warehouses @relation(fields: [warehouse_id], references: [id])
+  users     users        @relation(fields: [user_id], references: [id])
+  client    clients      @relation(fields: [client_id], references: [id])
+  warehouse warehouses   @relation(fields: [warehouse_id], references: [id])
+  items     sale_items[] // Добавлена связь с позициями продаж
 
   @@index([doc_date])
   @@index([client_id])
@@ -187,6 +188,25 @@ model purchase_items {
   product  products  @relation(fields: [product_id], references: [id])
 
   @@index([purchase_id])
+  @@index([product_id])
+}
+
+model sale_items {
+  id          Int       @id @default(autoincrement())
+  sale_id     Int
+  product_id  Int
+  quantity    Decimal   @db.Decimal(10, 2)
+  unit_price  Decimal   @db.Decimal(10, 2)
+  amount      Decimal   @db.Decimal(10, 2)
+  vat         Decimal?  @db.Decimal(5, 2)
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+  updated_at  DateTime? @default(now()) @db.Timestamp(6)
+
+  // Связи
+  sale    sales    @relation(fields: [sale_id], references: [id], onDelete: Cascade)
+  product products @relation(fields: [product_id], references: [id])
+
+  @@index([sale_id])
   @@index([product_id])
 }
 

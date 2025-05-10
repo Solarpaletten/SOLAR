@@ -39,3 +39,6 @@ temp/
 
 # Prisma generated files
 prisma/generated/
+
+.env
+.env.*
