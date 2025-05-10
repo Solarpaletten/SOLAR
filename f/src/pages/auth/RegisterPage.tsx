@@ -1,5 +1,5 @@
 // src/pages/auth/RegisterPage.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import authService from '../../services/authService';
@@ -30,6 +30,19 @@ const RegisterPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  // Автозаполнение формы в режиме разработки
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      setFormData({
+        email: 'test@example.com',
+        phone: '+49123456789',
+        name: 'Test',
+        surname: 'User',
+        password: 'test1234',
+      });
+    }
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -204,6 +217,23 @@ const RegisterPage: React.FC = () => {
                 {t('agreeToTerms')} <a href="#" className="text-blue-500 hover:underline">terms</a>
               </label>
             </div>
+
+            {/* Скрытая кнопка для ручного автозаполнения формы (только в режиме разработки) */}
+            {process.env.NODE_ENV === 'development' && (
+              <button
+                type="button"
+                hidden
+                onClick={() => setFormData({
+                  email: 'test@example.com',
+                  phone: '+49123456789',
+                  name: 'Test',
+                  surname: 'User',
+                  password: 'test1234',
+                })}
+              >
+                Autofill
+              </button>
+            )}
             <button
               type="submit"
               className="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
