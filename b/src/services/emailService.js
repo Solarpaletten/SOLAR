@@ -4,12 +4,12 @@ require('dotenv').config();
 class EmailService {
   constructor() {
     this.transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,
+      host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+      port: parseInt(process.env.EMAIL_PORT || '465'),
       secure: true,
       auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
       tls: {
         rejectUnauthorized: false,
@@ -20,7 +20,7 @@ class EmailService {
   async sendVerificationEmail(to, token) {
     try {
       const result = await this.transporter.sendMail({
-        from: process.env.SMTP_USER,
+        from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
         to: to,
         subject: 'Email Verification - Solar System',
         html: `
@@ -47,7 +47,7 @@ class EmailService {
   async sendTemporaryPassword(to, tempPassword) {
     try {
       const result = await this.transporter.sendMail({
-        from: process.env.SMTP_USER,
+        from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
         to: to,
         subject: 'Your Temporary Password - Solar System',
         html: `
@@ -80,7 +80,7 @@ class EmailService {
   async sendCompanyCreatedEmail(to, companyName) {
     try {
       const result = await this.transporter.sendMail({
-        from: process.env.SMTP_USER,
+        from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
         to: to,
         subject: 'Company Created Successfully - Solar System',
         html: `

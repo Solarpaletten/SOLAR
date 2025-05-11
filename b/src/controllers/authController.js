@@ -3,7 +3,11 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { logger } = require('../config/logger');
 const emailService = require('../services/emailService');
-const { generateTemporaryPassword } = require('../utils/create/tokenGenerator');
+
+// Inline implementation of generateTemporaryPassword для избежания проблем с импортом
+const generateTemporaryPassword = () => {
+  return Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+};
 
 const { PrismaClient } = require('@prisma/client'); // Обновляем импорт
 const prisma = new PrismaClient();

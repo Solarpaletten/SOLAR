@@ -19,8 +19,8 @@ async function startServer() {
     // Инициализируем WebSocket-сервис
     webSocketService = new WebSocketService(server);
     
-    // Сохраняем экземпляр WebSocketService в приложении для использования в контроллерах
-    app.set('webSocketService', webSocketService);
+    // Вместо app.set используем глобальную переменную
+    global.webSocketService = webSocketService;
     
     const port = process.env.PORT || 4000;
     server.listen(port, () => {
