@@ -79,6 +79,11 @@ app.use((req, res, next) => {
 
 // Импорт маршрутов
 const apiRouter = express.Router();
+
+// Подключаем маршруты
+apiRouter.use('/vat', require('./routes/vat'));
+apiRouter.use('/vat-report', require('./routes/vatReportRoutes'));
+
 apiRouter.use('/auth', require('./routes/authRoutes'));
 apiRouter.use('/clients', require('./routes/clientsRoutes'));
 apiRouter.use('/companies', require('./routes/companyRoutes'));
@@ -94,6 +99,7 @@ apiRouter.use('/purchases', require('./routes/purchasesRoutes'));
 // В файле app.js добавить:
 apiRouter.use('/assistant', require('./routes/assistantRoutes'));
 
+// Тестовый маршрут для проверки работы API
 apiRouter.get('/test', (req, res) => {
   res.json({
     message: 'Backend API is working!',
@@ -101,6 +107,7 @@ apiRouter.get('/test', (req, res) => {
   });
 });
 
+// Подключаем API маршруты к приложению
 app.use('/api', apiRouter);
 
 // Health-check endpoint с информацией о таблицах

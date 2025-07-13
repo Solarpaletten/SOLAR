@@ -63,14 +63,14 @@ const Sidebar: React.FC = () => {
 
       <nav className="flex-1 overflow-y-auto">
         <ul className="p-0 m-0 list-none">
-          <li>
+          {/* <li>
             <NavLink to="/clients" className={linkClass}>
               <FaUsers className="mr-3" />
               <span>Clients</span>
             </NavLink>
-          </li>
+          </li> */}
 
-          <li>
+          {/* <li>
             <div
               className={`flex items-center justify-between p-3 hover:bg-[#165468] cursor-pointer transition-colors ${
                 expandedMenus.warehouse || location.pathname.startsWith('/warehouse') ? 'bg-[#165468]' : ''
@@ -100,9 +100,9 @@ const Sidebar: React.FC = () => {
                 <li><NavLink to="/warehouse/cash-register-sales" className={submenuLinkClass}>Cash register sales</NavLink></li>
               </ul>
             )}
-          </li>
+          </li> */}
 
-          <li>
+          {/* <li>
             <NavLink to="/solar" className={linkClass}>
               <FaGlobe className="mr-3" />
               <span>SOLAR Ассистент</span>
@@ -121,9 +121,9 @@ const Sidebar: React.FC = () => {
               <FaBook className="mr-3" />
               <span>General ledger</span>
             </NavLink>
-          </li>
+          </li> */}
 
-          <li>
+          {/* <li>
             <div
               className={`flex items-center justify-between p-3 hover:bg-[#165468] cursor-pointer transition-colors ${
                 expandedMenus.cashier || location.pathname.startsWith('/cashier') ? 'bg-[#165468]' : ''
@@ -150,9 +150,9 @@ const Sidebar: React.FC = () => {
                 </li>
               </ul>
             )}
-          </li>
+          </li> */}
 
-          <li>
+          {/* <li>
             <NavLink to="/reports" className={linkClass}>
               <FaFileAlt className="mr-3" />
               <span>Reports</span>
@@ -199,13 +199,27 @@ const Sidebar: React.FC = () => {
               <FaFileAlt className="mr-3" />
               <span>Declaration</span>
             </NavLink>
+          </li> */}
+
+          <li>
+            <NavLink to="/vat" className={linkClass}>
+              <FaFileInvoice className="mr-3" />
+              <span>VAT Declaration</span>
+            </NavLink>
+          </li>
+
+          <li>
+            <NavLink to="/vat-report" className={linkClass}>
+              <FaFileAlt className="mr-3" />
+              <span>VAT Report</span>
+            </NavLink>
           </li>
         </ul>
       </nav>
 
       <div className="p-3 border-t border-[#165468]">
         <ul className="p-0 m-0 list-none">
-          <li>
+          {/* <li>
             <NavLink to="/admin" className={linkClass}>
               <FaDatabase className="mr-3" />
               <span>Admin Panel</span>
@@ -217,7 +231,7 @@ const Sidebar: React.FC = () => {
               <FaCog className="mr-3" />
               <span>Settings</span>
             </NavLink>
-          </li>
+          </li> */}
 
           <li>
             <button
@@ -229,8 +243,8 @@ const Sidebar: React.FC = () => {
             </button>
           </li>
         </ul>
-      </div>
     </div>
+  </div>
   );
 };
 

@@ -20,6 +20,8 @@ import PurchasesPage from './pages/purchases/PurchasesPage';
 import PurchasesDetailPage from './pages/purchases/PurchasesDetailPage';
 import CreatePurchasesPage from './pages/purchases/CreatePurchasesPage';
 import EditPurchasesPage from './pages/purchases/EditPurchasesPage';
+import VatPage from './pages/VatPage';
+import VatReportPage from './pages/VatReportPage';
 
 // Заглушки для остальных страниц
 const Warehouse = () => (
@@ -92,62 +94,17 @@ const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <Routes>
-        {/* Публичные маршруты */}
-        <Route path="/landing" element={<LandingPage />} />
-        <Route path="/auth/login" element={<LoginPage />} />
-        <Route path="/auth/register" element={<RegisterPage />} />
-        <Route path="/auth/confirm" element={<EmailConfirmPage />} />
-        <Route path="/onboarding" element={<OnboardingPage />} />
-
-        {/* Защищенные маршруты с использованием ProtectedRoute */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Navigate to="/dashboard" />} />
-            <Route path="dashboard" element={<DashboardPage />} />
-            
-            {/* SOLAR Ассистент как часть основного приложения */}
-            <Route path="solar" element={<SolarAssistantPage />} />
-            
-            {/* Маршруты для клиентов */}
-            <Route path="clients" element={<ClientsPage />} />
-            <Route path="clients/new" element={<NewClientPage />} />
-            <Route path="clients/:id" element={<ClientDetailPage />} />
-            
-            {/* Маршруты для warehouse */}
-            <Route path="warehouse">
-              <Route path="purchases" element={<PurchasesPage />} />
-              <Route path="purchases/create" element={<CreatePurchasesPage />} />
-              <Route path="purchases/edit/:id" element={<EditPurchasesPage />} />
-              <Route path="purchases/:id" element={<PurchasesDetailPage />} />
-              <Route path="sales" element={<Warehouse />} />
-              <Route path="client-prices" element={<Warehouse />} />
-              <Route path="automatic-invoicing" element={<Warehouse />} />
-              <Route path="sales-returns" element={<Warehouse />} />
-              <Route path="remaining-items" element={<Warehouse />} />
-              <Route path="item-movement" element={<Warehouse />} />
-              <Route path="consignment-balance" element={<Warehouse />} />
-              <Route path="stock-taking" element={<Warehouse />} />
-              <Route path="*" element={<Warehouse />} />
-            </Route>
-
-            {/* Другие маршруты */}
-            <Route path="general-ledger" element={<GeneralLedger />} />
-            <Route path="cashier" element={<Cashier />} />
-            <Route path="reports" element={<Reports />} />
-            <Route path="personnel" element={<Personnel />} />
-            <Route path="production" element={<Production />} />
-            <Route path="assets" element={<Assets />} />
-            <Route path="documents" element={<Documents />} />
-            <Route path="salary" element={<Salary />} />
-            <Route path="declaration" element={<Declaration />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="administrator" element={<AdminPage />} />
-            <Route path="administrator/analytics" element={<AdminAnalyticsPage />} />
-          </Route>
+        {/* Публичные маршруты без авторизации */}
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Navigate to="/vat" />} />
+          <Route path="vat" element={<VatPage />} />
+          <Route path="vat-report" element={<VatReportPage />} />
+          <Route path="dashboard" element={<DashboardPage />} />
+          <Route path="solar" element={<SolarAssistantPage />} />
         </Route>
-
-        {/* Обработка неизвестных маршрутов */}
-        <Route path="*" element={<Navigate to="/auth/login" replace />} />
+        
+        {/* Все остальные маршруты на VAT */}
+        <Route path="*" element={<Navigate to="/vat" replace />} />
       </Routes>
     </QueryClientProvider>
   );

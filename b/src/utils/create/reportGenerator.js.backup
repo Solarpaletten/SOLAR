@@ -1,0 +1,315 @@
+const ExcelJS = require('exceljs');
+const PDFDocument = require('pdfkit');
+const fs = require('fs');
+const path = require('path');
+const { logger } = require('../config/logger');
+const dateManager = require('./dateManager');
+
+class ReportGenerator {
+  constructor() {
+    this.reportsDir = path.join(process.cwd(), 'reports');
+    if (!fs.existsSync(this.reportsDir)) {
+      fs.mkdirSync(this.reportsDir, { recursive: true });
+    }
+  }
+
+  // Генерация Excel отчета
+  async generateExcel(data, options = {}) {
+    try {
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet(options.sheetName || 'Report');
+
+      // Установка заголовков
+      if (options.headers) {
+        worksheet.columns = options.headers.map((header) => ({
+          header: header.label,
+          key: header.key,
+          width: header.width || 15,
+        }));
+      }
+
+      // Добавление данных
+      worksheet.addRows(data);
+
+      // Стилизация
+      worksheet.getRow(1).font = { bold: true };
+      worksheet.getRow(1).alignment = {
+        vertical: 'middle',
+        horizontal: 'center',
+      };
+
+      // Сохранение файла
+      const fileName = `${options.fileName || 'report'}-${dateManager.format(
+        new Date(),
+        'YYYY-MM-DD-HHmmss'
+      )}.xlsx`;
+      const filePath = path.join(this.reportsDir, fileName);
+
+      await workbook.xlsx.writeFile(filePath);
+      logger.info('Excel report generated:', { path: filePath });
+
+      return filePath;
+    } catch (error) {
+      logger.error('Error generating Excel report:', error);
+      throw error;
+    }
+  }
+
+  // Генерация PDF отчета
+  async generatePDF(data, options = {}) {
+    try {
+      const doc = new PDFDocument({
+        margin: 50,
+        size: options.size || 'A4',
+      });
+
+      const fileName = `${options.fileName || 'report'}-${dateManager.format(
+        new Date(),
+        'YYYY-MM-DD-HHmmss'
+      )}.pdf`;
+      const filePath = path.join(this.reportsDir, fileName);
+
+      const stream = fs.createWriteStream(filePath);
+      doc.pipe(stream);
+
+      // Проверяем, используется ли шаблон финансового документа
+      if (options.template === 'financial-document') {
+        this.generateFinancialDocument(doc, data, options);
+      } else {
+        // Стандартный шаблон
+        this.generateStandardDocument(doc, data, options);
+      }
+
+      doc.end();
+
+      return new Promise((resolve, reject) => {
+        stream.on('finish', () => {
+          logger.info('PDF report generated:', { path: filePath });
+          resolve(filePath);
+        });
+        stream.on('error', reject);
+      });
+    } catch (error) {
+      logger.error('Error generating PDF report:', error);
+      throw error;
+    }
+  }
+
+  // Стандартный шаблон PDF
+  generateStandardDocument(doc, data, options) {
+    // Добавление заголовка
+    if (options.title) {
+      doc.fontSize(20).text(options.title, { align: 'center' }).moveDown();
+    }
+
+    // Добавление даты
+    doc
+      .fontSize(12)
+      .text(
+        `Generated: ${dateManager.format(new Date(), 'YYYY-MM-DD HH:mm:ss')}`
+      )
+      .moveDown();
+
+    // Добавление данных
+    if (Array.isArray(data)) {
+      data.forEach((item) => {
+        Object.entries(item).forEach(([key, value]) => {
+          doc.text(`${key}: ${value}`);
+        });
+        doc.moveDown();
+      });
+    } else {
+      doc.text(JSON.stringify(data, null, 2));
+    }
+  }
+
+  // Шаблон финансового документа с улучшенным форматированием
+  generateFinancialDocument(doc, data, options) {
+    if (!Array.isArray(data) || data.length === 0) {
+      return doc.text('No data provided');
+    }
+
+    const reportData = data[0];
+
+    // Заголовок документа
+    doc.fontSize(18)
+      .fillColor('#333')
+      .text(options.title || 'Финансовый отчёт', { align: 'center' })
+      .moveDown(0.5);
+
+    // Подзаголовок с периодом
+    doc.fontSize(14)
+      .fillColor('#555')
+      .text(`Период: ${reportData.period || 'Не указан'}`, { align: 'center' })
+      .moveDown(1);
+
+    // Информация о компании
+    doc.rect(50, doc.y, doc.page.width - 100, 100)
+      .lineWidth(1)
+      .stroke();
+
+    doc.y += 10;
+
+    doc.fontSize(12)
+      .fillColor('#000')
+      .text(`Компания: ${reportData.companyName || 'Не указана'}`, { align: 'left', indent: 60 })
+      .text(`Адрес: ${reportData.companyAddress || 'Не указан'}`, { align: 'left', indent: 60 })
+      .text(`Регистрационный номер: ${reportData.registrationNumber || 'Не указан'}`, { align: 'left', indent: 60 })
+      .text(`Налоговый номер: ${reportData.taxNumber || 'Не указан'}`, { align: 'left', indent: 60 })
+      .text(`Дата составления: ${reportData.reportDate || dateManager.format(new Date(), 'DD.MM.YYYY')}`, { align: 'left', indent: 60 })
+      .moveDown(1);
+
+    // Заголовок таблицы
+    const tableTop = doc.y + 10;
+    const tableWidth = doc.page.width - 100;
+    const colWidth = [60, 280, 100]; // Ширина колонок [Kennziffer, Название, Betrag]
+
+    // Заголовок таблицы
+    doc.fontSize(11)
+      .fillColor('#fff')
+      .rect(50, tableTop, tableWidth, 25)
+      .fill('#333');
+
+    doc.fillColor('#fff')
+      .text('Kennziffer', 60, tableTop + 7)
+      .text('Название строки', 130, tableTop + 7)
+      .text('Betrag (EUR)', doc.page.width - 150, tableTop + 7);
+
+    // Данные таблицы
+    let y = tableTop + 25;
+    const rowHeight = 30;
+    let isEven = false;
+
+    if (reportData.vatData && Array.isArray(reportData.vatData)) {
+      reportData.vatData.forEach((row, index) => {
+        // Фон строки (чередование для читаемости)
+        const rowColor = row.isTotal ? '#e8f5e8' : (row.isHighlighted ? '#fff8e1' : (isEven ? '#f9f9f9' : '#fff'));
+        const textColor = row.isHighlighted ? '#e65100' : (row.isTotal ? '#1b5e20' : '#333');
+        const fontWeight = row.isTotal || row.isHighlighted ? 'bold' : 'normal';
+
+        doc.rect(50, y, tableWidth, rowHeight)
+          .fillColor(rowColor)
+          .fill();
+
+        // Данные строки
+        doc.fontSize(10)
+          .fillColor(textColor)
+          .font(fontWeight === 'bold' ? 'Helvetica-Bold' : 'Helvetica')
+          .text(row.kennziffer || '', 60, y + 10)
+          .text(row.description || '', 130, y + 10)
+          .text(this.formatCurrency(row.betrag), doc.page.width - 150, y + 10, { align: 'left' });
+
+        // Линия разделения строк
+        doc.lineWidth(0.5)
+          .strokeColor('#ccc')
+          .moveTo(50, y + rowHeight)
+          .lineTo(50 + tableWidth, y + rowHeight)
+          .stroke();
+
+        y += rowHeight;
+        isEven = !isEven;
+      });
+    }
+
+    // Итоговая сумма - выделяем отдельно
+    const lastRow = reportData.vatData ? reportData.vatData.find(row => row.kennziffer === '83') : null;
+    if (lastRow) {
+      doc.moveDown(1);
+      doc.fontSize(12)
+        .fillColor('#333')
+        .text('ИТОГОВАЯ СУММА:', 50, doc.y)
+        .moveDown(0.5);
+
+      const amount = parseFloat(lastRow.betrag);
+      const color = amount >= 0 ? '#d32f2f' : '#388e3c';
+      const text = amount >= 0
+        ? `К ДОПЛАТЕ: ${this.formatCurrency(Math.abs(amount))}`
+        : `К ВОЗВРАТУ: ${this.formatCurrency(Math.abs(amount))}`;
+
+      doc.fontSize(14)
+        .fillColor(color)
+        .text(text, { align: 'center' })
+        .moveDown(1);
+    }
+
+    // Блок подписей
+    if (reportData.signatures) {
+      doc.moveDown(1);
+      const signaturesY = doc.y + 20;
+      const signatureWidth = (doc.page.width - 100) / 3;
+
+      // Линии для подписей
+      if (reportData.signatures.accountant) {
+        doc.lineWidth(0.5)
+          .moveTo(60, signaturesY + 30)
+          .lineTo(60 + signatureWidth - 20, signaturesY + 30)
+          .stroke()
+          .fontSize(10)
+          .fillColor('#666')
+          .text('Бухгалтер', 60, signaturesY + 35);
+      }
+
+      if (reportData.signatures.director) {
+        doc.lineWidth(0.5)
+          .moveTo(60 + signatureWidth, signaturesY + 30)
+          .lineTo(60 + signatureWidth * 2 - 20, signaturesY + 30)
+          .stroke()
+          .fontSize(10)
+          .fillColor('#666')
+          .text('Директор', 60 + signatureWidth, signaturesY + 35);
+      }
+
+      if (reportData.signatures.stamp) {
+        doc.fontSize(10)
+          .fillColor('#666')
+          .text('М.П.', 60 + signatureWidth * 2, signaturesY + 15, { align: 'center' })
+          .ellipse(60 + signatureWidth * 2 + 20, signaturesY + 15, 30, 30)
+          .lineWidth(0.5)
+          .dash(3, { space: 2 })
+          .stroke();
+      }
+    }
+
+    // Нижний колонтитул
+    const pageBottom = doc.page.height - 50;
+    doc.fontSize(8)
+      .fillColor('#999')
+      .text(
+        `Сгенерировано ${dateManager.format(new Date(), 'DD.MM.YYYY HH:mm:ss')} | IT AI SOLAR Dashka SmartStb`,
+        50, pageBottom, { align: 'center' }
+      );
+  }
+
+  // Форматирование валюты
+  formatCurrency(value) {
+    const num = parseFloat(value);
+    if (isNaN(num)) return '0,00 EUR';
+
+    return num.toFixed(2).replace('.', ',') + ' EUR';
+  }
+
+  // Очистка старых отчетов
+  async cleanupOldReports(maxAge = 7) {
+    // maxAge в днях
+    try {
+      const files = await fs.promises.readdir(this.reportsDir);
+      const now = new Date();
+
+      for (const file of files) {
+        const filePath = path.join(this.reportsDir, file);
+        const stats = await fs.promises.stat(filePath);
+        const fileAge = dateManager.getDiff(now, stats.mtime, 'day');
+
+        if (fileAge > maxAge) {
+          await fs.promises.unlink(filePath);
+          logger.info('Deleted old report:', { path: filePath });
+        }
+      }
+    } catch (error) {
+      logger.error('Error cleaning up old reports:', error);
+      throw error;
+    }
+  }
+}
+
+module.exports = new ReportGenerator();
