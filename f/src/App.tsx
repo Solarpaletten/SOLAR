@@ -3,82 +3,20 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
-import LandingPage from './pages/landing/LandingPage';
-import LoginPage from './pages/auth/LoginPage';
-import RegisterPage from './pages/auth/RegisterPage';
-import OnboardingPage from './pages/auth/OnboardingPage';
-import EmailConfirmPage from './pages/auth/EmailConfirmPage';
-import SolarAssistantPage from './pages/assistant/SolarAssistantPage';
-import Layout from './components/layout/Layout';
-import ClientsPage from './pages/clients/ClientsPage';
-import ClientDetailPage from './pages/clients/ClientDetailPage';
-import NewClientPage from './pages/clients/NewClientPage';
-import DashboardPage from './pages/dashboard/DashboardPage';
-import AdminPage from './pages/administrator/AdminPage';
-import AdminAnalyticsPage from './pages/administrator/AdminAnalyticsPage';
-import PurchasesPage from './pages/purchases/PurchasesPage';
-import PurchasesDetailPage from './pages/purchases/PurchasesDetailPage';
-import CreatePurchasesPage from './pages/purchases/CreatePurchasesPage';
-import EditPurchasesPage from './pages/purchases/EditPurchasesPage';
-import VatPage from './pages/VatPage';
-import VatReportPage from './pages/VatReportPage';
 
-// Заглушки для остальных страниц
-const Warehouse = () => (
-  <div className="p-6">
-    <h1 className="text-2xl font-semibold">Warehouse</h1>
-  </div>
-);
-const GeneralLedger = () => (
-  <div className="p-6">
-    <h1 className="text-2xl font-semibold">General Ledger</h1>
-  </div>
-);
-const Cashier = () => (
-  <div className="p-6">
-    <h1 className="text-2xl font-semibold">Cashier</h1>
-  </div>
-);
-const Reports = () => (
-  <div className="p-6">
-    <h1 className="text-2xl font-semibold">Reports</h1>
-  </div>
-);
-const Personnel = () => (
-  <div className="p-6">
-    <h1 className="text-2xl font-semibold">Personnel</h1>
-  </div>
-);
-const Production = () => (
-  <div className="p-6">
-    <h1 className="text-2xl font-semibold">Production</h1>
-  </div>
-);
-const Assets = () => (
-  <div className="p-6">
-    <h1 className="text-2xl font-semibold">Assets</h1>
-  </div>
-);
-const Documents = () => (
-  <div className="p-6">
-    <h1 className="text-2xl font-semibold">Documents</h1>
-  </div>
-);
-const Salary = () => (
-  <div className="p-6">
-    <h1 className="text-2xl font-semibold">Salary</h1>
-  </div>
-);
-const Declaration = () => (
-  <div className="p-6">
-    <h1 className="text-2xl font-semibold">Declaration</h1>
-  </div>
-);
-const Settings = () => (
-  <div className="p-6">
-    <h1 className="text-2xl font-semibold">Settings</h1>
-  </div>
-);
+// Account Layout и компоненты
+import AccountLayout from './components/layout/account/AccountLayout';
+import AccountDashboardPage from './pages/account/dashboard/AccountDashboardPage';
+
+// Company Layout и компоненты
+import CompanyLayout from './components/layout/company/CompanyLayout';
+import DashboardPage from './pages/company/dashboard/DashboardPage';
+import ClientsPage from './pages/company/clients/ClientsPage';
+import ClientDetailPage from './pages/company/clients/ClientDetailPage';
+import BankPage from './pages/company/bank/BankPage';
+
+// Транзитная страница
+import CompanyTransitPage from './pages/company/CompanyTransitPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -94,17 +32,77 @@ const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <Routes>
-        {/* Публичные маршруты без авторизации */}
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Navigate to="/vat" />} />
-          <Route path="vat" element={<VatPage />} />
-          <Route path="vat-report" element={<VatReportPage />} />
-          <Route path="dashboard" element={<DashboardPage />} />
-          <Route path="solar" element={<SolarAssistantPage />} />
+        <Route element={<ProtectedRoute />}>
+          {/* УРОВЕНЬ 1: АККАУНТ - Управление системой */}
+          <Route path="/account" element={<AccountLayout />}>
+            <Route path="dashboard" element={<AccountDashboardPage />} />
+            <Route
+              path="companies"
+              element={<div>Companies Management Page</div>}
+            />
+            <Route path="users" element={<div>Users Management Page</div>} />
+            <Route path="settings" element={<div>Account Settings Page</div>} />
+            <Route
+              path="employee/*"
+              element={<div>Employee Account Pages</div>}
+            />
+            <Route path="data/*" element={<div>My Data Pages</div>} />
+            <Route
+              path="affiliate"
+              element={<div>Affiliate Program Page</div>}
+            />
+            <Route path="invites" element={<div>Invites Page</div>} />
+            <Route path="reminders" element={<div>Reminders Page</div>} />
+            <Route path="support" element={<div>Support Page</div>} />
+            <Route path="statistics" element={<div>Statistics Page</div>} />
+          </Route>
+
+          {/* ТРАНЗИТНАЯ СТРАНИЦА - Выбор компании */}
+          <Route
+            path="/account/companies/select"
+            element={<CompanyTransitPage />}
+          />
+
+          {/* УРОВЕНЬ 2: КОМПАНИЯ - Работа внутри выбранной компании */}
+          <Route path="/" element={<CompanyLayout />}>
+            <Route path="dashboard" element={<DashboardPage />} />
+            <Route path="clients" element={<ClientsPage />} />
+            <Route path="clients/:id" element={<ClientDetailPage />} />
+            <Route path="warehouse" element={<div>Warehouse Page</div>} />
+            <Route path="bank" element={<BankPage />} />
+            <Route
+              path="general-ledger"
+              element={<div>General Ledger Page</div>}
+            />
+            <Route path="cashier" element={<div>Cashier Page</div>} />
+            <Route path="reports" element={<div>Reports Page</div>} />
+            <Route path="personnel" element={<div>Personnel Page</div>} />
+            <Route
+              path="reference-book"
+              element={<div>Reference Book Page</div>}
+            />
+            <Route path="production" element={<div>Production Page</div>} />
+            <Route path="assets" element={<div>Assets Page</div>} />
+            <Route path="documents" element={<div>Documents Page</div>} />
+            <Route path="salary" element={<div>Salary Page</div>} />
+            <Route path="declaration" element={<div>Declaration Page</div>} />
+            <Route path="analytics" element={<div>Analytics Page</div>} />
+            <Route path="settings" element={<div>Company Settings Page</div>} />
+          </Route>
         </Route>
-        
-        {/* Все остальные маршруты на VAT */}
-        <Route path="*" element={<Navigate to="/vat" replace />} />
+
+        {/* Главная страница - редирект в систему аккаунта */}
+        <Route
+          path="/"
+          element={<Navigate to="/account/dashboard" replace />}
+        />
+
+        {/* Все неизвестные пути - редирект в систему аккаунта */}
+        <Route
+          path="*"
+          element={<Navigate to="/account/dashboard" replace />}
+        />
+
       </Routes>
     </QueryClientProvider>
   );

@@ -35,7 +35,10 @@ const EditPurchasesPage: React.FC = () => {
         setSuppliers(suppliersList);
       } catch (err: any) {
         console.error('Ошибка при загрузке данных:', err);
-        setError(err.response?.data?.message || 'Произошла ошибка при загрузке данных. Пожалуйста, попробуйте еще раз.');
+        setError(
+          err.response?.data?.message ||
+            'Произошла ошибка при загрузке данных. Пожалуйста, попробуйте еще раз.'
+        );
       } finally {
         setIsLoading(false);
       }
@@ -63,17 +66,23 @@ const EditPurchasesPage: React.FC = () => {
         paymentMethod: formData.paymentMethod,
         notes: formData.notes,
         departmentId: formData.departmentId,
-        projectId: formData.projectId
+        projectId: formData.projectId,
       };
 
-      const updatedPurchase = await purchasesService.updatePurchase(id, purchaseDto);
+      const updatedPurchase = await purchasesService.updatePurchase(
+        id,
+        purchaseDto
+      );
 
       navigate(`/warehouse/purchases/${updatedPurchase.id}`, {
-        state: { message: 'Закупка успешно обновлена' }
+        state: { message: 'Закупка успешно обновлена' },
       });
     } catch (err: any) {
       console.error('Ошибка при обновлении закупки:', err);
-      setError(err.response?.data?.message || 'Произошла ошибка при обновлении закупки. Пожалуйста, попробуйте еще раз.');
+      setError(
+        err.response?.data?.message ||
+          'Произошла ошибка при обновлении закупки. Пожалуйста, попробуйте еще раз.'
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -90,7 +99,7 @@ const EditPurchasesPage: React.FC = () => {
         breadcrumbs={[
           { label: 'Главная', path: '/' },
           { label: 'Закупки', path: '/warehouse/purchases' },
-          { label: 'Редактирование', path: `/warehouse/purchases/edit/${id}` }
+          { label: 'Редактирование', path: `/warehouse/purchases/edit/${id}` },
         ]}
       >
         <div className="flex justify-center items-center p-8">
@@ -107,7 +116,7 @@ const EditPurchasesPage: React.FC = () => {
         breadcrumbs={[
           { label: 'Главная', path: '/' },
           { label: 'Закупки', path: '/warehouse/purchases' },
-          { label: 'Ошибка', path: `/warehouse/purchases/edit/${id}` }
+          { label: 'Ошибка', path: `/warehouse/purchases/edit/${id}` },
         ]}
       >
         <div className="p-4 bg-red-50 border border-red-300 rounded-md text-red-800">
@@ -131,8 +140,11 @@ const EditPurchasesPage: React.FC = () => {
       breadcrumbs={[
         { label: 'Главная', path: '/' },
         { label: 'Закупки', path: '/warehouse/purchases' },
-        { label: `Закупка №${purchase?.invoiceNumber}`, path: `/warehouse/purchases/${id}` },
-        { label: 'Редактирование', path: `/warehouse/purchases/edit/${id}` }
+        {
+          label: `Закупка №${purchase?.invoiceNumber}`,
+          path: `/warehouse/purchases/${id}`,
+        },
+        { label: 'Редактирование', path: `/warehouse/purchases/edit/${id}` },
       ]}
     >
       {error && (

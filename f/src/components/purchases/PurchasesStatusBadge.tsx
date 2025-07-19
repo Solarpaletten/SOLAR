@@ -16,9 +16,13 @@ const statusLabels = {
   cancelled: 'Отменено',
 };
 
-const PurchasesStatusBadge: React.FC<PurchasesStatusBadgeProps> = ({ status }) => {
+const PurchasesStatusBadge: React.FC<PurchasesStatusBadgeProps> = ({
+  status,
+}) => {
   return (
-    <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[status]}`}>
+    <span
+      className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[status]}`}
+    >
       {statusLabels[status]}
     </span>
   );

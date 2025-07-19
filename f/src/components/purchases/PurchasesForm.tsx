@@ -33,7 +33,11 @@ const PurchasesForm: React.FC<PurchasesFormProps> = ({
     }
   );
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target;
 
     if (name === 'client_id') {
@@ -53,7 +57,9 @@ const PurchasesForm: React.FC<PurchasesFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700">{t('date')}</label>
+        <label className="block text-sm font-medium text-gray-700">
+          {t('date')}
+        </label>
         <input
           type="date"
           name="date"
@@ -65,7 +71,9 @@ const PurchasesForm: React.FC<PurchasesFormProps> = ({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">{t('supplierLabel')}</label>
+        <label className="block text-sm font-medium text-gray-700">
+          {t('supplierLabel')}
+        </label>
         <select
           name="client_id"
           value={formData.client_id || ''}
@@ -83,7 +91,9 @@ const PurchasesForm: React.FC<PurchasesFormProps> = ({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">{t('invoiceNumber')}</label>
+        <label className="block text-sm font-medium text-gray-700">
+          {t('invoiceNumber')}
+        </label>
         <input
           type="text"
           name="invoiceNumber"
@@ -95,7 +105,9 @@ const PurchasesForm: React.FC<PurchasesFormProps> = ({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">{t('total')}</label>
+        <label className="block text-sm font-medium text-gray-700">
+          {t('total')}
+        </label>
         <input
           type="number"
           name="totalAmount"
@@ -109,7 +121,9 @@ const PurchasesForm: React.FC<PurchasesFormProps> = ({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">{t('description')}</label>
+        <label className="block text-sm font-medium text-gray-700">
+          {t('description')}
+        </label>
         <textarea
           name="description"
           value={formData.description || ''}
@@ -119,7 +133,9 @@ const PurchasesForm: React.FC<PurchasesFormProps> = ({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">{t('statusLabel')}</label>
+        <label className="block text-sm font-medium text-gray-700">
+          {t('statusLabel')}
+        </label>
         <select
           name="status"
           value={formData.status}
@@ -137,7 +153,9 @@ const PurchasesForm: React.FC<PurchasesFormProps> = ({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">{t('currency')}</label>
+        <label className="block text-sm font-medium text-gray-700">
+          {t('currency')}
+        </label>
         <select
           name="currency"
           value={formData.currency}

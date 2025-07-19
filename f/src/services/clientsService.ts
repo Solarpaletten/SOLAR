@@ -28,10 +28,34 @@ const clientsService = {
     } catch (error) {
       console.error('Error fetching clients:', error);
       return [
-        { id: 1, name: 'ASSET LOGISTICS GMBH', email: 'info@assetlogistics.com', role: ClientRole.SUPPLIER, is_active: true },
-        { id: 2, name: 'SWAPOIL GMBH', email: 'info@swapoil.com', role: ClientRole.SUPPLIER, is_active: true },
-        { id: 3, name: 'ASSET BILANS SPOLKA Z O O', email: 'info@assetbilans.pl', role: ClientRole.SUPPLIER, is_active: true },
-        { id: 4, name: 'RAPSOIL OU', email: 'info@rapsoil.ee', role: ClientRole.SUPPLIER, is_active: true },
+        {
+          id: 1,
+          name: 'ASSET LOGISTICS GMBH',
+          email: 'info@assetlogistics.com',
+          role: ClientRole.SUPPLIER,
+          is_active: true,
+        },
+        {
+          id: 2,
+          name: 'SWAPOIL GMBH',
+          email: 'info@swapoil.com',
+          role: ClientRole.SUPPLIER,
+          is_active: true,
+        },
+        {
+          id: 3,
+          name: 'ASSET BILANS SPOLKA Z O O',
+          email: 'info@assetbilans.pl',
+          role: ClientRole.SUPPLIER,
+          is_active: true,
+        },
+        {
+          id: 4,
+          name: 'RAPSOIL OU',
+          email: 'info@rapsoil.ee',
+          role: ClientRole.SUPPLIER,
+          is_active: true,
+        },
       ];
     }
   },
@@ -43,10 +67,34 @@ const clientsService = {
     } catch (error) {
       console.error('Error fetching suppliers:', error);
       return [
-        { id: 1, name: 'ASSET LOGISTICS GMBH', email: 'info@assetlogistics.com', role: ClientRole.SUPPLIER, is_active: true },
-        { id: 2, name: 'SWAPOIL GMBH', email: 'info@swapoil.com', role: ClientRole.SUPPLIER, is_active: true },
-        { id: 3, name: 'ASSET BILANS SPOLKA Z O O', email: 'info@assetbilans.pl', role: ClientRole.SUPPLIER, is_active: true },
-        { id: 4, name: 'RAPSOIL OU', email: 'info@rapsoil.ee', role: ClientRole.SUPPLIER, is_active: true },
+        {
+          id: 1,
+          name: 'ASSET LOGISTICS GMBH',
+          email: 'info@assetlogistics.com',
+          role: ClientRole.SUPPLIER,
+          is_active: true,
+        },
+        {
+          id: 2,
+          name: 'SWAPOIL GMBH',
+          email: 'info@swapoil.com',
+          role: ClientRole.SUPPLIER,
+          is_active: true,
+        },
+        {
+          id: 3,
+          name: 'ASSET BILANS SPOLKA Z O O',
+          email: 'info@assetbilans.pl',
+          role: ClientRole.SUPPLIER,
+          is_active: true,
+        },
+        {
+          id: 4,
+          name: 'RAPSOIL OU',
+          email: 'info@rapsoil.ee',
+          role: ClientRole.SUPPLIER,
+          is_active: true,
+        },
       ];
     }
   },
@@ -58,16 +106,42 @@ const clientsService = {
     } catch (error) {
       console.error(`Error fetching client with ID ${id}:`, error);
       const mockClients: Record<number, Client> = {
-        1: { id: 1, name: 'ASSET LOGISTICS GMBH', email: 'info@assetlogistics.com', role: ClientRole.SUPPLIER, is_active: true },
-        2: { id: 2, name: 'SWAPOIL GMBH', email: 'info@swapoil.com', role: ClientRole.SUPPLIER, is_active: true },
-        3: { id: 3, name: 'ASSET BILANS SPOLKA Z O O', email: 'info@assetbilans.pl', role: ClientRole.SUPPLIER, is_active: true },
-        4: { id: 4, name: 'RAPSOIL OU', email: 'info@rapsoil.ee', role: ClientRole.SUPPLIER, is_active: true },
+        1: {
+          id: 1,
+          name: 'ASSET LOGISTICS GMBH',
+          email: 'info@assetlogistics.com',
+          role: ClientRole.SUPPLIER,
+          is_active: true,
+        },
+        2: {
+          id: 2,
+          name: 'SWAPOIL GMBH',
+          email: 'info@swapoil.com',
+          role: ClientRole.SUPPLIER,
+          is_active: true,
+        },
+        3: {
+          id: 3,
+          name: 'ASSET BILANS SPOLKA Z O O',
+          email: 'info@assetbilans.pl',
+          role: ClientRole.SUPPLIER,
+          is_active: true,
+        },
+        4: {
+          id: 4,
+          name: 'RAPSOIL OU',
+          email: 'info@rapsoil.ee',
+          role: ClientRole.SUPPLIER,
+          is_active: true,
+        },
       };
       return mockClients[id] || null;
     }
   },
 
-  createClient: async (clientData: Omit<Client, 'id' | 'created_at' | 'updated_at'>): Promise<Client> => {
+  createClient: async (
+    clientData: Omit<Client, 'id' | 'created_at' | 'updated_at'>
+  ): Promise<Client> => {
     try {
       const response = await api.post<Client>(API_URL, clientData);
       return response.data;
@@ -77,7 +151,10 @@ const clientsService = {
     }
   },
 
-  updateClient: async (id: number, clientData: Partial<Client>): Promise<Client> => {
+  updateClient: async (
+    id: number,
+    clientData: Partial<Client>
+  ): Promise<Client> => {
     try {
       const response = await api.put<Client>(`${API_URL}/${id}`, clientData);
       return response.data;

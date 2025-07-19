@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOLAR API Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .card h3 {
+            margin-bottom: 15px;
+            color: #ffd700;
+            font-size: 1.5rem;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .status.online {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .status.offline {
+            background: #f44336;
+            color: white;
+        }
+        
+        .endpoints {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .endpoint {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .endpoint:last-child {
+            border-bottom: none;
+        }
+        
+        .method {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+        
+        .method.get { background: #4CAF50; }
+        .method.post { background: #2196F3; }
+        .method.put { background: #FF9800; }
+        .method.delete { background: #f44336; }
+        
+        .test-btn {
+            background: #ffd700;
+            color: #1e3c72;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+        
+        .test-btn:hover {
+            background: #ffed4e;
+        }
+        
+        .results {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .stat {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌟 SOLAR API Dashboard</h1>
+            <p>Monitoring & Testing Interface</p>
+        </div>
+        
+        <div class="grid">
+            <div class="card">
+                <h3>🔧 API Status</h3>
+                <div class="status" id="apiStatus">Checking...</div>
+                <p>Main API Server</p>
+                <div class="results" id="statusResult"></div>
+            </div>
+            
+            <div class="card">
+                <h3>📊 Statistics</h3>
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-value" id="clientCount">-</div>
+                        <div class="stat-label">Clients</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="uptime">-</div>
+                        <div class="stat-label">Uptime</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>🛠️ API Endpoints</h3>
+            <div class="endpoints">
+                <div class="endpoint">
+                    <div>
+                        <span class="method get">GET</span>
+                        <span>/api/health</span>
+                    </div>
+                    <button class="test-btn" onclick="testEndpoint('/api/health', 'GET')">Test</button>
+                </div>
+                
+                <div class="endpoint">
+                    <div>
+                        <span class="method get">GET</span>
+                        <span>/api/clients</span>
+                    </div>
+                    <button class="test-btn" onclick="testEndpoint('/api/clients', 'GET')">Test</button>
+                </div>
+                
+                <div class="endpoint">
+                    <div>
+                        <span class="method post">POST</span>
+                        <span>/api/clients</span>
+                    </div>
+                    <button class="test-btn" onclick="testCreateClient()">Test</button>
+                </div>
+                
+                <div class="endpoint">
+                    <div>
+                        <span class="method get">GET</span>
+                        <span>/api/clients/companies</span>
+                    </div>
+                    <button class="test-btn" onclick="testEndpoint('/api/clients/companies', 'GET')">Test</button>
+                </div>
+            </div>
+            
+            <div class="results" id="testResults"></div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE = 'https://api.solar.swapoil.de';
+        
+        async function checkApiStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/api/health`);
+                const data = await response.json();
+                
+                document.getElementById('apiStatus').textContent = 'Online';
+                document.getElementById('apiStatus').className = 'status online';
+                document.getElementById('statusResult').textContent = JSON.stringify(data, null, 2);
+                
+                // Update stats
+                if (data.tables) {
+                    document.getElementById('clientCount').textContent = data.tables.includes('clients') ? '✓' : '✗';
+                }
+                
+            } catch (error) {
+                document.getElementById('apiStatus').textContent = 'Offline';
+                document.getElementById('apiStatus').className = 'status offline';
+                document.getElementById('statusResult').textContent = `Error: ${error.message}`;
+            }
+        }
+        
+        async function testEndpoint(endpoint, method = 'GET') {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.textContent = `Testing ${method} ${endpoint}...`;
+            
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                resultsDiv.textContent = `✅ ${response.status} ${response.statusText}\n\n${JSON.stringify(data, null, 2)}`;
+                
+                // Update client count
+                if (endpoint === '/api/clients' && Array.isArray(data)) {
+                    document.getElementById('clientCount').textContent = data.length;
+                }
+                
+            } catch (error) {
+                resultsDiv.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+        
+        async function testCreateClient() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.textContent = 'Testing POST /api/clients...';
+            
+            const testClient = {
+                name: `Test Client ${Date.now()}`,
+                email: `test${Date.now()}@example.com`,
+                phone: '+491234567890',
+                code: `TEST${Date.now()}`,
+                vat_code: 'DE123456789'
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/clients`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testClient)
+                });
+                
+                const data = await response.json();
+                resultsDiv.textContent = `✅ ${response.status} ${response.statusText}\n\nCreated client:\n${JSON.stringify(data, null, 2)}`;
+                
+            } catch (error) {
+                resultsDiv.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+        
+        // Initialize dashboard
+        checkApiStatus();
+        
+        // Auto-refresh every 30 seconds
+        setInterval(checkApiStatus, 30000);
+    </script>
+</body>
+</html>

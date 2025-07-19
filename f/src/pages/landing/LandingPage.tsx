@@ -12,15 +12,23 @@ const LandingPage: React.FC = () => {
     <div className="min-h-screen bg-blue-100">
       {/* Navigation bar */}
       <nav className="bg-white shadow p-4 flex justify-between items-center">
-        <div className="text-2xl font-bold text-blue-600">
-          LEANID SOLAR
-        </div>
+        <div className="text-2xl font-bold text-blue-600">LEANID SOLAR</div>
         <div className="flex space-x-4">
-          <a href="#" className="text-gray-600 hover:text-blue-600">{t('product')}</a>
-          <a href="#" className="text-gray-600 hover:text-blue-600">{t('integrations')}</a>
-          <a href="#" className="text-gray-600 hover:text-blue-600">{t('training')}</a>
-          <a href="#" className="text-gray-600 hover:text-blue-600">{t('prices')}</a>
-          <a href="#" className="text-gray-600 hover:text-blue-600">{t('accountingCompanies')}</a>
+          <a href="#" className="text-gray-600 hover:text-blue-600">
+            {t('product')}
+          </a>
+          <a href="#" className="text-gray-600 hover:text-blue-600">
+            {t('integrations')}
+          </a>
+          <a href="#" className="text-gray-600 hover:text-blue-600">
+            {t('training')}
+          </a>
+          <a href="#" className="text-gray-600 hover:text-blue-600">
+            {t('prices')}
+          </a>
+          <a href="#" className="text-gray-600 hover:text-blue-600">
+            {t('accountingCompanies')}
+          </a>
         </div>
         <div className="flex items-center space-x-4">
           <LanguageSwitcher />
@@ -40,13 +48,11 @@ const LandingPage: React.FC = () => {
           </div>
         </div>
       </nav>
-      
+
       {/* Main header */}
       <div className="flex items-center justify-between p-10 bg-blue-500 text-white">
         <div className="max-w-lg">
-          <h1 className="text-4xl font-bold mb-4">
-            {t('mainHeader')}
-          </h1>
+          <h1 className="text-4xl font-bold mb-4">{t('mainHeader')}</h1>
           <button
             onClick={() => navigate('/auth/register')}
             className="px-6 py-3 bg-green-500 text-white rounded hover:bg-green-600"

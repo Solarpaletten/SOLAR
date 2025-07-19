@@ -5,8 +5,8 @@ import axios from 'axios';
 //   ? import.meta.env.VITE_API_URL // для продакшн берем из .env
 //   : ''; // для локальной разработки используем пустую строку
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
-const BASE_URL = `${API_URL}/api`;  // формируем полный путь
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.solar.swapoil.de';
+const BASE_URL = `${API_URL}/api`; // формируем полный путь
 
 // Создаем экземпляр axios с базовым URL
 export const api = axios.create({
@@ -52,6 +52,3 @@ export const logout = () => {
 export const checkDatabaseConnection = async () => {
   return await api.get('/health');
 };
-
-// Экспортируем axios по умолчанию для совместимости с существующим кодом
-export default api;

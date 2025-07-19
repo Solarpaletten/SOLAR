@@ -38,18 +38,18 @@ export const withMockFallback = async <T>(
       return await apiCall();
     } catch (error) {
       console.error('API call failed:', error);
-      
+
       // В случае ошибки, используем моки только в режиме разработки
       if (isDevelopment) {
         console.warn('Falling back to mock data due to API error');
         return mockData;
       }
-      
+
       // Иначе пробрасываем ошибку дальше
       throw error;
     }
   }
-  
+
   // Если моки включены - возвращаем мок-данные
   console.info('Using mock data');
   return mockData;

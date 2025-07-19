@@ -2,7 +2,13 @@
 import React, { useState } from 'react';
 import { useAssistant } from './AssistantContext';
 import { AssistantLanguage } from '../../types/assistantTypes';
-import { FaGlobe, FaRegTimesCircle, FaMicrophone, FaMicrophoneSlash, FaPaperPlane } from 'react-icons/fa';
+import {
+  FaGlobe,
+  FaRegTimesCircle,
+  FaMicrophone,
+  FaMicrophoneSlash,
+  FaPaperPlane,
+} from 'react-icons/fa';
 
 const AssistantPanel: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -23,7 +29,7 @@ const AssistantPanel: React.FC = () => {
     setUserLanguage,
     setTargetLanguage,
     error,
-    successMessage
+    successMessage,
   } = useAssistant();
 
   const [inputText, setInputText] = useState('');
@@ -64,7 +70,9 @@ const AssistantPanel: React.FC = () => {
       <button
         onClick={togglePanel}
         className={`fixed bottom-6 right-6 p-4 rounded-full shadow-lg transition-colors z-50 ${
-          isActive ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-500 hover:bg-blue-600'
+          isActive
+            ? 'bg-green-500 hover:bg-green-600'
+            : 'bg-blue-500 hover:bg-blue-600'
         }`}
       >
         <FaGlobe className="text-white text-2xl" />
@@ -77,7 +85,10 @@ const AssistantPanel: React.FC = () => {
             {/* Шапка панели */}
             <div className="bg-blue-600 text-white p-4 flex justify-between items-center">
               <h2 className="text-xl font-bold">SOLAR Ассистент</h2>
-              <button onClick={togglePanel} className="text-white hover:text-gray-200">
+              <button
+                onClick={togglePanel}
+                className="text-white hover:text-gray-200"
+              >
                 <FaRegTimesCircle className="text-xl" />
               </button>
             </div>
@@ -103,15 +114,21 @@ const AssistantPanel: React.FC = () => {
                     disabled={isConnecting}
                     className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300 text-lg"
                   >
-                    {isConnecting ? 'Подключение...' : 'Запустить ассистента SOLAR'}
+                    {isConnecting
+                      ? 'Подключение...'
+                      : 'Запустить ассистента SOLAR'}
                   </button>
                 </div>
               ) : !activeSession ? (
                 <div className="flex-1 flex flex-col items-center justify-center">
-                  <h3 className="text-xl font-semibold mb-4">Создать новую сессию</h3>
+                  <h3 className="text-xl font-semibold mb-4">
+                    Создать новую сессию
+                  </h3>
                   <div className="w-full max-w-md">
                     <div className="mb-4">
-                      <label className="block text-gray-700 mb-2">Название сессии</label>
+                      <label className="block text-gray-700 mb-2">
+                        Название сессии
+                      </label>
                       <input
                         type="text"
                         value={sessionName}
@@ -131,32 +148,60 @@ const AssistantPanel: React.FC = () => {
               ) : (
                 <div className="flex-1 flex flex-col h-full">
                   <div className="mb-4 flex justify-between items-center">
-                    <h3 className="text-lg font-medium">Сессия: {activeSession.name}</h3>
+                    <h3 className="text-lg font-medium">
+                      Сессия: {activeSession.name}
+                    </h3>
                     <div className="flex space-x-4">
                       <div>
-                        <label className="block text-sm text-gray-600">Ваш язык:</label>
+                        <label className="block text-sm text-gray-600">
+                          Ваш язык:
+                        </label>
                         <select
                           value={userLanguage}
-                          onChange={(e) => setUserLanguage(e.target.value as AssistantLanguage)}
+                          onChange={(e) =>
+                            setUserLanguage(e.target.value as AssistantLanguage)
+                          }
                           className="px-2 py-1 border rounded"
                         >
-                          <option value={AssistantLanguage.ENGLISH}>English</option>
-                          <option value={AssistantLanguage.RUSSIAN}>Русский</option>
-                          <option value={AssistantLanguage.GERMAN}>Deutsch</option>
-                          <option value={AssistantLanguage.POLISH}>Polski</option>
+                          <option value={AssistantLanguage.ENGLISH}>
+                            English
+                          </option>
+                          <option value={AssistantLanguage.RUSSIAN}>
+                            Русский
+                          </option>
+                          <option value={AssistantLanguage.GERMAN}>
+                            Deutsch
+                          </option>
+                          <option value={AssistantLanguage.POLISH}>
+                            Polski
+                          </option>
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm text-gray-600">Язык собеседника:</label>
+                        <label className="block text-sm text-gray-600">
+                          Язык собеседника:
+                        </label>
                         <select
                           value={targetLanguage}
-                          onChange={(e) => setTargetLanguage(e.target.value as AssistantLanguage)}
+                          onChange={(e) =>
+                            setTargetLanguage(
+                              e.target.value as AssistantLanguage
+                            )
+                          }
                           className="px-2 py-1 border rounded"
                         >
-                          <option value={AssistantLanguage.ENGLISH}>English</option>
-                          <option value={AssistantLanguage.RUSSIAN}>Русский</option>
-                          <option value={AssistantLanguage.GERMAN}>Deutsch</option>
-                          <option value={AssistantLanguage.POLISH}>Polski</option>
+                          <option value={AssistantLanguage.ENGLISH}>
+                            English
+                          </option>
+                          <option value={AssistantLanguage.RUSSIAN}>
+                            Русский
+                          </option>
+                          <option value={AssistantLanguage.GERMAN}>
+                            Deutsch
+                          </option>
+                          <option value={AssistantLanguage.POLISH}>
+                            Polski
+                          </option>
                         </select>
                       </div>
                     </div>
@@ -180,9 +225,13 @@ const AssistantPanel: React.FC = () => {
                             }`}
                           >
                             <div className="font-medium text-xs text-gray-700 mb-1">
-                              {message.senderType === 'user' ? 'Вы' : 'Собеседник'}
+                              {message.senderType === 'user'
+                                ? 'Вы'
+                                : 'Собеседник'}
                             </div>
-                            <div className="text-gray-800">{message.originalContent}</div>
+                            <div className="text-gray-800">
+                              {message.originalContent}
+                            </div>
                             {message.translatedContent && (
                               <div className="text-sm mt-1 text-gray-600 italic">
                                 {message.translatedContent}

@@ -1,7 +1,13 @@
 /**
  * Типы статусов закупки
  */
-export type PurchaseStatus = 'pending' | 'paid' | 'cancelled' | 'delivered' | 'completed' | 'draft';
+export type PurchaseStatus =
+  | 'pending'
+  | 'paid'
+  | 'cancelled'
+  | 'delivered'
+  | 'completed'
+  | 'draft';
 
 /**
  * Типы валют
@@ -79,12 +85,17 @@ export interface PurchaseFilter {
 /**
  * Интерфейс для создания закупки
  */
-export type CreatePurchaseDto = Omit<Purchase, 'id' | 'createdAt' | 'updatedAt'>;
+export type CreatePurchaseDto = Omit<
+  Purchase,
+  'id' | 'createdAt' | 'updatedAt'
+>;
 
 /**
  * Интерфейс для обновления закупки
  */
-export type UpdatePurchaseDto = Partial<Omit<Purchase, 'id' | 'createdAt' | 'updatedAt'>>;
+export type UpdatePurchaseDto = Partial<
+  Omit<Purchase, 'id' | 'createdAt' | 'updatedAt'>
+>;
 
 /**
  * Интерфейс для создания позиции закупки
@@ -111,7 +122,7 @@ export enum PurchaseAction {
   CHANGE_STATUS = 'change_status',
   PRINT = 'print',
   EXPORT = 'export',
-  DUPLICATE = 'duplicate'
+  DUPLICATE = 'duplicate',
 }
 
 /**

@@ -48,22 +48,34 @@ export interface ClientInfo {
 }
 
 // Получение метрик активности по сессиям
-export const getSessionMetrics = async (timeRange: TimeRange = 'hour'): Promise<SessionMetrics> => {
-  const response = await api.get<SessionMetrics>(`/admin/sessions/metrics?timeRange=${timeRange}`);
+export const getSessionMetrics = async (
+  timeRange: TimeRange = 'hour'
+): Promise<SessionMetrics> => {
+  const response = await api.get<SessionMetrics>(
+    `/admin/sessions/metrics?timeRange=${timeRange}`
+  );
   return response.data;
 };
 
 // Экспорт метрик в CSV формате
-export const exportSessionMetricsCSV = (timeRange: TimeRange = 'hour'): void => {
+export const exportSessionMetricsCSV = (
+  timeRange: TimeRange = 'hour'
+): void => {
   // Используем window.open для скачивания файла
-  window.open(`${api.defaults.baseURL}/admin/sessions/metrics/export-csv?timeRange=${timeRange}`, '_blank');
+  window.open(
+    `${api.defaults.baseURL}/admin/sessions/metrics/export-csv?timeRange=${timeRange}`,
+    '_blank'
+  );
 };
 
 // Получение детальной статистики по сессиям
-export const getDetailedSessionStats = async (): Promise<DetailedSessionStats> => {
-  const response = await api.get<DetailedSessionStats>('/admin/sessions/detailed');
-  return response.data;
-};
+export const getDetailedSessionStats =
+  async (): Promise<DetailedSessionStats> => {
+    const response = await api.get<DetailedSessionStats>(
+      '/admin/sessions/detailed'
+    );
+    return response.data;
+  };
 
 // Получение списка компаний с их статусом email-подтверждения
 export const getCompanies = async (): Promise<Company[]> => {
