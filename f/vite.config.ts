@@ -30,14 +30,11 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'https://npmbk-ppnp.onrender.com',
+        target: 'http://localhost:4000',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path
       }
     }
-  },
-  preview: {
-    allowedHosts: ['npmfr-snpq.onrender.com'], // Разрешаем хост для предосмотра
-  },
+  }
 });

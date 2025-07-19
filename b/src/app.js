@@ -98,6 +98,7 @@ apiRouter.use('/assistant', require('./routes/assistantRoutes'));
 apiRouter.use('/bank-operations', require('./routes/bankRoutes'));
 apiRouter.use('/company-context', require('./routes/companyContextRoutes'));
 
+// Тестовый маршрут для проверки работы API
 apiRouter.get('/test', (req, res) => {
   res.json({
     message: 'Backend API is working!',
@@ -105,6 +106,7 @@ apiRouter.get('/test', (req, res) => {
   });
 });
 
+// Подключаем API маршруты к приложению
 app.use('/api', apiRouter);
 
 // Health-check endpoint с информацией о таблицах
