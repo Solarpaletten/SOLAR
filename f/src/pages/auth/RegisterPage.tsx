@@ -13,7 +13,6 @@ interface RegisterFormData {
   password: string;
 }
 
-
 const RegisterPage: React.FC = () => {
   const { t } = useTranslation();
   const location = useLocation();
@@ -59,31 +58,45 @@ const RegisterPage: React.FC = () => {
     setSuccessMessage(null);
 
     try {
-      const response = await authService.register({email: formData.email, password: formData.password, username: formData.name, name: formData.name, phone: formData.phone, surname: formData.surname});
-      
+      const response = await authService.register({
+        email: formData.email,
+        password: formData.password,
+        username: formData.name,
+        name: formData.name,
+        phone: formData.phone,
+        surname: formData.surname,
+      });
+
       console.log('Registration response:', response); // Для отладки
-      
+
       // Сохраняем токен в localStorage
       if (response.token) {
         localStorage.setItem('token', response.token);
       } else {
         console.error('No token received in registration response');
       }
-      
+
       // Сохраняем другие данные
       localStorage.setItem('companyName', formData.name);
       localStorage.setItem('email', formData.email);
       localStorage.setItem('phone', formData.phone);
       // После регистрации, внутри блока try после сохранения токена
       localStorage.setItem('needsOnboarding', 'true');
-      
+
       // Проверяем, было ли отправлено письмо с подтверждением email
       if (response.emailVerificationSent) {
-        setSuccessMessage(response.message || t('Registration successful! Please check your email to confirm your account before logging in.'));
+        setSuccessMessage(
+          response.message ||
+            t(
+              'Registration successful! Please check your email to confirm your account before logging in.'
+            )
+        );
       } else {
-        setSuccessMessage(`${t('Registration successful')}! ${t('Your login')}: ${formData.email}`);
+        setSuccessMessage(
+          `${t('Registration successful')}! ${t('Your login')}: ${formData.email}`
+        );
       }
-      
+
       // Перенаправляем на онбординг с небольшой задержкой
       setTimeout(() => {
         navigate('/onboarding', { replace: true });
@@ -99,11 +112,21 @@ const RegisterPage: React.FC = () => {
       <nav className="bg-white shadow p-4 flex justify-between items-center">
         <div className="text-2xl font-bold text-blue-600">LEANID SOLAR</div>
         <div className="flex space-x-4">
-          <a href="#" className="text-gray-600 hover:text-blue-600">{t('product')}</a>
-          <a href="#" className="text-gray-600 hover:text-blue-600">{t('integrations')}</a>
-          <a href="#" className="text-gray-600 hover:text-blue-600">{t('training')}</a>
-          <a href="#" className="text-gray-600 hover:text-blue-600">{t('prices')}</a>
-          <a href="#" className="text-gray-600 hover:text-blue-600">{t('accountingCompanies')}</a>
+          <a href="#" className="text-gray-600 hover:text-blue-600">
+            {t('product')}
+          </a>
+          <a href="#" className="text-gray-600 hover:text-blue-600">
+            {t('integrations')}
+          </a>
+          <a href="#" className="text-gray-600 hover:text-blue-600">
+            {t('training')}
+          </a>
+          <a href="#" className="text-gray-600 hover:text-blue-600">
+            {t('prices')}
+          </a>
+          <a href="#" className="text-gray-600 hover:text-blue-600">
+            {t('accountingCompanies')}
+          </a>
         </div>
         <div className="flex items-center space-x-4">
           <LanguageSwitcher />
@@ -127,8 +150,10 @@ const RegisterPage: React.FC = () => {
       {/* Registration form */}
       <div className="flex-grow flex items-center justify-center">
         <div className="max-w-md w-full p-6 bg-white rounded shadow">
-          <h1 className="text-2xl font-bold mb-4 text-center">{t('registerTitle')}</h1>
-          
+          <h1 className="text-2xl font-bold mb-4 text-center">
+            {t('registerTitle')}
+          </h1>
+
           {messageFromLocation && (
             <div className="p-2 text-sm text-green-700 bg-green-100 border border-green-300 rounded mb-4">
               {messageFromLocation}
@@ -136,10 +161,16 @@ const RegisterPage: React.FC = () => {
           )}
 
           <div className="flex justify-center space-x-2 mb-4">
-            <button className="px-4 py-2 bg-blue-600 text-white rounded">Facebook</button>
-            <button className="px-4 py-2 bg-red-600 text-white rounded">Google</button>
+            <button className="px-4 py-2 bg-blue-600 text-white rounded">
+              Facebook
+            </button>
+            <button className="px-4 py-2 bg-red-600 text-white rounded">
+              Google
+            </button>
           </div>
-          <p className="text-center text-gray-600 mb-4">{t('Or fill out the registration form')}</p>
+          <p className="text-center text-gray-600 mb-4">
+            {t('Or fill out the registration form')}
+          </p>
           {successMessage && (
             <div className="p-2 text-sm text-green-700 bg-green-100 border border-green-300 rounded mb-4">
               {successMessage}
@@ -152,7 +183,9 @@ const RegisterPage: React.FC = () => {
           )}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">{t('email')} *</label>
+              <label className="block text-sm font-medium text-gray-700">
+                {t('email')} *
+              </label>
               <input
                 type="email"
                 name="email"
@@ -163,7 +196,9 @@ const RegisterPage: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">{t('phone')} *</label>
+              <label className="block text-sm font-medium text-gray-700">
+                {t('phone')} *
+              </label>
               <input
                 type="text"
                 name="phone"
@@ -174,7 +209,9 @@ const RegisterPage: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">{t('firstName')} *</label>
+              <label className="block text-sm font-medium text-gray-700">
+                {t('firstName')} *
+              </label>
               <input
                 type="text"
                 name="name"
@@ -185,7 +222,9 @@ const RegisterPage: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">{t('lastName')} *</label>
+              <label className="block text-sm font-medium text-gray-700">
+                {t('lastName')} *
+              </label>
               <input
                 type="text"
                 name="surname"
@@ -196,7 +235,9 @@ const RegisterPage: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">{t('password')} *</label>
+              <label className="block text-sm font-medium text-gray-700">
+                {t('password')} *
+              </label>
               <input
                 type="password"
                 name="password"
@@ -214,7 +255,10 @@ const RegisterPage: React.FC = () => {
                 className="mr-2"
               />
               <label className="text-sm text-gray-600">
-                {t('agreeToTerms')} <a href="#" className="text-blue-500 hover:underline">terms</a>
+                {t('agreeToTerms')}{' '}
+                <a href="#" className="text-blue-500 hover:underline">
+                  terms
+                </a>
               </label>
             </div>
 
@@ -223,13 +267,15 @@ const RegisterPage: React.FC = () => {
               <button
                 type="button"
                 hidden
-                onClick={() => setFormData({
-                  email: 'test@example.com',
-                  phone: '+49123456789',
-                  name: 'Test',
-                  surname: 'User',
-                  password: 'test1234',
-                })}
+                onClick={() =>
+                  setFormData({
+                    email: 'test@example.com',
+                    phone: '+49123456789',
+                    name: 'Test',
+                    surname: 'User',
+                    password: 'test1234',
+                  })
+                }
               >
                 Autofill
               </button>

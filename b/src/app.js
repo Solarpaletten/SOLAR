@@ -5,6 +5,9 @@ const compression = require('compression');
 const session = require('express-session');
 const { logger } = require('./config/logger');
 const prismaManager = require('./utils/prismaManager');
+// Добавь в app.js после auth middleware
+const { companyContextMiddleware } = require('./middleware/companySelector');
+
 
 const app = express();
 
@@ -12,7 +15,7 @@ const app = express();
 app.use(compression());
 app.use(
   cors({
-    origin: ['https://npmfr-snpq.onrender.com', 'http://localhost:3000', 'http://localhost:5173', 'http://207.154.220.86'],
+    origin: ['http://localhost:3000', 'http://localhost:5173', 'http://207.154.220.86', 'https://solar.swapoil.de'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -79,20 +82,21 @@ app.use((req, res, next) => {
 
 // Импорт маршрутов
 const apiRouter = express.Router();
+
+// Добавляем company context middleware к apiRouter
+apiRouter.use(companyContextMiddleware);
+
 apiRouter.use('/auth', require('./routes/authRoutes'));
 apiRouter.use('/clients', require('./routes/clientsRoutes'));
 apiRouter.use('/companies', require('./routes/companyRoutes'));
 apiRouter.use('/stats', require('./routes/statsRoutes'));
 apiRouter.use('/admin', require('./routes/adminRoutes'));
-
-// Добавить новый маршрут для онбординга
 apiRouter.use('/onboarding', require('./routes/onboardingRoutes'));
-
-// Добавим маршруты для продаж и покупок
 apiRouter.use('/sales', require('./routes/salesRoutes'));
 apiRouter.use('/purchases', require('./routes/purchasesRoutes'));
-// В файле app.js добавить:
 apiRouter.use('/assistant', require('./routes/assistantRoutes'));
+apiRouter.use('/bank-operations', require('./routes/bankRoutes'));
+apiRouter.use('/company-context', require('./routes/companyContextRoutes'));
 
 apiRouter.get('/test', (req, res) => {
   res.json({

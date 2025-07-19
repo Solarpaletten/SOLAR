@@ -31,8 +31,12 @@ const PurchasesDetailPage: React.FC = () => {
         // Получаем имя поставщика через client_id
         if (purchaseData.client_id) {
           try {
-            const supplierData = await clientsService.getClientById(purchaseData.client_id);
-            setSupplierName(supplierData ? supplierData.name : 'Неизвестный поставщик');
+            const supplierData = await clientsService.getClientById(
+              purchaseData.client_id
+            );
+            setSupplierName(
+              supplierData ? supplierData.name : 'Неизвестный поставщик'
+            );
           } catch (supplierErr) {
             console.error('Error loading supplier data:', supplierErr);
             setSupplierName('Неизвестный поставщик');
@@ -42,7 +46,9 @@ const PurchasesDetailPage: React.FC = () => {
         }
       } catch (err: any) {
         console.error('Error loading purchase data:', err);
-        setError(err.response?.data?.message || 'Не удалось загрузить данные закупки');
+        setError(
+          err.response?.data?.message || 'Не удалось загрузить данные закупки'
+        );
       } finally {
         setIsLoading(false);
       }
@@ -68,20 +74,31 @@ const PurchasesDetailPage: React.FC = () => {
   };
 
   const handleArchive = async () => {
-    if (!id || !window.confirm('Вы уверены, что хотите архивировать эту закупку?')) return;
+    if (
+      !id ||
+      !window.confirm('Вы уверены, что хотите архивировать эту закупку?')
+    )
+      return;
     try {
       await purchasesService.updatePurchase(id, { archived: true });
-      navigate('/warehouse/purchases', { state: { message: 'Закупка успешно перемещена в архив' } });
+      navigate('/warehouse/purchases', {
+        state: { message: 'Закупка успешно перемещена в архив' },
+      });
     } catch (err: any) {
       console.error('Error archiving purchase:', err);
-      setError(err.response?.data?.message || 'Не удалось архивировать закупку');
+      setError(
+        err.response?.data?.message || 'Не удалось архивировать закупку'
+      );
     }
   };
 
   const handleChangeStatus = async (newStatus: PurchaseStatus) => {
     if (!id) return;
     try {
-      const updatedPurchase = await purchasesService.updatePurchaseStatus(id, newStatus);
+      const updatedPurchase = await purchasesService.updatePurchaseStatus(
+        id,
+        newStatus
+      );
       setPurchase(updatedPurchase);
       setSuccessMessage('Статус закупки успешно обновлен');
       setTimeout(() => setSuccessMessage(null), 5000);
@@ -155,7 +172,10 @@ const PurchasesDetailPage: React.FC = () => {
       breadcrumbs={[
         { label: 'Главная', path: '/' },
         { label: 'Закупки', path: '/warehouse/purchases' },
-        { label: `Закупка №${purchase?.invoiceNumber}`, path: `/warehouse/purchases/${id}` },
+        {
+          label: `Закупка №${purchase?.invoiceNumber}`,
+          path: `/warehouse/purchases/${id}`,
+        },
       ]}
     >
       {successMessage && (
@@ -172,8 +192,12 @@ const PurchasesDetailPage: React.FC = () => {
 
       <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
         <div className="px-4 py-5 sm:px-6">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">Информация о закупке</h3>
-          <p className="mt-1 max-w-2xl text-sm text-gray-500">Подробные данные и статус документа</p>
+          <h3 className="text-lg leading-6 font-medium text-gray-900">
+            Информация о закупке
+          </h3>
+          <p className="mt-1 max-w-2xl text-sm text-gray-500">
+            Подробные данные и статус документа
+          </p>
         </div>
         <div className="border-t border-gray-200">
           <dl>
@@ -198,13 +222,17 @@ const PurchasesDetailPage: React.FC = () => {
             <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="text-sm font-medium text-gray-500">Сумма</dt>
               <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                {purchase ? formatCurrency(purchase.totalAmount, purchase.currency) : '—'}
+                {purchase
+                  ? formatCurrency(purchase.totalAmount, purchase.currency)
+                  : '—'}
               </dd>
             </div>
             <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="text-sm font-medium text-gray-500">Статус</dt>
               <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                {purchase?.status && <PurchasesStatusBadge status={purchase.status} />}
+                {purchase?.status && (
+                  <PurchasesStatusBadge status={purchase.status} />
+                )}
               </dd>
             </div>
             <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -240,7 +268,9 @@ const PurchasesDetailPage: React.FC = () => {
 
       {purchase?.items && purchase.items.length > 0 && (
         <div className="mt-8">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Позиции закупки</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
+            Позиции закупки
+          </h3>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">

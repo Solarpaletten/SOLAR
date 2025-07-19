@@ -19,7 +19,7 @@ const PurchasesActions: React.FC<PurchasesActionsProps> = ({
   selectedItems = [],
   hasExportFeature = true,
   hasImportFeature = true,
-  hasBulkActions = false
+  hasBulkActions = false,
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -44,7 +44,9 @@ const PurchasesActions: React.FC<PurchasesActionsProps> = ({
     <div className="flex items-center justify-between bg-gray-50 px-4 py-2 border-b border-gray-200">
       {hasSelection ? (
         <div className="flex items-center space-x-2">
-          <span className="text-gray-600 text-sm">Выбрано: {selectedItems.length}</span>
+          <span className="text-gray-600 text-sm">
+            Выбрано: {selectedItems.length}
+          </span>
           <button
             onClick={() => onBulkDelete && onBulkDelete(selectedItems)}
             className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
@@ -66,14 +68,19 @@ const PurchasesActions: React.FC<PurchasesActionsProps> = ({
             onClick={onCreateNew}
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              className="h-4 w-4 mr-1" 
-              fill="none" 
-              viewBox="0 0 24 24" 
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4 mr-1"
+              fill="none"
+              viewBox="0 0 24 24"
               stroke="currentColor"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
             </svg>
             New Purchase
           </button>

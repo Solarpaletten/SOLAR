@@ -9,7 +9,7 @@
  */
 export const standardizeCompanyCode = (code: string): string => {
   if (!code) return '';
-  
+
   // Удаляем суффикс временной метки, если он есть
   // Формат: "14926445_525518" -> "14926445"
   return code.split('_')[0];

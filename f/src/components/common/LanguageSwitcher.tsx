@@ -10,13 +10,13 @@ const LanguageSwitcher: React.FC = () => {
 
   return (
     <div className="flex gap-2">
-      <button 
+      <button
         className={`px-2 py-1 rounded ${i18n.language === 'ru' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
         onClick={() => changeLanguage('ru')}
       >
         RU
       </button>
-      <button 
+      <button
         className={`px-2 py-1 rounded ${i18n.language === 'en' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
         onClick={() => changeLanguage('en')}
       >

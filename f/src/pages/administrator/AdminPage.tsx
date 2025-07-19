@@ -8,8 +8,8 @@ const DebugInfo: React.FC = () => {
     <div className="text-sm text-gray-500 mt-2">
       Frontend URL: {window.location.origin}
       <br />
-      Backend URL:{' '}
-    {import.meta.env.VITE_API_URL || '/api'} {/* Используем Vite.env */}
+      Backend URL: {import.meta.env.VITE_API_URL || '/api'}{' '}
+      {/* Используем Vite.env */}
     </div>
   );
 };
@@ -78,7 +78,7 @@ const AdminPage: React.FC = () => {
   // Добавляем состояние для хранения статуса компаний
   const [companies, setCompanies] = useState<any[]>([]);
   const [loadingCompanies, setLoadingCompanies] = useState(false);
-  
+
   // Получаем список компаний и их статус email-подтверждения
   useEffect(() => {
     if (isAdmin) {
@@ -93,7 +93,7 @@ const AdminPage: React.FC = () => {
           setLoadingCompanies(false);
         }
       };
-      
+
       fetchCompanies();
     }
   }, [isAdmin]);
@@ -104,8 +104,8 @@ const AdminPage: React.FC = () => {
 
       {/* Навигация по административным функциям */}
       <div className="mb-6 flex space-x-2">
-        <a 
-          href="/administrator/analytics" 
+        <a
+          href="/administrator/analytics"
           className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded"
         >
           Session Analytics Dashboard
@@ -114,11 +114,13 @@ const AdminPage: React.FC = () => {
 
       {/* Компонент отладки */}
       <DebugInfo />
-      
+
       {/* Секция статуса подтверждения email */}
       <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-        <h2 className="text-xl font-medium mb-4">Company Email Verification Status</h2>
-        
+        <h2 className="text-xl font-medium mb-4">
+          Company Email Verification Status
+        </h2>
+
         {loadingCompanies ? (
           <div className="animate-pulse">Loading company data...</div>
         ) : (
@@ -167,7 +169,10 @@ const AdminPage: React.FC = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500">
+                  <td
+                    colSpan={4}
+                    className="px-6 py-4 text-center text-sm text-gray-500"
+                  >
                     No companies found
                   </td>
                 </tr>

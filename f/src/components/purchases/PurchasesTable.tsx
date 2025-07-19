@@ -82,8 +82,10 @@ const PurchasesTable: React.FC<PurchasesTableProps> = ({
     });
   };
 
-  if (isLoading) return <div className="flex justify-center p-4">Загрузка данных...</div>;
-  if (error) return <div className="text-red-500 p-4">Ошибка: {error.message}</div>;
+  if (isLoading)
+    return <div className="flex justify-center p-4">Загрузка данных...</div>;
+  if (error)
+    return <div className="text-red-500 p-4">Ошибка: {error.message}</div>;
 
   const totalAmount = purchases.reduce((sum, p) => sum + p.totalAmount, 0);
 
@@ -91,7 +93,9 @@ const PurchasesTable: React.FC<PurchasesTableProps> = ({
     <div className="overflow-x-auto border border-gray-200 rounded-md mb-4 text-xs font-light">
       {selectedRows.length > 0 && (
         <div className="flex items-center justify-between bg-blue-50 px-4 py-2 border-b border-blue-200">
-          <span className="text-sm text-blue-700">Выбрано: {selectedRows.length}</span>
+          <span className="text-sm text-blue-700">
+            Выбрано: {selectedRows.length}
+          </span>
           <div className="flex space-x-2">
             <button
               className="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600"
@@ -124,9 +128,15 @@ const PurchasesTable: React.FC<PurchasesTableProps> = ({
                 onChange={handleSelectAll}
               />
             </th>
-            <th className="px-3 py-1 text-left text-gray-500 uppercase">Дата</th>
-            <th className="px-3 py-1 text-left text-gray-500 uppercase">Поставщик</th>
-            <th className="px-3 py-1 text-right text-gray-500 uppercase">Сумма</th>
+            <th className="px-3 py-1 text-left text-gray-500 uppercase">
+              Дата
+            </th>
+            <th className="px-3 py-1 text-left text-gray-500 uppercase">
+              Поставщик
+            </th>
+            <th className="px-3 py-1 text-right text-gray-500 uppercase">
+              Сумма
+            </th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
@@ -156,7 +166,9 @@ const PurchasesTable: React.FC<PurchasesTableProps> = ({
             <td colSpan={3} className="px-3 py-2 font-medium text-gray-600">
               Всего:
             </td>
-            <td className="px-3 py-2 text-right font-semibold">{formatAmount(totalAmount)} EUR</td>
+            <td className="px-3 py-2 text-right font-semibold">
+              {formatAmount(totalAmount)} EUR
+            </td>
           </tr>
         </tfoot>
       </table>

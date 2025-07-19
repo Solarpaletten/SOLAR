@@ -1,3 +1,279 @@
+# 🏗️ Solar ERP - Двухуровневая Архитектура с Мульти-Схемой Prisma
+
+## 📊 Обзор Архитектуры
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    SOLAR ERP СИСТЕМА                        │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌─────────────────┐    ┌─────────────────────────────────┐ │
+│  │   ACCOUNT LEVEL │    │        COMPANY LEVEL            │ │
+│  │                 │    │                                 │ │
+│  │ • Управление    │    │ • Работа внутри компании        │ │
+│  │   пользователями│    │ • Клиенты, продажи, склад      │ │
+│  │ • Создание      │    │ • Финансы, отчеты               │ │
+│  │   компаний      │    │ • Документооборот               │ │
+│  │ • Системные     │    │ • Производство                  │ │
+│  │   настройки     │    │                                 │ │
+│  └─────────────────┘    └─────────────────────────────────┘ │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## 🗄️ База Данных - Мульти-Схема Структура
+
+```sql
+Database: solar_erp
+├── public schema (ACCOUNT LEVEL)
+│   ├── users                    -- Пользователи системы
+│   ├── companies               -- Компании  
+│   ├── company_users           -- Связь пользователи-компании
+│   ├── user_sessions           -- Сессии пользователей
+│   └── system_settings         -- Системные настройки
+│
+├── company_1 schema (COMPANY LEVEL - Desert Solar DMCC)
+│   ├── clients                 -- Клиенты компании
+│   ├── products               -- Продукты
+│   ├── sales                  -- Продажи
+│   ├── purchases              -- Покупки
+│   ├── warehouses             -- Склады
+│   ├── bank_operations        -- Банковские операции
+│   └── chart_of_accounts      -- План счетов
+│
+├── company_2 schema (COMPANY LEVEL - Emirates Energy)
+│   ├── clients
+│   ├── products
+│   ├── sales
+│   └── ... (аналогично company_1)
+│
+└── company_N schema (COMPANY LEVEL - Другие компании)
+    └── ... (аналогично)
+```
+
+## 🌐 Frontend - URL Структура
+
+```
+┌── ACCOUNT LEVEL ──────────────────────────────────────────┐
+│                                                           │
+│ solar.swapoil.de/account/dashboard                       │ ← Главная система
+│ solar.swapoil.de/account/companies                       │ ← Управление компаниями
+│ solar.swapoil.de/account/users                          │ ← Управление пользователями
+│ solar.swapoil.de/account/settings                       │ ← Системные настройки
+│                                                           │
+│ ┌─ ТРАНЗИТНАЯ СТРАНИЦА ─────────────────────────────────┐ │
+│ │ solar.swapoil.de/account/companies/select?id=1        │ │ ← 2 сек переход
+│ └───────────────────────────────────────────────────────┘ │
+│                          ↓                                │
+└──────────────────────────────────────────────────────────┘
+                           ↓
+┌── COMPANY LEVEL ──────────────────────────────────────────┐
+│                                                           │
+│ solar.swapoil.de/dashboard                               │ ← Дашборд компании
+│ solar.swapoil.de/clients                                 │ ← Клиенты
+│ solar.swapoil.de/warehouse                               │ ← Склад
+│ solar.swapoil.de/sales                                   │ ← Продажи
+│ solar.swapoil.de/bank                                    │ ← Банк
+│ solar.swapoil.de/reports                                 │ ← Отчеты
+│                                                           │
+└───────────────────────────────────────────────────────────┘
+```
+
+## 🎨 Frontend - Компоненты
+
+```
+src/
+├── components/
+│   └── layout/
+│       ├── account/                    👈 ACCOUNT LEVEL
+│       │   ├── AccountLayout.tsx       -- Layout для системы
+│       │   ├── AccountSidebar.tsx      -- Сайдбар системы
+│       │   └── AccountHeader.tsx       -- Header системы
+│       │
+│       └── company/                    👈 COMPANY LEVEL  
+│           ├── CompanyLayout.tsx       -- Layout для компании
+│           ├── CompanySidebar.tsx      -- Сайдбар компании
+│           └── CompanyHeader.tsx       -- Header компании
+│
+├── pages/
+│   ├── account/                        👈 СТРАНИЦЫ СИСТЕМЫ
+│   │   ├── dashboard/
+│   │   │   └── AccountDashboardPage.tsx  -- Выбор компаний
+│   │   ├── companies/
+│   │   │   ├── CompaniesPage.tsx         -- Управление компаниями
+│   │   │   └── CompanyTransitPage.tsx    -- Транзит в компанию
+│   │   └── users/
+│   │       └── UsersPage.tsx             -- Управление пользователями
+│   │
+│   └── company/                        👈 СТРАНИЦЫ КОМПАНИИ
+│       ├── dashboard/
+│       │   └── DashboardPage.tsx         -- Дашборд компании
+│       ├── clients/
+│       │   ├── ClientsPage.tsx           -- Клиенты компании
+│       │   └── ClientDetailPage.tsx      -- Детали клиента
+│       ├── warehouse/
+│       │   └── WarehousePage.tsx         -- Склад компании
+│       └── sales/
+│           └── SalesPage.tsx             -- Продажи компании
+```
+
+## 🔧 Backend - API Структура
+
+```
+┌── ACCOUNT LEVEL API ──────────────────────────────────────┐
+│                                                           │
+│ GET  /api/account/companies           -- Список компаний  │
+│ POST /api/account/companies           -- Создать компанию │
+│ GET  /api/account/users               -- Пользователи     │
+│ POST /api/account/users               -- Создать юзера    │
+│ POST /api/account/companies/select    -- Выбрать компанию │
+│                                                           │
+│ 🔄 Prisma: getAccountPrisma()         -- БЕЗ фильтрации  │
+│ 📊 Schema: public                                         │
+│                                                           │
+└───────────────────────────────────────────────────────────┘
+                           ↓
+┌── COMPANY LEVEL API ──────────────────────────────────────┐
+│                                                           │
+│ GET  /api/clients                     -- Клиенты         │
+│ POST /api/clients                     -- Создать клиента │
+│ GET  /api/sales                       -- Продажи         │ 
+│ POST /api/sales                       -- Создать продажу │
+│ GET  /api/warehouse                   -- Склад           │
+│                                                           │
+│ 🔄 Prisma: getCompanyPrisma(id)       -- С фильтрацией   │
+│ 📊 Schema: company_1, company_2, ...                     │
+│ 🔑 Header: X-Company-Id: 1                               │
+│                                                           │
+└───────────────────────────────────────────────────────────┘
+```
+
+## 🎯 Prisma Middleware - Автоматическая Фильтрация
+
+```javascript
+// Автоматическая фильтрация по company_id
+const COMPANY_SCOPED_MODELS = [
+  'clients', 'products', 'sales', 'purchases', 
+  'warehouses', 'bank_operations'
+];
+
+// CREATE - автоматически добавляет company_id
+prisma.clients.create({
+  data: { name: 'New Client' }
+  // ↓ Автоматически становится:
+  // data: { name: 'New Client', company_id: 1 }
+});
+
+// READ - автоматически фильтрует
+prisma.clients.findMany()
+// ↓ Автоматически становится:
+// prisma.clients.findMany({ where: { company_id: 1 } })
+```
+
+## 🔄 Логика Переключения Компаний
+
+```javascript
+// 1. Пользователь на Account Level
+const companies = await getAccountPrisma().companies.findMany();
+
+// 2. Выбор компании (клик на карточку)
+navigate(`/account/companies/select?id=${companyId}`);
+
+// 3. Транзитная страница (2 сек)
+// - Проверка прав доступа
+// - Установка контекста компании
+// - Подключение к нужной схеме
+
+// 4. Переход на Company Level
+navigate('/dashboard');
+
+// 5. Автоматическая фильтрация API
+const clients = await getCompanyPrisma(companyId).clients.findMany();
+// ↓ Автоматически использует company_1 схему
+```
+
+## 🚀 Преимущества Архитектуры
+
+### ✅ Безопасность
+- **Полная изоляция** данных между компаниями
+- **Автоматическая фильтрация** - невозможно получить чужие данные
+- **Двухуровневая авторизация** - система + компания
+
+### ✅ Масштабируемость  
+- **Неограниченное** количество компаний
+- **Независимые схемы** - можно мигрировать отдельные компании
+- **Горизонтальное** масштабирование по компаниям
+
+### ✅ Производительность
+- **Оптимизированные запросы** с автофильтрацией
+- **Индексы по company_id** для быстрого поиска  
+- **Connection pooling** для каждой компании
+
+### ✅ Удобство Разработки
+- **Прозрачная фильтрация** - разработчик не думает о company_id
+- **Консистентная архитектура** - одинаковая логика везде
+- **Легкое тестирование** - изолированные данные
+
+## 📋 План Внедрения
+
+### Этап 1: Базовая Структура ✅
+- [x] Двухуровневые Layout'ы  
+- [x] Account/Company Sidebar'ы
+- [x] URL структура
+- [x] Prisma middleware
+
+### Этап 2: API Endpoints
+- [ ] Account Level API (управление компаниями)
+- [ ] Company Level API (бизнес-логика)
+- [ ] Переключение контекста
+
+### Этап 3: Интеграция
+- [ ] Frontend ↔ Backend интеграция
+- [ ] Аутентификация и авторизация
+- [ ] Тестирование переходов
+
+### Этап 4: Продвинутые Фичи
+- [ ] Кросс-компанийная аналитика
+- [ ] Бэкапы по компаниям
+- [ ] Миграции схем
+
+## 🔮 Будущее Развитие
+
+```
+┌── Возможности Расширения ─────────────────────────────────┐
+│                                                           │
+│ 🌍 Мульти-тенантность                                     │
+│   ├── Географические регионы                              │
+│   ├── Отдельные БД для крупных клиентов                   │
+│   └── Федеративные запросы                                │
+│                                                           │
+│ 🔧 Микросервисы                                           │
+│   ├── Отдельные сервисы по доменам                        │
+│   ├── API Gateway                                         │
+│   └── Event-driven архитектура                            │
+│                                                           │
+│ 📊 Аналитика                                              │
+│   ├── Кросс-компанийные отчеты                            │
+│   ├── Machine Learning                                    │
+│   └── Предиктивная аналитика                              │
+│                                                           │
+└───────────────────────────────────────────────────────────┘
+```
+
+## 🎯 Заключение
+
+Двухуровневая архитектура Solar ERP с мульти-схемой Prisma предоставляет:
+
+- **Масштабируемость** для роста бизнеса
+- **Безопасность** данных компаний  
+- **Удобство** разработки и поддержки
+- **Гибкость** для будущих расширений
+
+Эта архитектура позволяет Solar ERP конкурировать с B1.lt и превосходить его по функциональности и надежности! 🚀
+
+//DATABASE_URL="postgresql://solar_user:Pass123@207.154.220.86:5433/solar?schema=public"//
+//DATABASE_URL="postgresql://solar_user:Pass123@207.154.220.86:5433/solar?schema=prisma_schema"//
+
 src/
 ├── components/
 │   ├── layout/

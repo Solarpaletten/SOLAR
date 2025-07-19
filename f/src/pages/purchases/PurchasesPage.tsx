@@ -1,8 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import purchasesService from '../../services/purchasesService';
-import clientsService, { Client, ClientRole } from '../../services/clientsService';
-import { Purchase, PurchaseFilter, PurchaseStatus } from '../../types/purchasesTypes';
+import clientsService, {
+  Client,
+  ClientRole,
+} from '../../services/clientsService';
+import {
+  Purchase,
+  PurchaseFilter,
+  PurchaseStatus,
+} from '../../types/purchasesTypes';
 import PurchasesTable from '../../components/purchases/PurchasesTable';
 import PurchasesActions from '../../components/purchases/PurchasesActions';
 import PurchasesSearch from '../../components/purchases/PurchasesSearch';
@@ -12,7 +19,7 @@ import { useTranslation } from 'react-i18next';
 const PurchasesPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  
+
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -48,12 +55,12 @@ const PurchasesPage: React.FC = () => {
       };
       const response = await purchasesService.getPurchases(filters);
       console.log('API response:', response);
-  
+
       const purchaseData = response.data.data || [];
       const filtered = archivedOnly
         ? purchaseData.filter((p) => p.archived)
         : purchaseData.filter((p) => !p.archived);
-  
+
       setPurchases(filtered);
       setTotalItems(response.data.totalCount || filtered.length);
       const total = filtered.reduce((sum, p) => sum + (p.totalAmount || 0), 0);
@@ -64,7 +71,7 @@ const PurchasesPage: React.FC = () => {
       setIsLoading(false);
     }
   };
-  
+
   useEffect(() => {
     const fetchSuppliers = async () => {
       try {
@@ -79,8 +86,19 @@ const PurchasesPage: React.FC = () => {
 
   useEffect(() => {
     fetchPurchases();
-  }, [searchTerm, statusFilter, archivedOnly, currentPage, itemsPerPage, startDate, endDate, supplierFilter, sortBy, sortOrder]);
-  
+  }, [
+    searchTerm,
+    statusFilter,
+    archivedOnly,
+    currentPage,
+    itemsPerPage,
+    startDate,
+    endDate,
+    supplierFilter,
+    sortBy,
+    sortOrder,
+  ]);
+
   const handleCreate = () => {
     navigate('/warehouse/purchases/create');
   };
@@ -89,17 +107,17 @@ const PurchasesPage: React.FC = () => {
     setStartDate(date);
     setCurrentPage(1);
   };
-  
+
   const handleEndDateChange = (date: string) => {
     setEndDate(date);
     setCurrentPage(1);
   };
-  
+
   const handleSupplierChange = (supplierId: string) => {
     setSupplierFilter(supplierId ? parseInt(supplierId) : null);
     setCurrentPage(1);
   };
-  
+
   const handleSort = (field: keyof Purchase) => {
     if (sortBy === field) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
@@ -164,13 +182,16 @@ const PurchasesPage: React.FC = () => {
           {error.message}
         </div>
       )}
-      <PurchasesActions 
-        onCreateNew={handleCreate} 
-        onExport={handleExport} 
-        onImport={handleImport} 
+      <PurchasesActions
+        onCreateNew={handleCreate}
+        onExport={handleExport}
+        onImport={handleImport}
       />
       <div className="flex flex-wrap gap-2 items-center">
-        <PurchasesSearch searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+        <PurchasesSearch
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+        />
         <div>
           <label className="text-sm mr-2">{t('startDate')}:</label>
           <input
@@ -204,7 +225,9 @@ const PurchasesPage: React.FC = () => {
         <select
           className="border rounded px-2 py-1 text-sm"
           value={statusFilter}
-          onChange={(e) => handleStatusChange(e.target.value as PurchaseStatus | '')}
+          onChange={(e) =>
+            handleStatusChange(e.target.value as PurchaseStatus | '')
+          }
         >
           <option value="">{t('allStatuses')}</option>
           <option value="pending">{t('pending')}</option>
@@ -215,17 +238,21 @@ const PurchasesPage: React.FC = () => {
           <option value="draft">{t('draft')}</option>
         </select>
         <label className="text-sm flex items-center space-x-1">
-          <input type="checkbox" checked={archivedOnly} onChange={() => setArchivedOnly(!archivedOnly)} />
+          <input
+            type="checkbox"
+            checked={archivedOnly}
+            onChange={() => setArchivedOnly(!archivedOnly)}
+          />
           <span>{t('showArchived')}</span>
         </label>
       </div>
-      <PurchasesTable 
-        purchases={purchases} 
-        isLoading={isLoading} 
-        error={error} 
-        onEdit={handleEdit} 
-        onDelete={handleDelete} 
-        onView={handleView} 
+      <PurchasesTable
+        purchases={purchases}
+        isLoading={isLoading}
+        error={error}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onView={handleView}
         onSearch={setSearchTerm}
         onPageChange={setCurrentPage}
         currentPage={currentPage}

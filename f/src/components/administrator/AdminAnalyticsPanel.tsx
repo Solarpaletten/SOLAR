@@ -1,6 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { getSessionMetrics, exportSessionMetricsCSV, TimeRange, SessionMetrics, SessionHistoryItem } from '../../services/adminService';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
+import {
+  getSessionMetrics,
+  exportSessionMetricsCSV,
+  TimeRange,
+  SessionMetrics,
+  SessionHistoryItem,
+} from '../../services/adminService';
 
 const AdminAnalyticsPanel: React.FC = () => {
   const [metrics, setMetrics] = useState<SessionMetrics | null>(null);
@@ -22,12 +37,12 @@ const AdminAnalyticsPanel: React.FC = () => {
       setLoading(false);
     }
   };
-  
+
   // Функция для экспорта данных в CSV
   const handleExportCSV = () => {
     exportSessionMetricsCSV(timeRange);
   };
-  
+
   // Обработчик изменения временного диапазона
   const handleTimeRangeChange = (newRange: TimeRange) => {
     setTimeRange(newRange);
@@ -36,12 +51,12 @@ const AdminAnalyticsPanel: React.FC = () => {
   // Загрузка данных при монтировании и обновление каждую минуту
   useEffect(() => {
     fetchMetrics();
-    
+
     // Установить интервал обновления данных каждую минуту
     const interval = setInterval(() => {
       fetchMetrics();
     }, 60000); // 60 секунд
-    
+
     // Очистка интервала при размонтировании
     return () => clearInterval(interval);
   }, [timeRange]); // Зависимость от timeRange
@@ -49,7 +64,7 @@ const AdminAnalyticsPanel: React.FC = () => {
   // Форматирование времени для отображения на графике в зависимости от диапазона
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
-    
+
     switch (timeRange) {
       case 'day':
         return `${date.getHours()}:00`; // Показываем только часы
@@ -63,9 +78,9 @@ const AdminAnalyticsPanel: React.FC = () => {
 
   // Подготовка данных для графика с учетом временного диапазона
   const prepareChartData = (history: SessionHistoryItem[]) => {
-    return history.map(item => ({
+    return history.map((item) => ({
       ...item,
-      time: formatTime(item.timestamp)
+      time: formatTime(item.timestamp),
     }));
   };
 
@@ -108,60 +123,83 @@ const AdminAnalyticsPanel: React.FC = () => {
           onClick={handleExportCSV}
           className="bg-green-600 hover:bg-green-700 text-white py-1 px-3 rounded flex items-center"
         >
-          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          <svg
+            className="w-4 h-4 mr-1"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+            />
           </svg>
           Export CSV
         </button>
       </div>
-      
+
       {/* Временные фильтры */}
       <div className="flex space-x-2 mb-6">
         <button
           onClick={() => handleTimeRangeChange('hour')}
-          className={`px-3 py-1 rounded ${timeRange === 'hour' 
-            ? 'bg-blue-600 text-white' 
-            : 'bg-gray-200 hover:bg-gray-300'}`}
+          className={`px-3 py-1 rounded ${
+            timeRange === 'hour'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-200 hover:bg-gray-300'
+          }`}
         >
           Last Hour
         </button>
         <button
           onClick={() => handleTimeRangeChange('day')}
-          className={`px-3 py-1 rounded ${timeRange === 'day' 
-            ? 'bg-blue-600 text-white' 
-            : 'bg-gray-200 hover:bg-gray-300'}`}
+          className={`px-3 py-1 rounded ${
+            timeRange === 'day'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-200 hover:bg-gray-300'
+          }`}
         >
           Last 24 Hours
         </button>
         <button
           onClick={() => handleTimeRangeChange('week')}
-          className={`px-3 py-1 rounded ${timeRange === 'week' 
-            ? 'bg-blue-600 text-white' 
-            : 'bg-gray-200 hover:bg-gray-300'}`}
+          className={`px-3 py-1 rounded ${
+            timeRange === 'week'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-200 hover:bg-gray-300'
+          }`}
         >
           Last Week
         </button>
       </div>
-      
+
       {/* Метрики в плашках */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div className="bg-blue-50 p-4 rounded-lg">
-          <div className="text-blue-800 text-sm uppercase font-medium">Active Sessions</div>
+          <div className="text-blue-800 text-sm uppercase font-medium">
+            Active Sessions
+          </div>
           <div className="text-3xl font-bold">{metrics.activeSessions}</div>
         </div>
         <div className="bg-amber-50 p-4 rounded-lg">
-          <div className="text-amber-800 text-sm uppercase font-medium">Closed Sessions</div>
+          <div className="text-amber-800 text-sm uppercase font-medium">
+            Closed Sessions
+          </div>
           <div className="text-3xl font-bold">{metrics.closedSessions}</div>
         </div>
       </div>
-      
+
       {/* График активности */}
       <div className="mt-8">
         <h3 className="text-lg font-medium mb-4">
-          Activity Timeline 
-          {timeRange === 'hour' ? ' (Last Hour)' : 
-           timeRange === 'day' ? ' (Last 24 Hours)' : 
-           ' (Last Week)'}
+          Activity Timeline
+          {timeRange === 'hour'
+            ? ' (Last Hour)'
+            : timeRange === 'day'
+              ? ' (Last 24 Hours)'
+              : ' (Last Week)'}
         </h3>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
@@ -174,28 +212,33 @@ const AdminAnalyticsPanel: React.FC = () => {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Line 
-                type="monotone" 
-                dataKey="active" 
-                name="Active Sessions" 
-                stroke="#3b82f6" 
-                activeDot={{ r: 8 }} 
+              <Line
+                type="monotone"
+                dataKey="active"
+                name="Active Sessions"
+                stroke="#3b82f6"
+                activeDot={{ r: 8 }}
               />
-              <Line 
-                type="monotone" 
-                dataKey="closed" 
-                name="Closed Sessions" 
-                stroke="#f59e0b" 
+              <Line
+                type="monotone"
+                dataKey="closed"
+                name="Closed Sessions"
+                stroke="#f59e0b"
               />
             </LineChart>
           </ResponsiveContainer>
         </div>
       </div>
-      
+
       <div className="mt-4 text-sm text-gray-500">
-        Time range: {timeRange === 'hour' ? 'Last Hour' : timeRange === 'day' ? 'Last 24 Hours' : 'Last Week'} · 
-        Last updated: {new Date().toLocaleTimeString()}
-        <button 
+        Time range:{' '}
+        {timeRange === 'hour'
+          ? 'Last Hour'
+          : timeRange === 'day'
+            ? 'Last 24 Hours'
+            : 'Last Week'}{' '}
+        · Last updated: {new Date().toLocaleTimeString()}
+        <button
           onClick={fetchMetrics}
           className="ml-4 text-blue-600 hover:text-blue-800"
         >

@@ -11,8 +11,12 @@ const PurchasesSummary: React.FC<PurchasesSummaryProps> = ({ purchases }) => {
 
   return (
     <div className="flex justify-between items-center px-4 py-2 border-t border-gray-200 bg-gray-50 text-sm text-gray-700">
-      <div>Всего записей: <strong>{totalCount}</strong></div>
-      <div>Общая сумма: <strong>{totalAmount.toFixed(2)} EUR</strong></div>
+      <div>
+        Всего записей: <strong>{totalCount}</strong>
+      </div>
+      <div>
+        Общая сумма: <strong>{totalAmount.toFixed(2)} EUR</strong>
+      </div>
     </div>
   );
 };

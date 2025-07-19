@@ -5,7 +5,7 @@ import Sidebar from './Sidebar';
 import Header from './Header';
 import AppHeader from './AppHeader';
 import LanguageSwitcher from '../common/LanguageSwitcher';
-import AssistantPanel from "@/components/assistant/AssistantPanel";
+import AssistantPanel from '@/components/assistant/AssistantPanel';
 
 const Layout: React.FC = () => {
   return (

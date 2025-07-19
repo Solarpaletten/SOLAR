@@ -1,5 +1,11 @@
 import axios from 'axios';
-import { Purchase, PurchaseFilter, PurchaseStatus, CreatePurchaseDto, UpdatePurchaseDto } from '../types/purchasesTypes';
+import {
+  Purchase,
+  PurchaseFilter,
+  PurchaseStatus,
+  CreatePurchaseDto,
+  UpdatePurchaseDto,
+} from '../types/purchasesTypes';
 import { withMockFallback } from '../api/mockConfig';
 import { api } from '../api/axios';
 
@@ -15,26 +21,35 @@ interface PurchasesResponse {
 
 // Мок-данные для разработки
 const createMockPurchases = (count: number = 5): Purchase[] => {
-  return Array(count).fill(null).map((_, index) => ({
-    id: `mock-${index}`,
-    date: new Date().toISOString().split('T')[0],
-    invoiceNumber: `INV-${2023000 + index}`,
-    client_id: index + 1,
-    description: 'Тестовая закупка для разработки',
-    items: [],
-    totalAmount: Math.round(Math.random() * 10000) / 100,
-    status: ['pending', 'paid', 'delivered', 'completed', 'cancelled', 'draft'][Math.floor(Math.random() * 6)] as PurchaseStatus,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    currency: 'EUR'
-  }));
+  return Array(count)
+    .fill(null)
+    .map((_, index) => ({
+      id: `mock-${index}`,
+      date: new Date().toISOString().split('T')[0],
+      invoiceNumber: `INV-${2023000 + index}`,
+      client_id: index + 1,
+      description: 'Тестовая закупка для разработки',
+      items: [],
+      totalAmount: Math.round(Math.random() * 10000) / 100,
+      status: [
+        'pending',
+        'paid',
+        'delivered',
+        'completed',
+        'cancelled',
+        'draft',
+      ][Math.floor(Math.random() * 6)] as PurchaseStatus,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      currency: 'EUR',
+    }));
 };
 
 const purchasesService = {
   // Получить список закупок с фильтрацией
   getPurchases: async (filters: PurchaseFilter = {}) => {
     const queryParams = new URLSearchParams();
-    
+
     // Добавляем параметры фильтрации в URL
     if (filters.page) queryParams.append('page', filters.page.toString());
     if (filters.limit) queryParams.append('limit', filters.limit.toString());
@@ -42,16 +57,22 @@ const purchasesService = {
     if (filters.startDate) queryParams.append('startDate', filters.startDate);
     if (filters.endDate) queryParams.append('endDate', filters.endDate);
     if (filters.status) queryParams.append('status', filters.status);
-    if (filters.client_id) queryParams.append('client_id', filters.client_id.toString());
+    if (filters.client_id)
+      queryParams.append('client_id', filters.client_id.toString());
     if (filters.sortBy) queryParams.append('sortBy', filters.sortBy);
     if (filters.sortOrder) queryParams.append('sortOrder', filters.sortOrder);
-    if (filters.minAmount) queryParams.append('minAmount', filters.minAmount.toString());
-    if (filters.maxAmount) queryParams.append('maxAmount', filters.maxAmount.toString());
-    if (filters.archived !== undefined) queryParams.append('archived', filters.archived.toString());
+    if (filters.minAmount)
+      queryParams.append('minAmount', filters.minAmount.toString());
+    if (filters.maxAmount)
+      queryParams.append('maxAmount', filters.maxAmount.toString());
+    if (filters.archived !== undefined)
+      queryParams.append('archived', filters.archived.toString());
 
     return withMockFallback(
       async () => {
-        const response = await api.get<PurchasesResponse>(`${API_URL}?${queryParams.toString()}`);
+        const response = await api.get<PurchasesResponse>(
+          `${API_URL}?${queryParams.toString()}`
+        );
         return response;
       },
       {
@@ -60,8 +81,8 @@ const purchasesService = {
           totalCount: 5,
           page: filters.page || 1,
           limit: filters.limit || 10,
-          totalPages: 1
-        }
+          totalPages: 1,
+        },
       }
     );
   },
@@ -84,13 +105,15 @@ const purchasesService = {
         status: 'pending',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        currency: 'EUR'
+        currency: 'EUR',
       }
     );
   },
 
   // Создать новую закупку
-  createPurchase: async (purchaseData: CreatePurchaseDto): Promise<Purchase> => {
+  createPurchase: async (
+    purchaseData: CreatePurchaseDto
+  ): Promise<Purchase> => {
     try {
       const response = await api.post<Purchase>(API_URL, purchaseData);
       return response.data;
@@ -101,9 +124,15 @@ const purchasesService = {
   },
 
   // Обновить существующую закупку
-  updatePurchase: async (id: string, purchaseData: UpdatePurchaseDto): Promise<Purchase> => {
+  updatePurchase: async (
+    id: string,
+    purchaseData: UpdatePurchaseDto
+  ): Promise<Purchase> => {
     try {
-      const response = await api.put<Purchase>(`${API_URL}/${id}`, purchaseData);
+      const response = await api.put<Purchase>(
+        `${API_URL}/${id}`,
+        purchaseData
+      );
       return response.data;
     } catch (error) {
       console.error(`Error updating purchase with ID ${id}:`, error);
@@ -112,9 +141,14 @@ const purchasesService = {
   },
 
   // Обновить статус закупки
-  updatePurchaseStatus: async (id: string, status: PurchaseStatus): Promise<Purchase> => {
+  updatePurchaseStatus: async (
+    id: string,
+    status: PurchaseStatus
+  ): Promise<Purchase> => {
     try {
-      const response = await api.patch<Purchase>(`${API_URL}/${id}/status`, { status });
+      const response = await api.patch<Purchase>(`${API_URL}/${id}/status`, {
+        status,
+      });
       return response.data;
     } catch (error) {
       console.error(`Error updating status for purchase with ID ${id}:`, error);
@@ -136,7 +170,7 @@ const purchasesService = {
   exportPurchasesToCSV: async (): Promise<Blob> => {
     try {
       const response = await api.get(`${API_URL}/export`, {
-        responseType: 'blob'
+        responseType: 'blob',
       });
       return response.data;
     } catch (error) {
@@ -152,8 +186,8 @@ const purchasesService = {
       formData.append('file', file);
       await api.post(`${API_URL}/import`, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data'
-        }
+          'Content-Type': 'multipart/form-data',
+        },
       });
     } catch (error) {
       console.error('Error importing purchases from CSV:', error);
@@ -165,7 +199,7 @@ const purchasesService = {
   downloadPurchasePDF: async (id: string): Promise<Blob> => {
     try {
       const response = await api.get(`${API_URL}/${id}/export/pdf`, {
-        responseType: 'blob'
+        responseType: 'blob',
       });
       return response.data;
     } catch (error) {
@@ -176,19 +210,16 @@ const purchasesService = {
 
   // Получить список имен поставщиков
   getSuppliersList: async () => {
-    return withMockFallback(
-      async () => {
-        const response = await api.get(`${API_URL}/suppliers`);
-        return response.data;
-      },
-      [
-        'ASSET LOGISTICS GMBH',
-        'SWAPOIL GMBH',
-        'ASSET BILANS SPOLKA Z O O',
-        'RAPSOIL OU'
-      ]
-    );
-  }
+    return withMockFallback(async () => {
+      const response = await api.get(`${API_URL}/suppliers`);
+      return response.data;
+    }, [
+      'ASSET LOGISTICS GMBH',
+      'SWAPOIL GMBH',
+      'ASSET BILANS SPOLKA Z O O',
+      'RAPSOIL OU',
+    ]);
+  },
 };
 
 export default purchasesService;

@@ -20,7 +20,9 @@ const CreatePurchasesPage: React.FC = () => {
         setSuppliers(suppliersList);
       } catch (err) {
         console.error('Ошибка при загрузке списка поставщиков:', err);
-        setError('Не удалось загрузить список поставщиков. Пожалуйста, попробуйте позже.');
+        setError(
+          'Не удалось загрузить список поставщиков. Пожалуйста, попробуйте позже.'
+        );
       }
     };
     fetchSuppliers();
@@ -44,13 +46,14 @@ const CreatePurchasesPage: React.FC = () => {
         paymentMethod: formData.paymentMethod,
         notes: formData.notes,
         departmentId: formData.departmentId,
-        projectId: formData.projectId
+        projectId: formData.projectId,
       };
 
-      const createdPurchase = await purchasesService.createPurchase(purchaseDto);
+      const createdPurchase =
+        await purchasesService.createPurchase(purchaseDto);
 
       navigate(`/warehouse/purchases/${createdPurchase.id}`, {
-        state: { message: 'Закупка успешно создана' }
+        state: { message: 'Закупка успешно создана' },
       });
     } catch (err: any) {
       console.error('Ошибка при создании закупки:', err);
@@ -73,7 +76,7 @@ const CreatePurchasesPage: React.FC = () => {
       breadcrumbs={[
         { label: 'Главная', path: '/' },
         { label: 'Закупки', path: '/warehouse/purchases' },
-        { label: 'Создание закупки', path: '/warehouse/purchases/create' }
+        { label: 'Создание закупки', path: '/warehouse/purchases/create' },
       ]}
     >
       {error && (

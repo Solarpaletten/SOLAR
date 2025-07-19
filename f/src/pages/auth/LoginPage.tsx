@@ -37,18 +37,26 @@ const LoginPage: React.FC = () => {
 
       try {
         const companies = await clientsService.getMyCompanies();
-        
+
         if (companies && companies.length > 0) {
           // Если у пользователя есть компании, отправляем на страницу клиентов
           const lastUsedCompanyId = localStorage.getItem('lastUsedCompanyId');
           const defaultCompanyId = lastUsedCompanyId || companies[0].id;
-          localStorage.setItem('lastUsedCompanyId', defaultCompanyId.toString());
+          localStorage.setItem(
+            'lastUsedCompanyId',
+            defaultCompanyId.toString()
+          );
           navigate(`/clients/${defaultCompanyId}`);
         } else {
           // Если у пользователя нет компаний, отправляем на страницу регистрации
           // Возможно, стоит показать сообщение о необходимости создать компанию
           localStorage.removeItem('token'); // Очищаем токен, чтобы пользователь мог заново зарегистрироваться
-          navigate('/auth/register', { state: { message: 'Для работы в системе необходимо создать компанию. Пожалуйста, зарегистрируйтесь.' } });
+          navigate('/auth/register', {
+            state: {
+              message:
+                'Для работы в системе необходимо создать компанию. Пожалуйста, зарегистрируйтесь.',
+            },
+          });
         }
       } catch (compErr) {
         console.error('Error fetching companies:', compErr);
@@ -61,11 +69,20 @@ const LoginPage: React.FC = () => {
       if (err.response) {
         if (err.response.status === 401) {
           setError(t('Invalid email or password'));
-        } else if (err.response.status === 403 && err.response.data.needsEmailConfirmation) {
+        } else if (
+          err.response.status === 403 &&
+          err.response.data.needsEmailConfirmation
+        ) {
           // Если требуется подтверждение email
-          setError(t('Please confirm your email before logging in. Check your inbox for the confirmation link.'));
+          setError(
+            t(
+              'Please confirm your email before logging in. Check your inbox for the confirmation link.'
+            )
+          );
         } else {
-          setError(err.response.data.message || t('Login failed. Please try again.'));
+          setError(
+            err.response.data.message || t('Login failed. Please try again.')
+          );
         }
       } else {
         setError(t('Login failed. Please try again.'));
@@ -79,11 +96,21 @@ const LoginPage: React.FC = () => {
       <nav className="bg-white shadow p-4 flex justify-between items-center">
         <div className="text-2xl font-bold text-blue-600">LEANID SOLAR</div>
         <div className="flex space-x-4">
-          <a href="#" className="text-gray-600 hover:text-blue-600">{t('product')}</a>
-          <a href="#" className="text-gray-600 hover:text-blue-600">{t('integrations')}</a>
-          <a href="#" className="text-gray-600 hover:text-blue-600">{t('training')}</a>
-          <a href="#" className="text-gray-600 hover:text-blue-600">{t('prices')}</a>
-          <a href="#" className="text-gray-600 hover:text-blue-600">{t('accountingCompanies')}</a>
+          <a href="#" className="text-gray-600 hover:text-blue-600">
+            {t('product')}
+          </a>
+          <a href="#" className="text-gray-600 hover:text-blue-600">
+            {t('integrations')}
+          </a>
+          <a href="#" className="text-gray-600 hover:text-blue-600">
+            {t('training')}
+          </a>
+          <a href="#" className="text-gray-600 hover:text-blue-600">
+            {t('prices')}
+          </a>
+          <a href="#" className="text-gray-600 hover:text-blue-600">
+            {t('accountingCompanies')}
+          </a>
         </div>
         <div className="flex items-center space-x-4">
           <LanguageSwitcher />
@@ -106,12 +133,20 @@ const LoginPage: React.FC = () => {
 
       <div className="flex-grow flex items-center justify-center">
         <div className="max-w-md w-full p-6 bg-white rounded shadow">
-          <h1 className="text-2xl font-bold mb-4 text-center">{t('loginTitle')}</h1>
+          <h1 className="text-2xl font-bold mb-4 text-center">
+            {t('loginTitle')}
+          </h1>
           <div className="flex justify-center space-x-2 mb-4">
-            <button className="px-4 py-2 bg-blue-600 text-white rounded">Facebook</button>
-            <button className="px-4 py-2 bg-red-600 text-white rounded">Google</button>
+            <button className="px-4 py-2 bg-blue-600 text-white rounded">
+              Facebook
+            </button>
+            <button className="px-4 py-2 bg-red-600 text-white rounded">
+              Google
+            </button>
           </div>
-          <p className="text-center text-gray-600 mb-4">{t('orUseCredentials')}</p>
+          <p className="text-center text-gray-600 mb-4">
+            {t('orUseCredentials')}
+          </p>
           {error && (
             <div className="p-2 text-sm text-red-700 bg-red-100 border border-red-300 rounded mb-4">
               {error}
@@ -119,7 +154,9 @@ const LoginPage: React.FC = () => {
           )}
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">{t('username')} *</label>
+              <label className="block text-sm font-medium text-gray-700">
+                {t('username')} *
+              </label>
               <input
                 type="email"
                 placeholder="Email"
@@ -131,7 +168,9 @@ const LoginPage: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">{t('password')} *</label>
+              <label className="block text-sm font-medium text-gray-700">
+                {t('password')} *
+              </label>
               <input
                 type="password"
                 placeholder={t('password')}
@@ -151,7 +190,9 @@ const LoginPage: React.FC = () => {
             </button>
           </form>
           <div className="flex justify-between mt-4 text-sm">
-            <a href="#" className="text-blue-500 hover:underline">{t('forgotPassword')}</a>
+            <a href="#" className="text-blue-500 hover:underline">
+              {t('forgotPassword')}
+            </a>
             <button
               onClick={() => navigate('/auth/register')}
               className="text-blue-500 hover:underline"

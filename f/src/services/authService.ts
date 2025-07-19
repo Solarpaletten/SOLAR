@@ -54,21 +54,28 @@ const authService = {
    */
   login: async (email: string, password: string): Promise<LoginResponse> => {
     try {
-      const response = await api.post<LoginResponse>('/auth/login', { email, password });
-      
+      const response = await api.post<LoginResponse>('/auth/login', {
+        email,
+        password,
+      });
+
       // Сохраняем токен и пользователя в localStorage
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
-      
+
       // Проверяем наличие редиректа в ответе
       if (response.data.redirectTo) {
         // Сохраняем URL для дальнейшего использования
         localStorage.setItem('pendingRedirect', response.data.redirectTo);
       }
-      
+
       return response.data;
     } catch (error: any) {
-      if (error.response && error.response.data && error.response.data.message) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
         throw new Error(error.response.data.message);
       }
       throw new Error('Не удалось выполнить вход');
@@ -81,24 +88,24 @@ const authService = {
   register: async (data: RegisterData): Promise<RegisterResponse> => {
     try {
       const response = await api.post<RegisterResponse>('/auth/register', data);
-      
+
       // Сохраняем токен и пользователя в localStorage
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
-      
+
       // Сохраняем данные, необходимые для онбординга
       localStorage.setItem('companyName', data.name || data.username);
       localStorage.setItem('email', data.email);
       if (data.phone) localStorage.setItem('phone', data.phone);
-      
+
       // Устанавливаем флаг необходимости онбординга
       localStorage.setItem('needsOnboarding', 'true');
-      
+
       // Проверяем наличие редиректа в ответе
       if (response.data.redirectTo) {
         localStorage.setItem('pendingRedirect', response.data.redirectTo);
       }
-      
+
       return response.data;
     } catch (error: any) {
       if (error.response && error.response.data && error.response.data.error) {
@@ -111,42 +118,47 @@ const authService = {
   /**
    * Настройка компании (вызывается после регистрации)
    */
-  setupCompany: async (data: CompanySetupData): Promise<{ company: Company, client: any, redirectTo?: string }> => {
+  setupCompany: async (
+    data: CompanySetupData
+  ): Promise<{ company: Company; client: any; redirectTo?: string }> => {
     try {
       // Стандартизируем код компании, удаляя возможный суффикс
       const cleanCompanyCode = standardizeCompanyCode(data.companyCode);
-      
+
       // Логируем для отладки оригинальный и очищенный код
       console.log('Company code standardization:', {
         original: data.companyCode,
-        standardized: cleanCompanyCode
+        standardized: cleanCompanyCode,
       });
-      
+
       const requestData = {
         ...data,
-        companyCode: cleanCompanyCode
+        companyCode: cleanCompanyCode,
       };
-      
+
       const response = await api.post('/onboarding/setup', requestData);
-      
+
       // Удаляем флаг онбординга
       localStorage.removeItem('needsOnboarding');
-      
+
       // Проверяем, пришел ли обновленный токен
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
       }
-      
+
       // Проверяем, есть ли информация о том, куда перенаправить пользователя
       if (response.data.redirectTo) {
         localStorage.setItem('pendingRedirect', response.data.redirectTo);
       }
-      
+
       // Если пришел ID компании, сохраняем его
       if (response.data.company && response.data.company.id) {
-        localStorage.setItem('selectedCompanyId', response.data.company.id.toString());
+        localStorage.setItem(
+          'selectedCompanyId',
+          response.data.company.id.toString()
+        );
       }
-      
+
       return response.data;
     } catch (error: any) {
       if (error.response?.data?.error) {
@@ -159,20 +171,22 @@ const authService = {
   /**
    * Проверка токена на валидность
    */
-  validateToken: async (token: string): Promise<{ valid: boolean, user?: AuthUser, redirectTo?: string }> => {
+  validateToken: async (
+    token: string
+  ): Promise<{ valid: boolean; user?: AuthUser; redirectTo?: string }> => {
     try {
       const response = await api.post('/auth/validate-token', { token });
-      
+
       // Если токен валидный и пришли данные пользователя, обновляем их в localStorage
       if (response.data.valid && response.data.user) {
         localStorage.setItem('user', JSON.stringify(response.data.user));
       }
-      
+
       // Если пришло указание для редиректа
       if (response.data.redirectTo) {
         localStorage.setItem('pendingRedirect', response.data.redirectTo);
       }
-      
+
       return response.data;
     } catch (error) {
       return { valid: false };
@@ -199,15 +213,15 @@ const authService = {
     try {
       // Отправляем запрос на сервер для выбора компании и обновления токена
       const response = await api.post(`/auth/companies/${companyId}/select`);
-      
+
       // Обновляем токен в localStorage
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
       }
-      
+
       // Сохраняем ID выбранной компании
       localStorage.setItem('selectedCompanyId', companyId.toString());
-      
+
       // Проверяем, есть ли указание для редиректа
       if (response.data.redirectTo) {
         window.location.href = response.data.redirectTo;
@@ -229,7 +243,7 @@ const authService = {
   getCurrentUser: (): AuthUser | null => {
     const userJson = localStorage.getItem('user');
     if (!userJson) return null;
-    
+
     try {
       return JSON.parse(userJson);
     } catch (error) {
@@ -273,7 +287,7 @@ const authService = {
         // Даже если запрос не удался, продолжаем очистку localStorage
       }
     }
-    
+
     // Очищаем все данные пользователя из localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -310,7 +324,9 @@ const authService = {
   /**
    * Подтверждение email по токену
    */
-  verifyEmail: async (token: string): Promise<{ message: string, redirectTo?: string }> => {
+  verifyEmail: async (
+    token: string
+  ): Promise<{ message: string; redirectTo?: string }> => {
     try {
       const response = await api.get(`/auth/confirm?token=${token}`);
       return response.data;
@@ -348,7 +364,7 @@ const authService = {
    */
   clearPendingRedirect: (): void => {
     localStorage.removeItem('pendingRedirect');
-  }
+  },
 };
 
 export default authService;
