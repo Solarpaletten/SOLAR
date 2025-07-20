@@ -1,3 +1,67 @@
+# Используй новый токен из ответа выше
+NEW_TOKEN="[новый_токен_из_ответа]"
+
+# Account Level тесты
+curl -H "Authorization: Bearer $NEW_TOKEN" http://localhost:4000/api/account/test
+curl -H "Authorization: Bearer $NEW_TOKEN" http://localhost:4000/api/account/companies
+
+# Создание компании
+curl -H "Authorization: Bearer $NEW_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"name":"Desert Solar DMCC","code":"DESERT","description":"Test company","director_name":"Test Director","legal_entity_type":"DMCC"}' \
+     http://localhost:4000/api/account/companies
+
+# Company Level тесты
+curl -H "Authorization: Bearer $NEW_TOKEN" -H "X-Company-Id: 1" http://localhost:4000/api/company/clients
+
+curl -X POST http://localhost:4000/api/mock/login
+{"success":true,"data":{"user":{"id":1,"username":"test_user","email":"test@solar.com","firstName":"Test","lastName":"User","phone":"+1234567890"},
+"token":"
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJ0ZXN0QHNvbGFyLmNvbSIsInJvbGUiOiJVU0VSIiwiZmlyc3ROYW1lIjoiVGVzdCIsImxhc3ROYW1lIjoiVXNlciIsImlhdCI6MTc1MzAxODQyOCwiZXhwIjoxNzUzMTA0ODI4fQ.hnXms3qKZkW8cRSM0ZRO7QsQZ-zrWajBm0NbFc3GqrI
+
+"
+,"companies":[]},"message":"🧪 Mock авторизация успешна!","testCommands":{"accountLevel":"curl -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJ0ZXN0QHNvbGFyLmNvbSIsInJvbGUiOiJVU0VSIiwiZmlyc3ROYW1lIjoiVGVzdCIsImxhc3ROYW1lIjoiVXNlciIsImlhdCI6MTc1MzAxODQyOCwiZXhwIjoxNzUzMTA0ODI4fQ.hnXms3qKZkW8cRSM0ZRO7QsQZ-zrWajBm0NbFc3GqrI\" http://localhost:4000/api/account/test","getCompanies":"curl -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJ0ZXN0QHNvbGFyLmNvbSIsInJvbGUiOiJVU0VSIiwiZmlyc3ROYW1lIjoiVGVzdCIsImxhc3ROYW1lIjoiVXNlciIsImlhdCI6MTc1MzAxODQyOCwiZXhwIjoxNzUzMTA0ODI4fQ.hnXms3qKZkW8cRSM0ZRO7QsQZ-zrWajBm0NbFc3GqrI\" http://localhost:4000/api/account/companies","createCompany":"curl -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJ0ZXN0QHNvbGFyLmNvbSIsInJvbGUiOiJVU0VSIiwiZmlyc3ROYW1lIjoiVGVzdCIsImxhc3ROYW1lIjoiVXNlciIsImlhdCI6MTc1MzAxODQyOCwiZXhwIjoxNzUzMTA0ODI4fQ.hnXms3qKZkW8cRSM0ZRO7QsQZ-zrWajBm0NbFc3GqrI\" -H \"Content-Type: application/json\" -d '{\"name\":\"Test Company\",\"code\":\"TEST\",\"description\":\"Test company\"}' http://localhost:4000/api/account/companies","companyLevel":"Сначала создайте компанию"}}#     
+
+
+# Account Level тест
+curl -H "Authorization: Bearer " http://localhost:4000/api/account/test
+
+# Получение компаний
+curl -H "Authorization: Bearer " http://localhost:4000/api/account/companies
+
+# Создание компании
+curl -H "Authorization: Bearer " -H "Content-Type: application/json" -d '{"name":"Test Company","code":"TEST","description":"Test company"}' http://localhost:4000/api/account/companies
+
+# Account Level тест
+curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJ0ZXN0QHNvbGFyLmNvbSIsInJvbGUiOiJVU0VSIiwiZmlyc3ROYW1lIjoiVGVzdCIsImxhc3ROYW1lIjoiVXNlciIsImlhdCI6MTc1MzAxODQyOCwiZXhwIjoxNzUzMTA0ODI4fQ.hnXms3qKZkW8cRSM0ZRO7QsQZ-zrWajBm0NbFc3GqrI" http://localhost:4000/api/account/test
+
+# Получение компаний
+curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJ0ZXN0QHNvbGFyLmNvbSIsInJvbGUiOiJVU0VSIiwiZmlyc3ROYW1lIjoiVGVzdCIsImxhc3ROYW1lIjoiVXNlciIsImlhdCI6MTc1MzAxODQyOCwiZXhwIjoxNzUzMTA0ODI4fQ.hnXms3qKZkW8cRSM0ZRO7QsQZ-zrWajBm0NbFc3GqrI" http://localhost:4000/api/account/companies
+
+# Создание компании
+curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJ0ZXN0QHNvbGFyLmNvbSIsInJvbGUiOiJVU0VSIiwiZmlyc3ROYW1lIjoiVGVzdCIsImxhc3ROYW1lIjoiVXNlciIsImlhdCI6MTc1MzAxODQyOCwiZXhwIjoxNzUzMTA0ODI4fQ.hnXms3qKZkW8cRSM0ZRO7QsQZ-zrWajBm0NbFc3GqrI" -H "Content-Type: application/json" -d '{"name":"Test Company","code":"TEST","description":"Test company"}' http://localhost:4000/api/account/companies
+
+# Используем созданную компанию (ID=1)
+
+TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJ0ZXN0QHNvbGFyLmNvbSIsInJvbGUiOiJVU0VSIiwiZmlyc3ROYW1lIjoiVGVzdCIsImxhc3ROYW1lIjoiVXNlciIsImlhdCI6MTc1MzAxODQyOCwiZXhwIjoxNzUzMTA0ODI4fQ.hnXms3qKZkW8cRSM0ZRO7QsQZ-zrWajBm0NbFc3GqrI"
+
+# Company Level тесты с X-Company-Id: 1
+curl -H "Authorization: Bearer $TOKEN" -H "X-Company-Id: 1" http://localhost:4000/api/company/stats/database-info
+
+curl -H "Authorization: Bearer $TOKEN" -H "X-Company-Id: 1" http://localhost:4000/api/company/company-context/test
+
+curl -H "Authorization: Bearer $TOKEN" -H "X-Company-Id: 1" http://localhost:4000/api/company/clients
+
+# Проверим, что компания теперь видна в списке
+curl -H "Authorization: Bearer $TOKEN" http://localhost:4000/api/account/companies
+
+# Создадим тестового клиента в компании
+curl -H "Authorization: Bearer $TOKEN" -H "X-Company-Id: 1" \
+     -H "Content-Type: application/json" \
+     -d '{"name":"Test Client","email":"client@test.com","role":"CLIENT"}' \
+     http://localhost:4000/api/company/clients
+
 # 🏗️ Solar ERP - Двухуровневая Архитектура с Мульти-Схемой Prisma
 
 ## 📊 Обзор Архитектуры

@@ -21,7 +21,7 @@ const testAccount = async (req, res) => {
 };
 
 // Получить список компаний пользователя
-const getCompanies = async (req, res) => {
+const getAllCompanies = async (req, res) => {
   try {
     logger.info('Getting companies for user:', req.user?.id);
     
@@ -117,7 +117,7 @@ const createCompany = async (req, res) => {
           name,
           code: code.toUpperCase(),
           description: description || null,
-          director_name: director_name || `${req.user.first_name || ''} ${req.user.last_name || ''}`.trim(),
+          director_name: director_name || `${req.user.first_name || ''} ${req.user.last_name || ''}`.trim() || 'Director',
           legal_entity_type: legal_entity_type || 'LLC', // Значение по умолчанию
           phone: phone || null,
           email: email || null,
@@ -294,10 +294,45 @@ const selectCompany = async (req, res) => {
   }
 };
 
+// Получить системную аналитику
+const getSystemAnalytics = async (req, res) => {
+  try {
+    const accountPrisma = prismaManager.getAccountPrisma();
+    
+    const [totalUsers, totalCompanies, activeCompanies] = await Promise.all([
+      accountPrisma.users.count(),
+      accountPrisma.companies.count(),
+      accountPrisma.companies.count({
+        where: { is_active: true }
+      })
+    ]);
+
+    res.json({
+      success: true,
+      analytics: {
+        users: totalUsers,
+        companies: {
+          total: totalCompanies,
+          active: activeCompanies,
+          inactive: totalCompanies - activeCompanies
+        }
+      }
+    });
+
+  } catch (error) {
+    logger.error('Ошибка получения аналитики:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Ошибка получения аналитики'
+    });
+  }
+};
+
 module.exports = {
   testAccount,
-  getCompanies,
+  getAllCompanies, // ← ПРАВИЛЬНОЕ ИМЯ для роутов
   createCompany,
   getCompanyById,
-  selectCompany
+  selectCompany,
+  getSystemAnalytics
 };

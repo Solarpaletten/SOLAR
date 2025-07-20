@@ -23,7 +23,7 @@ const mockLogin = async (req, res) => {
       // Создаем тестового пользователя с ВСЕМИ обязательными полями
       user = await prismaManager.getAccountPrisma().users.create({
         data: {
-          username: 'test_user',           // ← Добавили обязательное поле
+          username: 'test_user',
           email: 'test@solar.com',
           password_hash: 'mock_password',
           first_name: 'Test',
@@ -37,11 +37,12 @@ const mockLogin = async (req, res) => {
       logger.info('Mock Auth: создан тестовый пользователь', { userId: user.id });
     }
 
-    // Создаем JWT токен
+    // Создаем JWT токен с ПРАВИЛЬНЫМИ ПОЛЯМИ
     const token = jwt.sign(
       { 
-        userId: user.id,
+        id: user.id,           // ← ИСПРАВЛЕНО: было userId, стало id
         email: user.email,
+        role: user.role,       // ← ДОБАВЛЕНО: роль пользователя
         firstName: user.first_name,
         lastName: user.last_name
       },
@@ -54,14 +55,20 @@ const mockLogin = async (req, res) => {
     try {
       companies = await prismaManager.getAccountPrisma().companies.findMany({
         where: {
-          company_users: {
-            some: {
-              user_id: user.id
+          OR: [
+            { owner_id: user.id },
+            {
+              employees: {
+                some: {
+                  user_id: user.id,
+                  is_active: true
+                }
+              }
             }
-          }
+          ]
         },
         include: {
-          company_users: {
+          employees: {
             where: { user_id: user.id },
             select: { role: true }
           }
@@ -88,7 +95,7 @@ const mockLogin = async (req, res) => {
           id: c.id,
           name: c.name,
           code: c.code || c.name,
-          role: c.company_users[0]?.role || 'user'
+          role: c.employees[0]?.role || 'owner'
         }))
       },
       message: '🧪 Mock авторизация успешна!',
@@ -127,11 +134,12 @@ const getTestToken = async (req, res) => {
       });
     }
 
-    // Создаем токен
+    // Создаем токен с правильными полями
     const token = jwt.sign(
       { 
-        userId: user.id,
+        id: user.id,           // ← ИСПРАВЛЕНО: было userId, стало id
         email: user.email,
+        role: user.role,
         firstName: user.first_name,
         lastName: user.last_name
       },
