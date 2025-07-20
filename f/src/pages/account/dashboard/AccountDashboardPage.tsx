@@ -23,7 +23,7 @@ const AccountDashboardPage: React.FC = () => {
         setIsLoading(true);
         console.log('🔄 Loading companies from API...');
         
-        const apiBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+        const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000';
         
         const response = await fetch(`${apiBaseUrl}/api/company-context/available`);
         
