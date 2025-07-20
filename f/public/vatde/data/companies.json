@@ -1,0 +1,93 @@
+{
+  "version": "2.0",
+  "lastUpdated": "2025-03-31",
+  "software": "IT AI SOLAR Dashka SmartStb",
+  "companies": {
+    "ASSET_LOGISTICS": {
+      "name": "ASSET LOGISTICS GMBH",
+      "address": "Kurze Straße 6, 06366 Köthen",
+      "hrb": "34481",
+      "steuernummer": "DE453202061",
+      "period": "März 2025",
+      "vatData": {
+        "field10": 0,
+        "field81a": 0.00,
+        "field81b": 133.56,
+        "field41a": 18400.00,
+        "field41b": 0.00,
+        "field43": 0.00,
+        "field66": 25.38,
+        "field62": 3085.59,
+        "field67": 0.00
+      },
+      "notes": "Основная компания проекта IT AI SOLAR"
+    },
+    "SOLAR_TECH": {
+      "name": "SOLAR TECH SOLUTIONS GMBH",
+      "address": "Sonnenstraße 12, 10115 Berlin",
+      "hrb": "45678",
+      "steuernummer": "DE987654321",
+      "period": "März 2025",
+      "vatData": {
+        "field10": 0,
+        "field81a": 5000.00,
+        "field81b": 0.00,
+        "field41a": 0.00,
+        "field41b": 8000.00,
+        "field43": 2000.00,
+        "field66": 950.00,
+        "field62": 0.00,
+        "field67": 0.00
+      },
+      "notes": "Солнечные технологии и оборудование"
+    },
+    "AI_CONSULTING": {
+      "name": "AI CONSULTING GMBH",
+      "address": "Tech Park 5, 80333 München",
+      "hrb": "56789",
+      "steuernummer": "DE555666777",
+      "period": "März 2025",
+      "vatData": {
+        "field10": 0,
+        "field81a": 15000.00,
+        "field81b": 500.00,
+        "field41a": 5000.00,
+        "field41b": 12000.00,
+        "field43": 0.00,
+        "field66": 2850.00,
+        "field62": 0.00,
+        "field67": 950.00
+      },
+      "notes": "AI консалтинг и разработка"
+    },
+    "DASHKA_SERVICES": {
+      "name": "DASHKA SERVICES GMBH",
+      "address": "Innovation Hub 1, 22765 Hamburg",
+      "hrb": "67890",
+      "steuernummer": "DE333444555",
+      "period": "März 2025",
+      "vatData": {
+        "field10": 0,
+        "field81a": 3000.00,
+        "field81b": 1200.00,
+        "field41a": 7500.00,
+        "field41b": 4500.00,
+        "field43": 1000.00,
+        "field66": 570.00,
+        "field62": 380.00,
+        "field67": 0.00
+      },
+      "notes": "Умные сервисы и автоматизация"
+    }
+  },
+  "metadata": {
+    "totalCompanies": 4,
+    "defaultCompany": "ASSET_LOGISTICS",
+    "supportedPeriods": ["März 2025", "April 2025", "Mai 2025"],
+    "vatRates": {
+      "standard": 0.19,
+      "reduced": 0.07,
+      "zero": 0.00
+    }
+  }
+}
