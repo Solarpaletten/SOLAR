@@ -1,4 +1,3 @@
-cat > src/controllers/accountController.js << 'EOF'
 // src/controllers/accountController.js
 const prismaManager = require('../utils/prismaManager');
 const { logger } = require('../config/logger');
@@ -302,4 +301,3 @@ module.exports = {
   getCompanyById,
   selectCompany
 };
-EOF

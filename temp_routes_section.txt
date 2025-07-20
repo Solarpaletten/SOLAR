@@ -1,0 +1,33 @@
+// Импорт маршрутов
+const apiRouter = express.Router();
+
+// ===========================================
+// 🧪 MOCK ROUTES (для тестирования)
+// ===========================================
+apiRouter.use('/mock', require('./routes/mockRoutes'));
+
+// ===========================================
+// 🏢 ACCOUNT LEVEL ROUTES (БЕЗ company middleware)
+// ===========================================
+apiRouter.use('/account', require('./routes/accountRoutes'));
+apiRouter.use('/auth', require('./routes/authRoutes'));
+
+// ===========================================
+// 🏭 COMPANY LEVEL ROUTES (С company middleware)
+// ===========================================
+const companyRouter = express.Router();
+companyRouter.use(companyContextMiddleware);
+
+companyRouter.use('/clients', require('./routes/clientsRoutes'));
+companyRouter.use('/companies', require('./routes/companyRoutes'));
+companyRouter.use('/stats', require('./routes/statsRoutes'));
+companyRouter.use('/admin', require('./routes/adminRoutes'));
+companyRouter.use('/onboarding', require('./routes/onboardingRoutes'));
+companyRouter.use('/sales', require('./routes/salesRoutes'));
+companyRouter.use('/purchases', require('./routes/purchasesRoutes'));
+companyRouter.use('/assistant', require('./routes/assistantRoutes'));
+companyRouter.use('/bank-operations', require('./routes/bankRoutes'));
+companyRouter.use('/company-context', require('./routes/companyContextRoutes'));
+
+// Подключаем company роуты
+apiRouter.use('/', companyRouter);
