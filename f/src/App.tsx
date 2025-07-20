@@ -102,6 +102,7 @@ const App: React.FC = () => {
           path="*"
           element={<Navigate to="/account/dashboard" replace />}
         />
+
       </Routes>
     </QueryClientProvider>
   );
