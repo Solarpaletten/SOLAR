@@ -6,13 +6,8 @@ const { logger } = require('../config/logger');
 // Добавим отладку
 logger.info('Clients routes initialized');
 
-// Маршруты с проверкой аутентификации
+// Маршруты для клиентов (только те, что реально есть в контроллере)
 router.get('/', clientsController.getAllClients);
-router.get('/companies', clientsController.getMyCompanies);
-router.get('/:id', clientsController.getClientById);
 router.post('/', clientsController.createClient);
-router.put('/:id', clientsController.updateClient);
-router.delete('/:id', clientsController.deleteClient);
-
 
 module.exports = router;

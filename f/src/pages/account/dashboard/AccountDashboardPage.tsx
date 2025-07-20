@@ -23,7 +23,9 @@ const AccountDashboardPage: React.FC = () => {
         setIsLoading(true);
         console.log('🔄 Loading companies from API...');
         
-        const response = await fetch('http://localhost:4000/api/company-context/available');
+        const apiBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+        
+        const response = await fetch(`${apiBaseUrl}/api/company-context/available`);
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);

@@ -3,308 +3,173 @@ const { logger } = require('../config/logger');
 
 const getAllClients = async (req, res) => {
   try {
-    // ВРЕМЕННО: используем компанию ID=1, потом будет req.user.current_company_id
-    const company_id = 1;
+    const companyId = req.companyContext?.companyId;
     
-    const clients = await prismaManager.prisma.clients.findMany({
-      where: { 
-        company_id: company_id 
-      },
-      include: {
-        sales: true,
-        purchases: true,
-        company: {
-          select: {
-            id: true,
-            name: true,
-            base_currency: true
-          }
-        }
-      },
+    if (!companyId) {
+      return res.status(400).json({ 
+        error: 'Company context required',
+        hint: 'Add X-Company-Id header'
+      });
+    }
+    
+    const clients = await req.prisma.clients.findMany({
       orderBy: {
         created_at: 'desc'
       }
     });
     
-    res.json(clients);
+    res.json({
+      success: true,
+      clients: clients,
+      count: clients.length,
+      companyId: companyId
+    });
+    
   } catch (error) {
     logger.error('Error fetching clients:', error);
-    res.status(500).json({ error: 'Failed to fetch clients' });
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch clients',
+      details: error.message 
+    });
+  }
+};
+
+const createClient = async (req, res) => {
+  try {
+    const { name, email, phone, role, country, currency } = req.body;
+    const companyId = req.companyContext?.companyId;
+    const userId = req.user?.id || 1; // Fallback для теста
+    
+    if (!companyId) {
+      return res.status(400).json({ 
+        error: 'Company context required'
+      });
+    }
+
+    logger.info('Creating client:', { name, email, companyId, userId });
+    
+    // НЕ указываем company - middleware уже добавляет company_id!
+    const client = await req.prisma.clients.create({
+      data: {
+        name: name,
+        email: email,
+        phone: phone || null,
+        role: role || 'CLIENT',
+        country: country || null,
+        currency: currency || 'EUR',
+        is_juridical: true,
+        is_active: true,
+        created_by: userId
+        // НЕ добавляем company или company_id - middleware делает это автоматически!
+      }
+    });
+    
+    logger.info('Client created successfully:', { clientId: client.id });
+    
+    res.status(201).json({
+      success: true,
+      client: client,
+      message: 'Клиент успешно создан!'
+    });
+    
+  } catch (error) {
+    logger.error('Error creating client:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create client',
+      details: error.message
+    });
   }
 };
 
 const getClientById = async (req, res) => {
   try {
     const { id } = req.params;
-    const company_id = 1; // ВРЕМЕННО
     
-    const client = await prismaManager.prisma.clients.findFirst({
-      where: {
-        id: parseInt(id),
-        company_id: company_id
-      },
-      include: {
-        sales: true,
-        purchases: true,
-        company: true
-      },
+    const client = await req.prisma.clients.findUnique({
+      where: { id: parseInt(id) }
     });
     
     if (!client) {
-      return res.status(404).json({ error: 'Client not found' });
+      return res.status(404).json({ 
+        success: false,
+        error: 'Client not found' 
+      });
     }
     
-    res.json(client);
-  } catch (error) {
-    logger.error('Error fetching client:', error);
-    res.status(500).json({ error: 'Failed to fetch client' });
-  }
-};
-
-const createClient = async (req, res) => {
-  try {
-    const { 
-      name, email, phone, abbreviation, code, vat_code, vat_rate,
-      website, fax, is_juridical, auto_debt_reminder, foreigner_country,
-      registration_date, date_of_birth, credit_sum, pay_per, currency,
-      eori_code, foreign_taxpayer_code, legal_address, actual_address,
-      bank_account, bank_name, contact_information, notes, business_license_code
-    } = req.body;
-    
-    const company_id = 1; // ВРЕМЕННО
-    const user_id = 1;    // ВРЕМЕННО
-    
-    const client = await prismaManager.prisma.clients.create({
-      data: {
-        // Основные поля
-        name,
-        email,
-        phone,
-        abbreviation,
-        code,
-        vat_code,
-        vat_rate: vat_rate ? parseFloat(vat_rate) : null,
-        website,
-        fax,
-        
-        // Статусы
-        is_juridical: is_juridical !== undefined ? is_juridical : true,
-        auto_debt_reminder: auto_debt_reminder || false,
-        is_active: true,
-        
-        // География
-        foreigner_country,
-        legal_address,
-        actual_address,
-        
-        // Финансы
-        credit_sum: credit_sum ? parseFloat(credit_sum) : 0,
-        pay_per,
-        currency: currency || 'EUR',
-        
-        // Коды
-        business_license_code,
-        eori_code,
-        foreign_taxpayer_code,
-        
-        // Банковские данные
-        bank_account,
-        bank_name,
-        
-        // Даты
-        registration_date: registration_date ? new Date(registration_date) : null,
-        date_of_birth: date_of_birth ? new Date(date_of_birth) : null,
-        
-        // Дополнительно
-        contact_information,
-        notes,
-        
-        // Системные поля
-        company_id: company_id,
-        user_id: user_id,
-      },
-      include: {
-        company: true
-      }
+    res.json({
+      success: true,
+      client: client
     });
     
-    res.status(201).json(client);
   } catch (error) {
-    logger.error('Error creating client:', error);
-    res.status(500).json({ error: 'Failed to create client' });
+    logger.error('Error fetching client:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to fetch client'
+    });
   }
 };
 
 const updateClient = async (req, res) => {
   try {
     const { id } = req.params;
-    const company_id = 1; // ВРЕМЕННО
-    const updateData = { ...req.body };
     
-    // Преобразуем даты если они есть
-    if (updateData.registration_date) {
-      updateData.registration_date = new Date(updateData.registration_date);
-    }
-    if (updateData.date_of_birth) {
-      updateData.date_of_birth = new Date(updateData.date_of_birth);
-    }
-    
-    // Преобразуем числовые поля
-    if (updateData.vat_rate) {
-      updateData.vat_rate = parseFloat(updateData.vat_rate);
-    }
-    if (updateData.credit_sum) {
-      updateData.credit_sum = parseFloat(updateData.credit_sum);
-    }
-    
-    const client = await prismaManager.prisma.clients.updateMany({
-      where: {
-        id: parseInt(id),
-        company_id: company_id
-      },
-      data: updateData,
+    const client = await req.prisma.clients.update({
+      where: { id: parseInt(id) },
+      data: req.body
     });
     
-    if (client.count === 0) {
-      return res.status(404).json({ error: 'Client not found' });
-    }
-    
-    // Возвращаем обновленного клиента
-    const updatedClient = await prismaManager.prisma.clients.findFirst({
-      where: {
-        id: parseInt(id),
-        company_id: company_id
-      },
-      include: {
-        company: true
-      }
+    res.json({
+      success: true,
+      client: client
     });
     
-    res.json(updatedClient);
   } catch (error) {
     logger.error('Error updating client:', error);
-    res.status(500).json({ error: 'Failed to update client' });
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update client'
+    });
   }
 };
 
 const deleteClient = async (req, res) => {
   try {
     const { id } = req.params;
-    const company_id = 1; // ВРЕМЕННО
     
-    const result = await prismaManager.prisma.clients.deleteMany({
-      where: {
-        id: parseInt(id),
-        company_id: company_id
-      },
+    await req.prisma.clients.delete({
+      where: { id: parseInt(id) }
     });
     
-    if (result.count === 0) {
-      return res.status(404).json({ error: 'Client not found' });
-    }
+    res.json({
+      success: true,
+      message: 'Client deleted successfully'
+    });
     
-    res.status(204).send();
   } catch (error) {
     logger.error('Error deleting client:', error);
-    res.status(500).json({ error: 'Failed to delete client' });
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete client'
+    });
   }
 };
 
 const getMyCompanies = async (req, res) => {
-  try {
-    const user_id = 1; // ВРЕМЕННО
-    
-    // Получаем компании где пользователь является владельцем
-    const ownedCompanies = await prismaManager.prisma.companies.findMany({
-      where: { 
-        owner_id: user_id 
-      },
-      include: {
-        owner: {
-          select: {
-            id: true,
-            email: true,
-            username: true
-          }
-        }
-      }
-    });
-    
-    // Получаем компании где пользователь является сотрудником
-    const memberCompanies = await prismaManager.prisma.company_users.findMany({
-      where: {
-        user_id: user_id,
-        is_active: true
-      },
-      include: {
-        company: {
-          include: {
-            owner: {
-              select: {
-                id: true,
-                email: true,
-                username: true
-              }
-            }
-          }
-        }
-      }
-    });
-    
-    // Объединяем результаты
-    const allCompanies = [
-      ...ownedCompanies,
-      ...memberCompanies.map(membership => ({
-        ...membership.company,
-        role: membership.role
-      }))
-    ];
-    
-    res.status(200).json(allCompanies);
-  } catch (error) {
-    logger.error('Error fetching companies:', error);
-    res.status(500).json({ message: 'Failed to fetch companies' });
-  }
-};
-
-// Новая функция для получения статистики клиентов
-const getClientsStats = async (req, res) => {
-  try {
-    const company_id = 1; // ВРЕМЕННО
-    
-    const stats = await prismaManager.prisma.clients.groupBy({
-      by: ['role'],
-      where: {
-        company_id: company_id
-      },
-      _count: {
-        id: true
-      }
-    });
-    
-    const totalClients = await prismaManager.prisma.clients.count({
-      where: {
-        company_id: company_id,
-        is_active: true
-      }
-    });
-    
-    res.json({
-      total: totalClients,
-      by_role: stats
-    });
-  } catch (error) {
-    logger.error('Error fetching clients stats:', error);
-    res.status(500).json({ error: 'Failed to fetch clients stats' });
-  }
+  res.json({
+    success: true,
+    companies: [],
+    message: 'Use /api/account/companies instead'
+  });
 };
 
 module.exports = {
   getAllClients,
-  getClientById, 
+  getClientById,
   createClient,
   updateClient,
   deleteClient,
-  getMyCompanies,
-  getClientsStats // Новая функция
+  getMyCompanies
 };
