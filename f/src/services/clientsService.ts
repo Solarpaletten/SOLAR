@@ -1,6 +1,6 @@
 // src/services/clientsService.ts
 import { api } from '../api/axios';
-const API_URL = '/api/clients';
+const API_URL = '/api/company/clients';
 
 export enum ClientRole {
   CLIENT = 'CLIENT',
