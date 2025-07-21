@@ -94,6 +94,8 @@ apiRouter.use('/company-context', require('./routes/companyContextRoutes'));
 apiRouter.use('/companies', require('./routes/companyRoutes'));        // ← ПЕРЕНЕСТИ СЮДА
 apiRouter.use('/admin', require('./routes/adminRoutes'));              // ← ПЕРЕНЕСТИ СЮДА  
 apiRouter.use('/onboarding', require('./routes/onboardingRoutes'));    // ← ПЕРЕНЕСТИ СЮДА
+apiRouter.use('/account/companies', require('./routes/companyRoutes')); // Account Level
+
 
 // ===========================================
 // 🏭 COMPANY LEVEL ROUTES (С company middleware)
@@ -105,6 +107,8 @@ const companyRouter = express.Router();
 companyRouter.use(companyContextMiddleware);
 
 companyRouter.use('/clients', require('./routes/clientsRoutes'));       // ← ОСТАЕТСЯ
+companyRouter.use('/dashboard', require('./routes/dashboardRoutes'));  // Company Level  
+companyRouter.use('/clients', require('./routes/clientsRoutes'));      // Company Level
 companyRouter.use('/stats', require('./routes/statsRoutes'));           // ← ОСТАЕТСЯ
 companyRouter.use('/sales', require('./routes/salesRoutes'));           // ← ОСТАЕТСЯ
 companyRouter.use('/purchases', require('./routes/purchasesRoutes'));   // ← ОСТАЕТСЯ

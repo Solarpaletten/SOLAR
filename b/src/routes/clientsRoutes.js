@@ -10,4 +10,7 @@ logger.info('Clients routes initialized');
 router.get('/', clientsController.getAllClients);
 router.post('/', clientsController.createClient);
 
+// 🔥 ДОБАВИТЬ ЭТУ СТРОКУ:
+router.get('/:id', clientsController.getClientById);
+
 module.exports = router;

@@ -85,29 +85,44 @@ const createClient = async (req, res) => {
 
 const getClientById = async (req, res) => {
   try {
-    const { id } = req.params;
+    const clientId = parseInt(req.params.id);
+    const companyId = req.companyContext?.companyId;
     
-    const client = await req.prisma.clients.findUnique({
-      where: { id: parseInt(id) }
-    });
+    console.log(`🔍 Getting client ${clientId} for company ${companyId}`);
     
-    if (!client) {
-      return res.status(404).json({ 
+    if (!companyId) {
+      return res.status(400).json({
         success: false,
-        error: 'Client not found' 
+        error: 'Company ID is required'
       });
     }
-    
+
+    // Используйте req.prisma вместо prismaManager.prisma (для консистентности)
+    const client = await req.prisma.clients.findFirst({
+      where: {
+        id: clientId,
+        company_id: parseInt(companyId)
+      }
+    });
+
+    if (!client) {
+      return res.status(404).json({
+        success: false,
+        error: 'Client not found'
+      });
+    }
+
     res.json({
       success: true,
-      client: client
+      client: client,
+      companyId: parseInt(companyId)
     });
-    
+
   } catch (error) {
-    logger.error('Error fetching client:', error);
-    res.status(500).json({ 
+    logger.error('Error getting client by ID:', error);
+    res.status(500).json({
       success: false,
-      error: 'Failed to fetch client'
+      error: 'Failed to get client'
     });
   }
 };
