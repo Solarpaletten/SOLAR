@@ -129,6 +129,7 @@ apiRouter.get('/test', (req, res) => {
   });
 });
 
+
 // Подключаем API роуты
 app.use('/api', apiRouter);
 

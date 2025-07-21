@@ -1,5 +1,6 @@
 # PostgreSQL connection
-DATABASE_URL=postgresql://<username>:<password>@<host>/<database>
+DATABASE_URL="postgresql://solar_user:Pass123@207.154.220.86:5433/solar?schema=public"
+
 DATABASE_SSL=true
 
 # JWT settings
