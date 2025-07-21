@@ -90,6 +90,10 @@ apiRouter.use('/mock', require('./routes/mockRoutes'));
 // ===========================================
 apiRouter.use('/account', require('./routes/accountRoutes'));
 apiRouter.use('/auth', require('./routes/authRoutes'));
+apiRouter.use('/company-context', require('./routes/companyContextRoutes'));
+apiRouter.use('/companies', require('./routes/companyRoutes'));        // ← ПЕРЕНЕСТИ СЮДА
+apiRouter.use('/admin', require('./routes/adminRoutes'));              // ← ПЕРЕНЕСТИ СЮДА  
+apiRouter.use('/onboarding', require('./routes/onboardingRoutes'));    // ← ПЕРЕНЕСТИ СЮДА
 
 // ===========================================
 // 🏭 COMPANY LEVEL ROUTES (С company middleware)
@@ -100,16 +104,13 @@ const companyRouter = express.Router();
 // Применяем company middleware ТОЛЬКО к company роутам
 companyRouter.use(companyContextMiddleware);
 
-companyRouter.use('/clients', require('./routes/clientsRoutes'));
-companyRouter.use('/companies', require('./routes/companyRoutes'));
-companyRouter.use('/stats', require('./routes/statsRoutes'));
-companyRouter.use('/admin', require('./routes/adminRoutes'));
-companyRouter.use('/onboarding', require('./routes/onboardingRoutes'));
-companyRouter.use('/sales', require('./routes/salesRoutes'));
-companyRouter.use('/purchases', require('./routes/purchasesRoutes'));
-companyRouter.use('/assistant', require('./routes/assistantRoutes'));
-companyRouter.use('/bank-operations', require('./routes/bankRoutes'));
-companyRouter.use('/company-context', require('./routes/companyContextRoutes'));
+companyRouter.use('/clients', require('./routes/clientsRoutes'));       // ← ОСТАЕТСЯ
+companyRouter.use('/stats', require('./routes/statsRoutes'));           // ← ОСТАЕТСЯ
+companyRouter.use('/sales', require('./routes/salesRoutes'));           // ← ОСТАЕТСЯ
+companyRouter.use('/purchases', require('./routes/purchasesRoutes'));   // ← ОСТАЕТСЯ
+companyRouter.use('/assistant', require('./routes/assistantRoutes'));   // ← ОСТАЕТСЯ
+companyRouter.use('/bank-operations', require('./routes/bankRoutes')); // ← ОСТАЕТСЯ
+
 
 // Подключаем company роуты к основному роутеру
 apiRouter.use('/company', companyRouter); // Все company роуты под /api/company/*
