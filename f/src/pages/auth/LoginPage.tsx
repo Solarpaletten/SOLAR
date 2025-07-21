@@ -1,206 +1,174 @@
-// src/pages/auth/LoginPage.tsx
-import React, { useState, useEffect } from 'react';
+// f/src/pages/auth/LoginPage.tsx
+// ===============================================
+// 🔐 ОБНОВЛЕННЫЙ LOGIN PAGE С СУЩЕСТВУЮЩИМ LOGIN FORM
+// ===============================================
+
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import authService from '../../services/authService';
-import LanguageSwitcher from '../../components/common/LanguageSwitcher';
-import clientsService from '../../services/clientsService';
+import LoginForm from '../../components/auth/LoginForm';
 
 const LoginPage: React.FC = () => {
-  const { t } = useTranslation();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      navigate('/dashboard');
-    }
-  }, [navigate]);
+  // 🎯 Простые тестовые учетные данные
+  const testUsers = [
+    { email: 'admin@solar.com', password: '123456', role: 'admin' },
+    { email: 'test@solar.com', password: '123456', role: 'user' },
+    { email: 'demo@solar.com', password: '123456', role: 'demo' }
+  ];
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  const handleLogin = async (email: string, password: string) => {
+    setLoading(true);
     setError('');
 
     try {
-      const response = await authService.login(email, password);
-      console.log('Login successful:', response);
+      console.log('🔐 Login attempt:', { email });
 
-      localStorage.setItem('token', response.token);
-      if (response.user) {
-        localStorage.setItem('user', JSON.stringify(response.user));
+      // Имитируем задержку сети
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // 🎯 Проверяем тестовые учетные данные
+      const user = testUsers.find(u => u.email === email && u.password === password);
+      
+      if (!user) {
+        throw new Error('Неверный email или пароль');
       }
 
-      try {
-        const companies = await clientsService.getMyCompanies();
+      // 🎯 Создаем токен
+      const token = btoa(JSON.stringify({
+        email: user.email,
+        role: user.role,
+        timestamp: Date.now(),
+        expires: Date.now() + (24 * 60 * 60 * 1000) // 24 часа
+      }));
 
-        if (companies && companies.length > 0) {
-          // Если у пользователя есть компании, отправляем на страницу клиентов
-          const lastUsedCompanyId = localStorage.getItem('lastUsedCompanyId');
-          const defaultCompanyId = lastUsedCompanyId || companies[0].id;
-          localStorage.setItem(
-            'lastUsedCompanyId',
-            defaultCompanyId.toString()
-          );
-          navigate(`/clients/${defaultCompanyId}`);
-        } else {
-          // Если у пользователя нет компаний, отправляем на страницу регистрации
-          // Возможно, стоит показать сообщение о необходимости создать компанию
-          localStorage.removeItem('token'); // Очищаем токен, чтобы пользователь мог заново зарегистрироваться
-          navigate('/auth/register', {
-            state: {
-              message:
-                'Для работы в системе необходимо создать компанию. Пожалуйста, зарегистрируйтесь.',
-            },
-          });
-        }
-      } catch (compErr) {
-        console.error('Error fetching companies:', compErr);
-        // В случае ошибки также отправляем на регистрацию
-        localStorage.removeItem('token');
-        navigate('/auth/register');
-      }
-    } catch (err: any) {
-      console.error('Login error:', err);
-      if (err.response) {
-        if (err.response.status === 401) {
-          setError(t('Invalid email or password'));
-        } else if (
-          err.response.status === 403 &&
-          err.response.data.needsEmailConfirmation
-        ) {
-          // Если требуется подтверждение email
-          setError(
-            t(
-              'Please confirm your email before logging in. Check your inbox for the confirmation link.'
-            )
-          );
-        } else {
-          setError(
-            err.response.data.message || t('Login failed. Please try again.')
-          );
-        }
-      } else {
-        setError(t('Login failed. Please try again.'));
-      }
+      // �� Сохраняем данные (совместимость со старым и новым кодом)
+      localStorage.setItem('auth_token', `Bearer ${token}`);
+      localStorage.setItem('token', token); // Для старого кода
+      localStorage.setItem('user_email', user.email);
+      localStorage.setItem('user_role', user.role);
+
+      console.log('✅ Login successful!');
+      
+      // �� Очищаем старые данные компании
+      localStorage.removeItem('current_company_id');
+      localStorage.removeItem('lastUsedCompanyId');
+
+      // 🚀 Перенаправляем на Account Dashboard
+      navigate('/account/dashboard');
+
+    } catch (error: any) {
+      console.error('❌ Login failed:', error);
+      setError(error.message || 'Ошибка входа в систему');
+    } finally {
+      setLoading(false);
     }
-    setIsLoading(false);
+  };
+
+  // 🎯 Быстрый логин для демо
+  const quickLogin = (email: string, password: string) => {
+    handleLogin(email, password);
   };
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
+      {/* Header Navigation */}
       <nav className="bg-white shadow p-4 flex justify-between items-center">
-        <div className="text-2xl font-bold text-blue-600">LEANID SOLAR</div>
+        <div className="text-2xl font-bold text-blue-600">SOLAR ERP</div>
         <div className="flex space-x-4">
-          <a href="#" className="text-gray-600 hover:text-blue-600">
-            {t('product')}
-          </a>
-          <a href="#" className="text-gray-600 hover:text-blue-600">
-            {t('integrations')}
-          </a>
-          <a href="#" className="text-gray-600 hover:text-blue-600">
-            {t('training')}
-          </a>
-          <a href="#" className="text-gray-600 hover:text-blue-600">
-            {t('prices')}
-          </a>
-          <a href="#" className="text-gray-600 hover:text-blue-600">
-            {t('accountingCompanies')}
-          </a>
-        </div>
-        <div className="flex items-center space-x-4">
-          <LanguageSwitcher />
-          <div className="flex space-x-2">
-            <button
-              onClick={() => navigate('/auth/login')}
-              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-            >
-              {t('signIn')}
-            </button>
-            <button
-              onClick={() => navigate('/auth/register')}
-              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-            >
-              {t('register')}
-            </button>
-          </div>
+          <a href="#" className="text-gray-600 hover:text-blue-600">Product</a>
+          <a href="#" className="text-gray-600 hover:text-blue-600">Integrations</a>
+          <a href="#" className="text-gray-600 hover:text-blue-600">Training</a>
+          <a href="#" className="text-gray-600 hover:text-blue-600">Prices</a>
         </div>
       </nav>
 
-      <div className="flex-grow flex items-center justify-center">
-        <div className="max-w-md w-full p-6 bg-white rounded shadow">
-          <h1 className="text-2xl font-bold mb-4 text-center">
-            {t('loginTitle')}
-          </h1>
-          <div className="flex justify-center space-x-2 mb-4">
-            <button className="px-4 py-2 bg-blue-600 text-white rounded">
-              Facebook
-            </button>
-            <button className="px-4 py-2 bg-red-600 text-white rounded">
-              Google
-            </button>
+      {/* Main Content */}
+      <div className="flex-grow flex items-center justify-center px-4">
+        <div className="max-w-md w-full">
+          
+          {/* Login Card */}
+          <div className="bg-white rounded-2xl shadow-xl p-8">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-gradient-to-r from-orange-400 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-white text-2xl font-bold">☀️</span>
+              </div>
+              <h1 className="text-3xl font-bold text-gray-800 mb-2">Вход в систему</h1>
+              <p className="text-gray-600">Multi-Tenant Architecture</p>
+            </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+                <strong>Ошибка:</strong> {error}
+              </div>
+            )}
+
+            {/* Login Form */}
+            <div className="flex justify-center mb-6">
+              <LoginForm onLogin={handleLogin} isLoading={loading} />
+            </div>
+
+            {/* Quick Login Buttons */}
+            <div className="pt-6 border-t border-gray-200">
+              <p className="text-sm text-gray-600 text-center mb-4">Быстрый демо-вход:</p>
+              <div className="space-y-2">
+                <button
+                  onClick={() => quickLogin('admin@solar.com', '123456')}
+                  disabled={loading}
+                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-lg transition-colors text-sm disabled:opacity-50"
+                >
+                  👨‍💼 Администратор (admin@solar.com)
+                </button>
+                <button
+                  onClick={() => quickLogin('test@solar.com', '123456')}
+                  disabled={loading}
+                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-lg transition-colors text-sm disabled:opacity-50"
+                >
+                  👤 Пользователь (test@solar.com)
+                </button>
+                <button
+                  onClick={() => quickLogin('demo@solar.com', '123456')}
+                  disabled={loading}
+                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-lg transition-colors text-sm disabled:opacity-50"
+                >
+                  🎯 Демо-доступ (demo@solar.com)
+                </button>
+              </div>
+            </div>
+
+            {/* Test Credentials Info */}
+            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+              <h4 className="text-sm font-medium text-blue-800 mb-2">�� Тестовые учетные данные:</h4>
+              <div className="text-xs text-blue-700 space-y-1">
+                <p>• Email: <strong>admin@solar.com</strong> | Пароль: <strong>123456</strong></p>
+                <p>• Email: <strong>test@solar.com</strong> | Пароль: <strong>123456</strong></p>
+                <p>• Email: <strong>demo@solar.com</strong> | Пароль: <strong>123456</strong></p>
+              </div>
+            </div>
           </div>
-          <p className="text-center text-gray-600 mb-4">
-            {t('orUseCredentials')}
-          </p>
-          {error && (
-            <div className="p-2 text-sm text-red-700 bg-red-100 border border-red-300 rounded mb-4">
-              {error}
-            </div>
-          )}
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                {t('username')} *
-              </label>
-              <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={isLoading}
-                className="mt-1 block w-full border rounded px-3 py-2 text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                {t('password')} *
-              </label>
-              <input
-                type="password"
-                placeholder={t('password')}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={isLoading}
-                className="mt-1 block w-full border rounded px-3 py-2 text-sm"
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-            >
-              {isLoading ? t('loggingIn') : t('signIn')}
-            </button>
-          </form>
-          <div className="flex justify-between mt-4 text-sm">
-            <a href="#" className="text-blue-500 hover:underline">
-              {t('forgotPassword')}
-            </a>
-            <button
-              onClick={() => navigate('/auth/register')}
-              className="text-blue-500 hover:underline"
-            >
-              {t('register')}
-            </button>
+
+          {/* Register Link */}
+          <div className="text-center mt-6">
+            <p className="text-gray-600 text-sm">
+              Нет аккаунта?{' '}
+              <button
+                onClick={() => navigate('/auth/register')}
+                className="text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Зарегистрироваться
+              </button>
+            </p>
           </div>
         </div>
+      </div>
+
+      {/* Footer */}
+      <div className="bg-white p-4 text-center text-sm text-gray-500">
+        <p>&copy; 2025 Solar ERP. Двухуровневая мульти-тенантная архитектура.</p>
       </div>
     </div>
   );
