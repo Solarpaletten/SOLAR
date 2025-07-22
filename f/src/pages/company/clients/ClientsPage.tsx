@@ -24,7 +24,7 @@ const ClientsPage: React.FC = () => {
       setLoading(true);
       try {
         console.log('Fetching clients...');
-        const response = await api.get('/clients');
+        const response = await api.get('/api/company/clients');
         console.log('Clients response:', response.data);
         setClients(response.data);
         setError(null);
