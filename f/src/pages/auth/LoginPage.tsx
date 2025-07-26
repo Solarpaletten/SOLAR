@@ -1,64 +1,36 @@
 // f/src/pages/auth/LoginPage.tsx
-// ===============================================
-// 🔐 ОБНОВЛЕННЫЙ LOGIN PAGE С СУЩЕСТВУЮЩИМ LOGIN FORM
-// ===============================================
+
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import LoginForm from '../../components/auth/LoginForm';
+import authService from '../../services/account/authService';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const [email, setEmail] = useState('solar@solar.com');
+  const [password, setPassword] = useState('pass123');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // 🎯 Простые тестовые учетные данные
-  const testUsers = [
-    { email: 'admin@solar.com', password: '123456', role: 'admin' },
-    { email: 'test@solar.com', password: '123456', role: 'user' },
-    { email: 'demo@solar.com', password: '123456', role: 'demo' }
-  ];
-
-  const handleLogin = async (email: string, password: string) => {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
     setError('');
 
     try {
-      console.log('🔐 Login attempt:', { email });
+      console.log('🔑 Attempting login with real API:', email);
 
-      // Имитируем задержку сети
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // 🔧 ИСПОЛЬЗУЕМ РЕАЛЬНЫЙ API ВМЕСТО MOKA
 
-      // 🎯 Проверяем тестовые учетные данные
-      const user = testUsers.find(u => u.email === email && u.password === password);
-      
-      if (!user) {
-        throw new Error('Неверный email или пароль');
+      const response = await authService.login(email, password);
+      console.log('🔑 Login response:', response);
+
+      if (!response || !response.user) {
+        throw new Error('Не удалось получить данные пользователя');
       }
 
-      // 🎯 Создаем токен
-      const token = btoa(JSON.stringify({
-        email: user.email,
-        role: user.role,
-        timestamp: Date.now(),
-        expires: Date.now() + (24 * 60 * 60 * 1000) // 24 часа
-      }));
-
-      // �� Сохраняем данные (совместимость со старым и новым кодом)
-      localStorage.setItem('auth_token', `Bearer ${token}`);
-      localStorage.setItem('token', token); // Для старого кода
-      localStorage.setItem('user_email', user.email);
-      localStorage.setItem('user_role', user.role);
-
-      console.log('✅ Login successful!');
-      
-      // �� Очищаем старые данные компании
-      localStorage.removeItem('current_company_id');
-      localStorage.removeItem('lastUsedCompanyId');
-
-      // 🚀 Перенаправляем на Account Dashboard
+      //Перенаправляем на Dashboard
       navigate('/account/dashboard');
-
     } catch (error: any) {
       console.error('❌ Login failed:', error);
       setError(error.message || 'Ошибка входа в систему');
@@ -67,9 +39,15 @@ const LoginPage: React.FC = () => {
     }
   };
 
-  // 🎯 Быстрый логин для демо
-  const quickLogin = (email: string, password: string) => {
-    handleLogin(email, password);
+  // 🎯 Быстрый логин с реальными данными
+  const quickLogin = async () => {
+    setEmail('solar@solar.com');
+    setPassword('pass123');
+    // Небольшая задержка для Ui
+    setTimeout(() => {
+      const form = document.querySelector('form') as HTMLFormElement;
+      form.requestSubmit();
+    }, 100);
   };
 
   return (
@@ -88,7 +66,6 @@ const LoginPage: React.FC = () => {
       {/* Main Content */}
       <div className="flex-grow flex items-center justify-center px-4">
         <div className="max-w-md w-full">
-          
           {/* Login Card */}
           <div className="bg-white rounded-2xl shadow-xl p-8">
             {/* Header */}
@@ -97,7 +74,7 @@ const LoginPage: React.FC = () => {
                 <span className="text-white text-2xl font-bold">☀️</span>
               </div>
               <h1 className="text-3xl font-bold text-gray-800 mb-2">Вход в систему</h1>
-              <p className="text-gray-600">Multi-Tenant Architecture</p>
+              <p className="text-gray-600">Real API Connection</p>
             </div>
 
             {/* Error Message */}
@@ -108,45 +85,68 @@ const LoginPage: React.FC = () => {
             )}
 
             {/* Login Form */}
-            <div className="flex justify-center mb-6">
-              <LoginForm onLogin={handleLogin} isLoading={loading} />
-            </div>
-
-            {/* Quick Login Buttons */}
-            <div className="pt-6 border-t border-gray-200">
-              <p className="text-sm text-gray-600 text-center mb-4">Быстрый демо-вход:</p>
-              <div className="space-y-2">
-                <button
-                  onClick={() => quickLogin('admin@solar.com', '123456')}
-                  disabled={loading}
-                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-lg transition-colors text-sm disabled:opacity-50"
-                >
-                  👨‍💼 Администратор (admin@solar.com)
-                </button>
-                <button
-                  onClick={() => quickLogin('test@solar.com', '123456')}
-                  disabled={loading}
-                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-lg transition-colors text-sm disabled:opacity-50"
-                >
-                  👤 Пользователь (test@solar.com)
-                </button>
-                <button
-                  onClick={() => quickLogin('demo@solar.com', '123456')}
-                  disabled={loading}
-                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-lg transition-colors text-sm disabled:opacity-50"
-                >
-                  🎯 Демо-доступ (demo@solar.com)
-                </button>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Logging in...
+                  </span>
+                ) : (
+                  'Login'
+                )}
+              </button>
+            </form>
+
+            {/* Quick Login Button */}
+            <div className="pt-6 border-t border-gray-200">
+              <p className="text-sm text-gray-600 text-center mb-4">Быстрый вход с тестовыми данными:</p>
+              <button
+                onClick={quickLogin}
+                disabled={loading}
+                className="w-full bg-green-100 hover:bg-green-200 text-green-800 py-2 px-4 rounded-lg transition-colors text-sm disabled:opacity-50"
+              >
+                🚀 Быстрый логин (solar@solar.com)
+              </button>
             </div>
 
             {/* Test Credentials Info */}
             <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-              <h4 className="text-sm font-medium text-blue-800 mb-2">�� Тестовые учетные данные:</h4>
+              <h4 className="text-sm font-medium text-blue-800 mb-2">🔧 Тестовые данные (Real API):</h4>
               <div className="text-xs text-blue-700 space-y-1">
-                <p>• Email: <strong>admin@solar.com</strong> | Пароль: <strong>123456</strong></p>
-                <p>• Email: <strong>test@solar.com</strong> | Пароль: <strong>123456</strong></p>
-                <p>• Email: <strong>demo@solar.com</strong> | Пароль: <strong>123456</strong></p>
+                <p>• Email: <strong>solar@solar.com</strong></p>
+                <p>• Password: <strong>pass123</strong></p>
+                <p>• Backend: <strong>http://localhost:4000</strong></p>
+                <p>• Database: <strong>PostgreSQL</strong></p>
               </div>
             </div>
           </div>
@@ -168,7 +168,7 @@ const LoginPage: React.FC = () => {
 
       {/* Footer */}
       <div className="bg-white p-4 text-center text-sm text-gray-500">
-        <p>&copy; 2025 Solar ERP. Двухуровневая мульти-тенантная архитектура.</p>
+        <p>&copy; 2025 Solar ERP. Two-Level Multi-Tenant Architecture.</p>
       </div>
     </div>
   );

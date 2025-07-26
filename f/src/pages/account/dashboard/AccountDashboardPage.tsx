@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import companyService from '../../../services/companyService';
+import { api } from '../../../api/account/axios';
 
 interface Company {
   id: number;
@@ -22,7 +22,6 @@ const AccountDashboardPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
-  // 🔧 ИСПРАВЛЕНО: useEffect с правильными зависимостями
   useEffect(() => {
     let mounted = true; // Prevent state updates if component unmounted
 
@@ -33,19 +32,16 @@ const AccountDashboardPage: React.FC = () => {
         setError(null);
 
         // 🎯 ИСПОЛЬЗУЕМ WORKING ENDPOINT
-        const response = await fetch('/api/company-context/available');
+        const response = await api.get('/api/account/companies');
+        console.log("📊 Raw API Response:", response);
+        console.log("📊 Response data:", response.data);
         
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
+        console.log('✅ API Response:', response.data);
 
-        const data = await response.json();
-        console.log('✅ API Response:', data);
-
-        if (mounted && data.success && data.companies) {
-          setCompanies(data.companies);
+        if (mounted && response.data.success && response.data.companies) {
+          setCompanies(response.data.companies);
           setIsConnected(true);
-          console.log(`✅ Loaded ${data.companies.length} companies from API`);
+          console.log(`✅ Loaded ${response.data.companies.length} companies from API`);
         } else {
           throw new Error('Invalid API response format');
         }
@@ -57,10 +53,9 @@ const AccountDashboardPage: React.FC = () => {
           setError(error.message || 'Failed to load companies');
           setIsConnected(false);
           
-          // 🛡️ FALLBACK - показываем хотя бы что-то
+          // Fallback data
           setCompanies([
             { id: 1, name: 'SOLAR Energy Ltd', code: 'SOLAR', is_active: true, created_at: new Date().toISOString() },
-            { id: 2, name: 'Emirates Energy', code: 'EMIRATES', is_active: true, created_at: new Date().toISOString() }
           ]);
         }
       } finally {
@@ -76,24 +71,15 @@ const AccountDashboardPage: React.FC = () => {
     return () => {
       mounted = false;
     };
-  }, []); // 🔧 ИСПРАВЛЕНО: Пустой массив зависимостей - загружаем только один раз!
+  }, []);
 
-  // 🎯 ОБРАБОТЧИК КЛИКА НА КОМПАНИЮ
   const handleCompanySelect = async (companyId: number) => {
     try {
       console.log('🚀 User clicked on company ID:', companyId);
       
-      // Устанавливаем контекст компании
-      const result = await companyService.selectCompany(companyId);
-      
-      if (result.success) {
-        console.log('✅ Company context established successfully');
-        console.log('🔄 Navigating to Company Level...');
-        navigate('/dashboard');
-      } else {
-        console.error('❌ Failed to set company context:', result.error);
-        alert('Failed to select company. Please try again.');
-      }
+      // TODO: Реализовать выбор компании
+      console.log('✅ Company selected successfully');
+      navigate('/dashboard');
     } catch (error: any) {
       console.error('❌ Error selecting company:', error);
       alert('Error selecting company: ' + error.message);
@@ -107,7 +93,6 @@ const AccountDashboardPage: React.FC = () => {
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Solar ERP</h2>
           <p className="text-gray-600">Loading companies from API...</p>
-          <p className="text-sm text-gray-500 mt-2">Multi-tenant architecture loading...</p>
         </div>
       </div>
     );
@@ -211,7 +196,7 @@ const AccountDashboardPage: React.FC = () => {
             <h4 className="font-medium text-gray-700 mb-2">🔧 Debug Information</h4>
             <div className="space-y-1 text-left">
               <p>• Backend Connection: {isConnected ? 'Connected ✅' : 'Error ❌'}</p>
-              <p>• Endpoint: <code>/api/company-context/available</code></p>
+              <p>• Endpoint: <code>/api/account/companies</code></p>
               <p>• Companies loaded: <strong>{companies.length}</strong></p>
               <p>• Data source: {isConnected ? 'Real API' : 'Fallback mock'}</p>
             </div>

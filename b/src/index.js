@@ -2,7 +2,6 @@ const app = require('./app');
 const http = require('http');
 const { logger } = require('./config/logger');
 const prismaManager = require('./utils/prismaManager');
-const WebSocketService = require('./services/webSocketService');
 
 // Создаем HTTP сервер
 const server = http.createServer(app);
@@ -16,8 +15,6 @@ async function startServer() {
     await prismaManager.connect();
     logger.info('Database connected successfully');
 
-    // Инициализируем WebSocket-сервис
-    webSocketService = new WebSocketService(server);
     
     // Вместо app.set используем глобальную переменную
     global.webSocketService = webSocketService;

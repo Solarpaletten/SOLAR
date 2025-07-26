@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Formik, Form, Field, ErrorMessage, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
-import authService from '../../services/authService';
+import authService from '../../services/account/authService';
 
 interface OnboardingFormData {
   companyCode: string;

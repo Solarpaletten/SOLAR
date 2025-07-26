@@ -1,0 +1,201 @@
+// f/src/app/AppRouter.tsx
+// ===============================================
+// 🚀 SOLAR ERP APP ROUTER - Multi-tenant architecture
+// ===============================================
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+
+// Auth components
+import LoginPage from '../pages/auth/LoginPage';
+import AuthGuard from '../components/account/AuthGuard';
+
+// Account Level - System Management
+import AccountDashboardPage from '../pages/account/dashboard/AccountDashboardPage';
+
+// Company Navigation
+import CompanyTransitPage from '../pages/company/navigation/CompanyTransitPage';
+
+// Company Level - Business Operations (пока заглушки, можно добавить позже)
+// import CompanyDashboardPage from '../pages/company/dashboard/CompanyDashboardPage';
+
+function App() {
+  console.log('🚀 Solar ERP App loaded - Multi-tenant architecture');
+  
+  return (
+    <Router>
+      <Routes>
+        {/* ============================================= */}
+        {/* 🔓 PUBLIC ROUTES - No authentication needed */}
+        {/* ============================================= */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/auth/login" element={<LoginPage />} />
+     
+        {/* ============================================= */}
+        {/* 🏢 ACCOUNT LEVEL - System management        */}
+        {/* ============================================= */}
+        <Route 
+          path="/account/dashboard" 
+          element={
+            <AuthGuard>
+              <AccountDashboardPage />
+            </AuthGuard>
+          } 
+        />
+
+        {/* Account sub-pages (заглушки для будущего развития) */}
+        <Route 
+          path="/account/companies/create" 
+          element={
+            <AuthGuard>
+              <div className="p-6">
+                <h1 className="text-2xl font-bold">Create Company Page</h1>
+                <p>This page will be implemented later</p>
+                <button 
+                  onClick={() => window.history.back()}
+                  className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
+                >
+                  ← Back
+                </button>
+              </div>
+            </AuthGuard>
+          } 
+        />
+
+        {/* ============================================= */}
+        {/* 🔄 COMPANY NAVIGATION - Transit pages        */}
+        {/* ============================================= */}
+        <Route 
+          path="/company/transit" 
+          element={
+            <AuthGuard>
+              <CompanyTransitPage />
+            </AuthGuard>
+          } 
+        />
+
+        {/* ============================================= */}
+        {/* 🏭 COMPANY LEVEL - Business operations       */}
+        {/* ============================================= */}
+        <Route 
+          path="/dashboard" 
+          element={
+            <AuthGuard>
+              <div className="min-h-screen bg-gray-50 p-6">
+                <div className="max-w-6xl mx-auto">
+                  <div className="bg-white rounded-lg shadow p-6 mb-6">
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                      🏭 Company Dashboard
+                    </h1>
+                    <p className="text-gray-600">
+                      Welcome to your company workspace!
+                    </p>
+                    <p className="text-sm text-gray-500 mt-2">
+                      Company ID: {localStorage.getItem('selectedCompanyId') || 'Not selected'}
+                    </p>
+                  </div>
+
+                  {/* Quick stats cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                    <div className="bg-white rounded-lg shadow p-6">
+                      <h3 className="text-lg font-semibold text-gray-900">Clients</h3>
+                      <p className="text-3xl font-bold text-blue-600">5</p>
+                    </div>
+                    <div className="bg-white rounded-lg shadow p-6">
+                      <h3 className="text-lg font-semibold text-gray-900">Products</h3>
+                      <p className="text-3xl font-bold text-green-600">15</p>
+                    </div>
+                    <div className="bg-white rounded-lg shadow p-6">
+                      <h3 className="text-lg font-semibold text-gray-900">Sales</h3>
+                      <p className="text-3xl font-bold text-purple-600">$12,500</p>
+                    </div>
+                    <div className="bg-white rounded-lg shadow p-6">
+                      <h3 className="text-lg font-semibold text-gray-900">Orders</h3>
+                      <p className="text-3xl font-bold text-orange-600">8</p>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <button className="bg-blue-500 text-white p-4 rounded-lg hover:bg-blue-600">
+                        👥 Manage Clients
+                      </button>
+                      <button className="bg-green-500 text-white p-4 rounded-lg hover:bg-green-600">
+                        📦 View Products
+                      </button>
+                      <button className="bg-purple-500 text-white p-4 rounded-lg hover:bg-purple-600">
+                        �� Create Sale
+                      </button>
+                    </div>
+                    
+                    <div className="mt-6 pt-4 border-t">
+                      <button 
+                        onClick={() => window.location.href = '/account/dashboard'}
+                        className="text-gray-600 hover:text-gray-800"
+                      >
+                        ← Back to Companies
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Debug info */}
+                  {process.env.NODE_ENV === 'development' && (
+                    <div className="mt-6 bg-gray-100 rounded-lg p-4">
+                      <h3 className="font-semibold text-gray-800 mb-2">Debug Info</h3>
+                      <div className="text-sm text-gray-600 space-y-1">
+                        <p>Current Route: /dashboard</p>
+                        <p>Company ID: {localStorage.getItem('selectedCompanyId')}</p>
+                        <p>User Token: {localStorage.getItem('token') ? 'Present' : 'Missing'}</p>
+                        <p>Navigation: Account → Transit → Company ✅</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </AuthGuard>
+          } 
+        />
+
+        {/* Company sub-pages (заглушки) */}
+        <Route 
+          path="/clients" 
+          element={
+            <AuthGuard>
+              <div className="p-6">
+                <h1 className="text-2xl font-bold">Clients Page</h1>
+                <p>Company clients will be listed here</p>
+              </div>
+            </AuthGuard>
+          } 
+        />
+
+        {/* ============================================= */}
+        {/* 🔄 DEFAULT REDIRECTS                         */}
+        {/* ============================================= */}
+        <Route path="/" element={<Navigate to="/account/dashboard" replace />} />
+        
+        {/* Fallback для неизвестных роутов */}
+        <Route 
+          path="*" 
+          element={
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+              <div className="text-center">
+                <h1 className="text-2xl font-bold text-gray-900 mb-4">404 - Page Not Found</h1>
+                <p className="text-gray-600 mb-6">The page you're looking for doesn't exist.</p>
+                <button 
+                  onClick={() => window.location.href = '/account/dashboard'}
+                  className="bg-[#f7931e] text-white px-6 py-2 rounded-lg hover:bg-[#e05e00]"
+                >
+                  Go to Dashboard
+                </button>
+              </div>
+            </div>
+          } 
+        />
+      </Routes>
+    </Router>
+  );
+}
+
+export default App;

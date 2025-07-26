@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import authService from '../../services/authService';
-import LanguageSwitcher from '../../components/common/LanguageSwitcher';
+import authService from '../../services/account/authService';
+import LanguageSwitcher from '../../components/account/LanguageSwitcher';
 
 interface RegisterFormData {
   email: string;

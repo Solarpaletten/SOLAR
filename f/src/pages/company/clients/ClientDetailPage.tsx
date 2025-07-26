@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaEdit, FaTrash, FaCheck, FaTimes } from 'react-icons/fa';
-import { api } from '../../../api/axios';
+import { api } from '../../../api/account/axios';
 
 interface Client {
   id: number;

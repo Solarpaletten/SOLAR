@@ -1,6 +1,0 @@
-JIMMY::TASK::CHECK_SSH_ACCESS
---description="Проверить, есть ли доступ по SSH через публичный ключ"
---user=root
---host=207.154.220.86
---port=22
---check=publickey,permissions,authorized_keys,sshd_config,zshrc
