@@ -42,7 +42,7 @@ const AccountDashboardPage: React.FC = () => {
       setError(null);
 
       // 🎯 ИСПОЛЬЗУЕМ WORKING ENDPOINT
-      const response = await api.get('/api/account/companies');
+      const response = await api.get('/account/companies');
       console.log("📊 Raw API Response:", response);
       console.log("📊 Response data:", response.data);
       
