@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../../../api/axios';
 
 // ✅ ИСПРАВЛЕНО: Правильный путь к companyService
-// import companyService, { CreateCompanyData } from '../../../services/company/companyService';
-import companyService from '../../../services/company/companyService';
+import companyService, { CreateCompanyData } from '../../../services/company/companyService';
+
 
 interface Company {
   id: number;
