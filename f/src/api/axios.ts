@@ -21,7 +21,7 @@ const getApiUrl = (): string => {
 
     // Локальная разработка
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      return 'http://localhost:4000';
+      return 'http://localhost:4000/api';
     }
   }
 

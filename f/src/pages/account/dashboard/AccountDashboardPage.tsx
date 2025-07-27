@@ -1,11 +1,11 @@
 // f/src/pages/account/dashboard/AccountDashboardPage.tsx
-// ===============================================
-// 🏢 ИСПРАВЛЕННЫЙ ACCOUNT DASHBOARD БЕЗ БЕСКОНЕЧНОГО ЦИКЛА
-// ===============================================
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../../../api/account/axios';
+import { api } from '../../../api/axios';
+
+// ✅ ИСПРАВЛЕНО: Правильный путь к companyService
+// import companyService, { CreateCompanyData } from '../../../services/company/companyService';
+import companyService from '../../../services/company/companyService';
 
 interface Company {
   id: number;
@@ -17,75 +17,111 @@ interface Company {
 
 const AccountDashboardPage: React.FC = () => {
   const navigate = useNavigate();
+  
+  // ✅ ОСНОВНЫЕ STATE ПЕРЕМЕННЫЕ
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
-  useEffect(() => {
-    let mounted = true; // Prevent state updates if component unmounted
+  // ✅ ИСПРАВЛЕНО: State переменные ВНУТРИ компонента
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [createFormData, setCreateFormData] = useState<CreateCompanyData>({
+    name: '',
+    code: '',
+    description: '',
+    industry: 'RENEWABLE_ENERGY',
+    country: 'DE'
+  });
 
-    const loadCompanies = async () => {
-      try {
-        console.log('🔄 Loading companies for Account Dashboard...');
-        setLoading(true);
-        setError(null);
+  // ✅ ФУНКЦИЯ ЗАГРУЗКИ КОМПАНИЙ
+  const fetchCompanies = async () => {
+    try {
+      console.log('🔄 Loading companies for Account Dashboard...');
+      setLoading(true);
+      setError(null);
 
-        // 🎯 ИСПОЛЬЗУЕМ WORKING ENDPOINT
-        const response = await api.get('/api/account/companies');
-        console.log("📊 Raw API Response:", response);
-        console.log("📊 Response data:", response.data);
-        
-        console.log('✅ API Response:', response.data);
+      // 🎯 ИСПОЛЬЗУЕМ WORKING ENDPOINT
+      const response = await api.get('/api/account/companies');
+      console.log("📊 Raw API Response:", response);
+      console.log("📊 Response data:", response.data);
+      
+      console.log('✅ API Response:', response.data);
 
-        if (mounted && response.data.success && response.data.companies) {
-          setCompanies(response.data.companies);
-          setIsConnected(true);
-          console.log(`✅ Loaded ${response.data.companies.length} companies from API`);
-        } else {
-          throw new Error('Invalid API response format');
-        }
-
-      } catch (error: any) {
-        console.error('❌ Error loading companies:', error);
-        
-        if (mounted) {
-          setError(error.message || 'Failed to load companies');
-          setIsConnected(false);
-          
-          // Fallback data
-          setCompanies([
-            { id: 1, name: 'SOLAR Energy Ltd', code: 'SOLAR', is_active: true, created_at: new Date().toISOString() },
-          ]);
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
+      if (response.data.success && response.data.companies) {
+        setCompanies(response.data.companies);
+        setIsConnected(true);
+        console.log(`✅ Loaded ${response.data.companies.length} companies from API`);
+      } else {
+        throw new Error('Invalid API response format');
       }
-    };
 
-    loadCompanies();
+    } catch (error: any) {
+      console.error('❌ Error loading companies:', error);
+      
+      setError(error.message || 'Failed to load companies');
+      setIsConnected(false);
+      
+      // Fallback data
+      setCompanies([
+        { id: 1, name: 'SOLAR Energy Ltd', code: 'SOLAR', is_active: true, created_at: new Date().toISOString() },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    // Cleanup function
-    return () => {
-      mounted = false;
-    };
+  // ✅ USEEFFECT ДЛЯ ЗАГРУЗКИ КОМПАНИЙ
+  useEffect(() => {
+    fetchCompanies();
   }, []);
 
+  // ✅ ИСПРАВЛЕНО: Функция создания компании ВНУТРИ компонента
+  const handleCreateCompany = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      console.log('🏢 Creating new company:', createFormData);
+      
+      const newCompany = await companyService.createCompany(createFormData);
+      console.log('✅ Company created:', newCompany);
+      
+      // Обновляем список компаний
+      await fetchCompanies();
+      
+      // Закрываем форму и очищаем данные
+      setShowCreateForm(false);
+      setCreateFormData({
+        name: '',
+        code: '',
+        description: '',
+        industry: 'RENEWABLE_ENERGY',
+        country: 'DE'
+      });
+      
+    } catch (error: any) {
+      console.error('❌ Error creating company:', error);
+      setError(error.message || 'Failed to create company');
+    }
+  };
+
+  // ✅ ОБРАБОТЧИК ВЫБОРА КОМПАНИИ
   const handleCompanySelect = async (companyId: number) => {
     try {
       console.log('🚀 User clicked on company ID:', companyId);
       
-      // TODO: Реализовать выбор компании
+      // ✅ ИСПОЛЬЗУЕМ companyService для выбора компании
+      await companyService.selectCompany(companyId);
       console.log('✅ Company selected successfully');
+      
       navigate('/dashboard');
     } catch (error: any) {
       console.error('❌ Error selecting company:', error);
-      alert('Error selecting company: ' + error.message);
+      setError('Error selecting company: ' + error.message);
     }
   };
 
+  // ✅ LOADING STATE
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
@@ -122,9 +158,19 @@ const AccountDashboardPage: React.FC = () => {
         {/* Error Message */}
         {error && (
           <div className="mb-6 bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
-            <p className="font-medium">⚠️ API Issue:</p>
-            <p className="text-sm">{error}</p>
-            <p className="text-sm mt-1">Using fallback data for demonstration.</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">⚠️ API Issue:</p>
+                <p className="text-sm">{error}</p>
+                <p className="text-sm mt-1">Using fallback data for demonstration.</p>
+              </div>
+              <button
+                onClick={() => setError(null)}
+                className="text-yellow-700 hover:text-yellow-900"
+              >
+                ✕
+              </button>
+            </div>
           </div>
         )}
 
@@ -183,12 +229,126 @@ const AccountDashboardPage: React.FC = () => {
         {/* Create New Company */}
         <div className="text-center">
           <button 
-            onClick={() => console.log('Create company clicked')}
+            onClick={() => setShowCreateForm(true)}
             className="bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-3 rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 font-medium"
           >
             + Create New Company
           </button>
         </div>
+
+        {/* ✅ МОДАЛЬНОЕ ОКНО СОЗДАНИЯ КОМПАНИИ */}
+        {showCreateForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-gray-800">🏢 Create New Company</h3>
+                <button
+                  onClick={() => setShowCreateForm(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateCompany} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Company Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={createFormData.name}
+                    onChange={(e) => setCreateFormData({ ...createFormData, name: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="My Company Ltd"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Company Code *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={createFormData.code}
+                    onChange={(e) => setCreateFormData({ ...createFormData, code: e.target.value.toUpperCase() })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="MYCO"
+                    maxLength={6}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    value={createFormData.description}
+                    onChange={(e) => setCreateFormData({ ...createFormData, description: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="Brief company description"
+                    rows={3}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Industry
+                    </label>
+                    <select
+                      value={createFormData.industry}
+                      onChange={(e) => setCreateFormData({ ...createFormData, industry: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    >
+                      <option value="RENEWABLE_ENERGY">Renewable Energy</option>
+                      <option value="TECHNOLOGY">Technology</option>
+                      <option value="MANUFACTURING">Manufacturing</option>
+                      <option value="TRADING">Trading</option>
+                      <option value="SERVICES">Services</option>
+                      <option value="OTHER">Other</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Country
+                    </label>
+                    <select
+                      value={createFormData.country}
+                      onChange={(e) => setCreateFormData({ ...createFormData, country: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    >
+                      <option value="DE">Germany</option>
+                      <option value="PL">Poland</option>
+                      <option value="US">United States</option>
+                      <option value="GB">United Kingdom</option>
+                      <option value="AE">UAE</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateForm(false)}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200"
+                  >
+                    Create Company
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
         {/* Debug Info */}
         <div className="mt-8 text-center text-sm text-gray-500">
@@ -199,6 +359,8 @@ const AccountDashboardPage: React.FC = () => {
               <p>• Endpoint: <code>/api/account/companies</code></p>
               <p>• Companies loaded: <strong>{companies.length}</strong></p>
               <p>• Data source: {isConnected ? 'Real API' : 'Fallback mock'}</p>
+              <p>• Company Service: f/src/services/company/companyService.ts</p>
+              <p>• Create Form: {showCreateForm ? 'Open' : 'Closed'}</p>
             </div>
           </div>
         </div>
