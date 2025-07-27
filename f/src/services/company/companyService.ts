@@ -26,7 +26,7 @@ const companyService = {
     try {
       console.log('📋 Fetching user companies...');
       
-      const response = await api.get<{success: boolean, companies: Company[]}>('/account/companies');
+      const response = await api.get<{success: boolean, companies: Company[]}>('/api/account/companies');
       
       if (response.data.success) {
         console.log('✅ Companies loaded:', response.data.companies);
@@ -129,7 +129,7 @@ const companyService = {
     try {
       console.log('🏢 Creating new company:', companyData);
 
-      const response = await api.post<{success: boolean, company: Company}>('/account/companies', companyData);
+      const response = await api.post<{success: boolean, company: Company}>('/api/account/companies', companyData);
       
       if (response.data.success && response.data.company) {
         console.log('✅ Company created successfully:', response.data.company);

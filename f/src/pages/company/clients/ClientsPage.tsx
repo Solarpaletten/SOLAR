@@ -1,6 +1,7 @@
 // f/src/pages/company/clients/ClientsPage.tsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { api } from '../../../api/axios';
 
 // 🎯 Типы для клиентов
 interface Client {
@@ -62,14 +63,7 @@ const ClientsPage: React.FC = () => {
 
       console.log('🔄 Fetching clients for company:', companyId);
 
-      const response = await fetch('/api/clients', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'X-Company-Id': companyId,
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await api.get('/api/company/clients');
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -105,15 +99,7 @@ const ClientsPage: React.FC = () => {
 
       console.log('➕ Creating client:', formData);
 
-      const response = await fetch('/api/clients', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'X-Company-Id': companyId,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      });
+      const response = await api.post('/api/company/clients', formData);
 
       const data = await response.json();
       console.log('✅ Client creation response:', data);
