@@ -1,5 +1,5 @@
 // src/services/account/authService.ts 
-import { api } from '../../api/account/axios';
+import { api } from '../../api/axios';
 
 export interface Company {
   id: number;

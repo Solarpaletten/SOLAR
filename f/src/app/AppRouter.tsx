@@ -16,7 +16,9 @@ import AccountDashboardPage from '../pages/account/dashboard/AccountDashboardPag
 import CompanyTransitPage from '../pages/company/navigation/CompanyTransitPage';
 
 // Company Level - Business Operations (пока заглушки, можно добавить позже)
-// import CompanyDashboardPage from '../pages/company/dashboard/CompanyDashboardPage';
+import ClientsPage from '../pages/company/clients/ClientsPage';
+
+import CompanyDashboardPage from '../pages/company/dashboard/CompanyDashboardPage';
 
 function App() {
   console.log('🚀 Solar ERP App loaded - Multi-tenant architecture');
@@ -38,6 +40,7 @@ function App() {
           element={
             <AuthGuard>
               <AccountDashboardPage />
+              <ClientsPage />
             </AuthGuard>
           } 
         />
