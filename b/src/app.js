@@ -5,7 +5,7 @@ const helmet = require('helmet');
 const compression = require('compression');
 const session = require('express-session');
 const { logger } = require('./config/logger');
-const { getPrismaManager } = require('./utils/prismaManager');
+const prismaManager = require('./utils/prismaManager');
 
 const app = express();
 
