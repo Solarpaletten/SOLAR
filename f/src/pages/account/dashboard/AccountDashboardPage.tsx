@@ -2,10 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../../api/axios';
-
-// ✅ ИСПРАВЛЕНО: Правильный путь к companyService
 import companyService, { CreateCompanyData } from '../../../services/company/companyService';
-
 
 interface Company {
   id: number;
@@ -18,13 +15,11 @@ interface Company {
 const AccountDashboardPage: React.FC = () => {
   const navigate = useNavigate();
   
-  // ✅ ОСНОВНЫЕ STATE ПЕРЕМЕННЫЕ
+  // State переменные
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-
-  // ✅ ИСПРАВЛЕНО: State переменные ВНУТРИ компонента
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [createFormData, setCreateFormData] = useState<CreateCompanyData>({
     name: '',
@@ -34,18 +29,14 @@ const AccountDashboardPage: React.FC = () => {
     country: 'DE'
   });
 
-  // ✅ ФУНКЦИЯ ЗАГРУЗКИ КОМПАНИЙ
+  // Функция загрузки компаний
   const fetchCompanies = async () => {
     try {
       console.log('🔄 Loading companies for Account Dashboard...');
       setLoading(true);
       setError(null);
 
-      // 🎯 ИСПОЛЬЗУЕМ WORKING ENDPOINT
       const response = await api.get('/api/account/companies');
-      console.log("📊 Raw API Response:", response);
-      console.log("📊 Response data:", response.data);
-      
       console.log('✅ API Response:', response.data);
 
       if (response.data.success && response.data.companies) {
@@ -71,12 +62,49 @@ const AccountDashboardPage: React.FC = () => {
     }
   };
 
-  // ✅ USEEFFECT ДЛЯ ЗАГРУЗКИ КОМПАНИЙ
+  // UseEffect для загрузки компаний
   useEffect(() => {
     fetchCompanies();
   }, []);
 
-  // ✅ ИСПРАВЛЕНО: Функция создания компании ВНУТРИ компонента
+  // ✅ ЕДИНСТВЕННАЯ ПРАВИЛЬНАЯ функция входа в компанию
+  const handleEnterCompany = async (companyId: number) => {
+    try {
+      console.log('🔄 Switching to company:', companyId);
+      
+      // 1. Переключаем контекст на backend
+      const response = await api.post('/api/account/switch-to-company', { 
+        companyId: companyId 
+      });
+      
+      console.log('✅ Backend context switched:', response.data);
+      
+      // 2. Сохраняем правильный ID в localStorage
+      localStorage.setItem('currentCompanyId', companyId.toString());
+      
+      // 3. Сохраняем имя компании
+      const selectedCompany = companies.find(c => c.id === companyId);
+      if (selectedCompany) {
+        localStorage.setItem('currentCompanyName', selectedCompany.name);
+      }
+      
+      // 4. Перенаправляем на company dashboard
+      navigate('/dashboard');
+      
+    } catch (error: any) {
+      console.error('❌ Failed to switch company:', error);
+      
+      // Fallback - переходим даже если backend не отвечает
+      localStorage.setItem('currentCompanyId', companyId.toString());
+      const selectedCompany = companies.find(c => c.id === companyId);
+      if (selectedCompany) {
+        localStorage.setItem('currentCompanyName', selectedCompany.name);
+      }
+      navigate('/dashboard');
+    }
+  };
+
+  // Функция создания компании
   const handleCreateCompany = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -105,23 +133,7 @@ const AccountDashboardPage: React.FC = () => {
     }
   };
 
-  // ✅ ОБРАБОТЧИК ВЫБОРА КОМПАНИИ
-  const handleCompanySelect = async (companyId: number) => {
-    try {
-      console.log('🚀 User clicked on company ID:', companyId);
-      
-      // ✅ ИСПОЛЬЗУЕМ companyService для выбора компании
-      await companyService.selectCompany(companyId);
-      console.log('✅ Company selected successfully');
-      
-      navigate('/dashboard');
-    } catch (error: any) {
-      console.error('❌ Error selecting company:', error);
-      setError('Error selecting company: ' + error.message);
-    }
-  };
-
-  // ✅ LOADING STATE
+  // Loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
@@ -191,8 +203,8 @@ const AccountDashboardPage: React.FC = () => {
           {companies.map((company) => (
             <div
               key={company.id}
-              onClick={() => handleCompanySelect(company.id)}
               className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-2 p-6"
+              onClick={() => handleEnterCompany(company.id)}
             >
               <div className="flex items-center mb-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
@@ -236,7 +248,7 @@ const AccountDashboardPage: React.FC = () => {
           </button>
         </div>
 
-        {/* ✅ МОДАЛЬНОЕ ОКНО СОЗДАНИЯ КОМПАНИИ */}
+        {/* Modal форма создания компании */}
         {showCreateForm && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
