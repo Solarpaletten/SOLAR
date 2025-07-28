@@ -1,23 +1,22 @@
-// b/src/app.js - ТОЛЬКО ИЗМЕНЕНИЯ
+// b/src/app.js - БЕЗ app.listen() в конце
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const session = require('express-session');
 const { logger } = require('./config/logger');
-// 🔧 ИСПРАВЛЕНИЕ 1: Используем getPrismaManager вместо prismaManager
 const { getPrismaManager } = require('./utils/prismaManager');
 
 const app = express();
 
-// Middleware (без изменений)
+// Middleware
 app.use(compression());
 app.use(
   cors({
     origin: ['http://localhost:3000', 'http://localhost:5173', 'http://207.154.220.86', 'https://solar.swapoil.de'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Company-Id'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-company-id'],
   })
 );
 
@@ -42,7 +41,7 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Логирование запросов (без изменений)
+// Логирование запросов
 app.use((req, res, next) => {
   const startTime = Date.now();
   res.on('finish', () => {
@@ -52,7 +51,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Health check endpoint (без изменений)
+// Health check endpoint
 app.get('/health', (req, res) => {
   res.json({
     status: 'OK',
@@ -99,7 +98,7 @@ try {
   logger.error('❌ Failed to load company dashboard routes:', error);
 }
 
-// Тестовые роуты (без изменений)
+// Тестовые роуты
 apiRouter.get('/test', (req, res) => {
   res.json({
     message: 'Backend API is working!',
@@ -113,7 +112,7 @@ apiRouter.get('/test', (req, res) => {
   });
 });
 
-// 🔧 ИСПРАВЛЕНИЕ 2: Улучшенный Company context test endpoint
+// Company context test endpoint
 apiRouter.get('/company/test', (req, res) => {
   const companyId = req.headers['x-company-id'];
   const authorization = req.headers.authorization;
@@ -129,8 +128,8 @@ apiRouter.get('/company/test', (req, res) => {
       'authorization': authorization ? 'Bearer ***' : 'Missing'
     },
     instructions: {
-      usage: 'Send X-Company-ID header and Authorization Bearer token',
-      example: 'curl -H "X-Company-ID: 1" -H "Authorization: Bearer TOKEN" http://localhost:4000/api/company/test'
+      usage: 'Send x-company-id header and Authorization Bearer token',
+      example: 'curl -H "x-company-id: 1" -H "Authorization: Bearer TOKEN" http://localhost:4000/api/company/test'
     }
   });
 });
@@ -138,7 +137,7 @@ apiRouter.get('/company/test', (req, res) => {
 // Подключаем API роуты
 app.use('/api', apiRouter);
 
-// 404 handler (без изменений)
+// 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({
     success: false,
@@ -149,7 +148,7 @@ app.use('*', (req, res) => {
   });
 });
 
-// Error handler (без изменений)
+// Error handler
 app.use((error, req, res, next) => {
   logger.error('Global error handler:', error);
   
@@ -163,18 +162,7 @@ app.use((error, req, res, next) => {
   });
 });
 
-const PORT = process.env.PORT || 4000;
-
-app.listen(PORT, () => {
-  logger.info(`🚀 Solar ERP Backend v1.7.0 running on port ${PORT}`);
-  logger.info(`📋 API Endpoints:`);
-  logger.info(`   Health: http://localhost:${PORT}/health`);
-  logger.info(`   Test: http://localhost:${PORT}/api/test`);
-  logger.info(`   Company Test: http://localhost:${PORT}/api/company/test`);
-  logger.info(`   Auth: http://localhost:${PORT}/api/auth/*`);
-  logger.info(`   Account: http://localhost:${PORT}/api/account/*`);
-  logger.info(`   Clients: http://localhost:${PORT}/api/company/clients`);
-  logger.info(`   Dashboard: http://localhost:${PORT}/api/company/dashboard`);
-});
+// ✅ ВАЖНО: НЕ ЗАПУСКАЕМ СЕРВЕР ЗДЕСЬ!
+// Сервер запускается в index.js или server.js
 
 module.exports = app;
