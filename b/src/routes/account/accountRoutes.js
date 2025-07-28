@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const accountController = require('../../controllers/account/accountController');
 const accountContextController = require('../../controllers/account/accountContextController');
-const auth = require('../../middleware/account/auth');
+const auth = require('../middleware/auth');
 const { logger } = require('../../config/logger');
 
 // Добавим отладку
