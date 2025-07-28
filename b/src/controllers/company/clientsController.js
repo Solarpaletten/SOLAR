@@ -2,6 +2,16 @@
 const { logger } = require('../../config/logger');
 
 const getAllClients = async (req, res) => {
+  logger.info("🔍 getAllClients START", {
+    companyId: req.companyContext?.companyId,
+    userId: req.user?.id,
+    prismaExists: !!req.prisma
+  });
+  logger.info("🔍 DEBUG getAllClients called", { 
+    companyId: req.companyContext?.companyId,
+    userId: req.user?.id,
+    headers: req.headers
+  });
   try {
     const companyId = req.companyContext?.companyId;
     
@@ -13,6 +23,7 @@ const getAllClients = async (req, res) => {
     }
     
     // 🔥 ИСПРАВЛЕНО: Фильтруем по company_id!
+    logger.info("🔍 About to query database", { companyId });
     const clients = await req.prisma.clients.findMany({
       where: {
         company_id: parseInt(companyId)  // ✅ MULTI-TENANT ИЗОЛЯЦИЯ
@@ -235,6 +246,7 @@ const searchClients = async (req, res) => {
       });
     }
 
+    logger.info("🔍 About to query database", { companyId });
     const clients = await req.prisma.clients.findMany({
       where: {
         company_id: parseInt(companyId),

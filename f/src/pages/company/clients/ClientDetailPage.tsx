@@ -26,7 +26,10 @@ const ClientDetailPage: React.FC = () => {
     const fetchClient = async () => {
       setLoading(true);
       try {
-        const response = await api.get(`/clients/${id}`);
+        const token = localStorage.getItem('auth_token');
+        const currentCompanyId = localStorage.getItem('currentCompanyId');
+        
+        const response = await api.get(`/api/company/clients/${id}`);
         setClient(response.data);
       } catch (err) {
         console.error('Error fetching client:', err);
@@ -43,7 +46,7 @@ const ClientDetailPage: React.FC = () => {
 
   const handleDelete = async () => {
     try {
-      await api.delete(`/clients/${id}`);
+      await api.delete(`/api/company/clients/${id}`);
       navigate('/clients');
     } catch (err) {
       console.error('Error deleting client:', err);
@@ -89,7 +92,7 @@ const ClientDetailPage: React.FC = () => {
 
           <div className="flex space-x-3">
             <button
-              onClick={() => navigate(`/clients/${id}/edit`)}
+              onClick={() => navigate(`/api/company/clients/${id}/edit`)}
               className="inline-flex items-center px-4 py-2 bg-[#f7931e] text-white rounded hover:bg-[#e67e00]"
             >
               <FaEdit className="mr-2" />
