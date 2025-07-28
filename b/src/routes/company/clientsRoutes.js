@@ -26,12 +26,4 @@ router.put('/:id', clientsController.updateClient);
 // Удалить клиента  
 router.delete('/:id', clientsController.deleteClient);
 
-// ✅ ДОПОЛНИТЕЛЬНЫЕ ENDPOINTS для v1.7.0:
-
-// Поиск клиентов по имени/email
-router.get('/search/query', clientsController.searchClients);
-
-// Legacy route (будет удален в v1.8.0)
-router.get('/companies', clientsController.getMyCompanies);
-
 module.exports = router;

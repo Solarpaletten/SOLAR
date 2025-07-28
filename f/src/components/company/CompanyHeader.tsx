@@ -1,20 +1,20 @@
-//f/src/components/layout/company/CompanyHeader.tsx
+// f/src/components/company/CompanyHeader.tsx
 import React, { useState, useEffect } from 'react';
 
-interface HeaderProps {
-  user?: {
-    name: string;
-    avatar?: string;
-  };
-}
-
-const CompanyHeader: React.FC<HeaderProps> = ({ user }) => {
+const CompanyHeader: React.FC = () => {
   const [companyName, setCompanyName] = useState('');
+  const [companyId, setCompanyId] = useState('');
   const [balance, setBalance] = useState(0);
 
   useEffect(() => {
+    // Получаем данные из localStorage
     const name = localStorage.getItem('currentCompanyName') || 'Company';
+    const id = localStorage.getItem('currentCompanyId') || '0';
+    
     setCompanyName(name);
+    setCompanyId(id);
+    
+    console.log('🏢 CompanyHeader loaded:', { name, id });
   }, []);
 
   return (
@@ -31,19 +31,16 @@ const CompanyHeader: React.FC<HeaderProps> = ({ user }) => {
       </div>
 
       <div className="flex items-center space-x-3">
-        <span className="text-sm">{companyName}</span>
+        {/* 🎯 ДОБАВЛЯЕМ ОТОБРАЖЕНИЕ COMPANY ID ДЛЯ ДИАГНОСТИКИ */}
+        <div className="text-right">
+          <div className="text-sm font-medium">{companyName}</div>
+          <div className="text-xs opacity-75">Company ID: {companyId}</div>
+        </div>
+        
         <div className="w-9 h-9 rounded-full bg-white overflow-hidden">
-          {user?.avatar ? (
-            <img
-              src={user.avatar}
-              alt="User avatar"
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-[#f7931e] font-bold">
-              {companyName.charAt(0)}
-            </div>
-          )}
+          <div className="w-full h-full flex items-center justify-center text-[#f7931e] font-bold">
+            {companyName.charAt(0)}
+          </div>
         </div>
       </div>
     </header>
