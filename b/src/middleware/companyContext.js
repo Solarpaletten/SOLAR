@@ -1,6 +1,6 @@
 // b/src/middleware/company/companyContext.js
-const { getPrismaManager } = require('../../utils/prismaManager');
-const { logger } = require('../../config/logger');
+const { getPrismaManager } = require('../utils/prismaManager');
+const { logger } = require('../config/logger');
 
 /**
  * 🏭 COMPANY CONTEXT MIDDLEWARE

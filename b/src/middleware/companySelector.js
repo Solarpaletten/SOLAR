@@ -1,5 +1,5 @@
 // src/middleware/companySelector.js
-const { getPrismaManager } = require('./companyContext');
+const { getPrismaManager } = require('../companyContext');
 
 /**
  * Middleware для определения уровня доступа (Account vs Company)

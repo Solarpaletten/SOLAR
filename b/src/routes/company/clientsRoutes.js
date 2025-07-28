@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../../middleware/auth');
-const companyContext = require('../../middleware/company/companyContext');
+const companyContext = require('../../middleware/companyContext');
 const clientsController = require('../../controllers/company/clientsController');
 const { logger } = require('../../config/logger');
 

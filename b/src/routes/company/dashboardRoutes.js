@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const dashboardController = require('../../controllers/company/dashboardController');
-const auth = require('../../middleware/account/auth');
+const auth = require('../../middleware/auth'); // Импортируем middleware для аутентификации
 const { logger } = require('../../config/logger');
 
 logger.info('Company dashboard routes initialized');
