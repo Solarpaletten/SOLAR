@@ -1,4 +1,5 @@
-import React from 'react';
+//f/src/components/layout/company/CompanyHeader.tsx
+import React, { useState, useEffect } from 'react';
 
 interface HeaderProps {
   user?: {
@@ -7,7 +8,15 @@ interface HeaderProps {
   };
 }
 
-const Header: React.FC<HeaderProps> = ({ user = { name: 'LEANID SOLAR' } }) => {
+const CompanyHeader: React.FC<HeaderProps> = ({ user }) => {
+  const [companyName, setCompanyName] = useState('');
+  const [balance, setBalance] = useState(0);
+
+  useEffect(() => {
+    const name = localStorage.getItem('currentCompanyName') || 'Company';
+    setCompanyName(name);
+  }, []);
+
   return (
     <header className="flex justify-between items-center h-15 px-4 bg-[#f7931e] text-white">
       <div className="flex items-center space-x-4">
@@ -17,14 +26,14 @@ const Header: React.FC<HeaderProps> = ({ user = { name: 'LEANID SOLAR' } }) => {
         <button className="py-1.5 px-3 bg-transparent rounded hover:bg-opacity-10 hover:bg-white transition-colors">
           Minimal
         </button>
-        <div className="ml-2 text-sm">Balance 0.00 €</div>
+        <div className="ml-2 text-sm">Balance {balance.toFixed(2)} €</div>
         <div className="ml-2 text-sm">Partnership points 0.00 €</div>
       </div>
 
       <div className="flex items-center space-x-3">
-        <span className="text-sm">{user.name}</span>
+        <span className="text-sm">{companyName}</span>
         <div className="w-9 h-9 rounded-full bg-white overflow-hidden">
-          {user.avatar ? (
+          {user?.avatar ? (
             <img
               src={user.avatar}
               alt="User avatar"
@@ -32,7 +41,7 @@ const Header: React.FC<HeaderProps> = ({ user = { name: 'LEANID SOLAR' } }) => {
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-[#f7931e] font-bold">
-              {user.name.charAt(0)}
+              {companyName.charAt(0)}
             </div>
           )}
         </div>
@@ -41,4 +50,4 @@ const Header: React.FC<HeaderProps> = ({ user = { name: 'LEANID SOLAR' } }) => {
   );
 };
 
-export default Header;
+export default CompanyHeader;

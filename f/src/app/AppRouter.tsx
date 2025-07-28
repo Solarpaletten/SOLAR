@@ -16,6 +16,8 @@ import AccountDashboardPage from '../pages/account/dashboard/AccountDashboardPag
 import CompanyTransitPage from '../pages/company/navigation/CompanyTransitPage';
 
 // Company Level - Business Operations (пока заглушки, можно добавить позже)
+import DashboardPage from '../pages/company/dashboard/DashboardPage'; 
+
 import ClientsPage from '../pages/company/clients/ClientsPage';
 
 import CompanyDashboardPage from '../pages/company/dashboard/CompanyDashboardPage';
@@ -35,6 +37,7 @@ function App() {
         {/* ============================================= */}
         {/* 🏢 ACCOUNT LEVEL - System management        */}
         {/* ============================================= */}
+        <Route path="/dashboard" element={<DashboardPage />} />
         <Route 
           path="/account/dashboard" 
           element={
