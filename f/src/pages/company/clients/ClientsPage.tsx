@@ -1,6 +1,6 @@
 // f/src/pages/company/clients/ClientsPage.tsx - С ПРАВИЛЬНОЙ АВТОРИЗАЦИЕЙ
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import CompanyLayout from '../../../components/company/CompanyLayout';
 import { api } from '../../../api/axios';
 
@@ -28,7 +28,7 @@ interface CreateClientData {
 
 const ClientsPage: React.FC = () => {
   const navigate = useNavigate();
-  
+
   // State
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,13 +47,14 @@ const ClientsPage: React.FC = () => {
     phone: '',
     role: 'CLIENT',
     country: 'Germany',
-    currency: 'EUR'
+    currency: 'EUR',
   });
 
   // Get company context
   useEffect(() => {
     const id = localStorage.getItem('currentCompanyId') || '0';
-    const name = localStorage.getItem('currentCompanyName') || 'Unknown Company';
+    const name =
+      localStorage.getItem('currentCompanyName') || 'Unknown Company';
     setCompanyId(id);
     setCompanyName(name);
   }, []);
@@ -63,10 +64,10 @@ const ClientsPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const token = localStorage.getItem('auth_token');
       const currentCompanyId = localStorage.getItem('currentCompanyId');
-      
+
       if (!token) {
         setError('No authentication token found. Please login.');
         navigate('/login');
@@ -79,29 +80,33 @@ const ClientsPage: React.FC = () => {
         return;
       }
 
-      console.log('🔄 Fetching clients with auth for company:', currentCompanyId);
+      console.log(
+        '🔄 Fetching clients with auth for company:',
+        currentCompanyId
+      );
 
       // 🎯 ПРАВИЛЬНЫЙ API ЗАПРОС С ТОКЕНОМ И COMPANY ID
       const response = await api.get('/api/company/clients', {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'x-company-id': currentCompanyId,
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       });
 
       console.log('✅ API Response:', response.data);
 
       if (response.data.success) {
         setClients(response.data.clients || []);
-        console.log(`✅ Loaded ${response.data.clients?.length || 0} clients from API`);
+        console.log(
+          `✅ Loaded ${response.data.clients?.length || 0} clients from API`
+        );
       } else {
         throw new Error(response.data.error || 'Failed to load clients');
       }
-
     } catch (err: any) {
       console.error('❌ Error fetching clients:', err);
-      
+
       // Проверяем тип ошибки
       if (err.response?.status === 401) {
         setError('Authentication failed. Please login again.');
@@ -109,15 +114,17 @@ const ClientsPage: React.FC = () => {
         navigate('/login');
         return;
       }
-      
+
       if (err.response?.status === 400) {
         setError('Company context missing. Please select a company.');
         navigate('/account/dashboard');
         return;
       }
 
-      setError(err.response?.data?.error || err.message || 'Failed to load clients');
-      
+      setError(
+        err.response?.data?.error || err.message || 'Failed to load clients'
+      );
+
       // 🎯 FALLBACK MOCK DATA только в case крайней ошибки
       console.log('⚠️ Using fallback mock data');
       setClients([
@@ -130,7 +137,7 @@ const ClientsPage: React.FC = () => {
           country: 'Germany',
           currency: 'EUR',
           is_active: true,
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
         },
         {
           id: 2,
@@ -141,8 +148,8 @@ const ClientsPage: React.FC = () => {
           country: 'Germany',
           currency: 'EUR',
           is_active: true,
-          created_at: new Date().toISOString()
-        }
+          created_at: new Date().toISOString(),
+        },
       ]);
     } finally {
       setLoading(false);
@@ -158,11 +165,11 @@ const ClientsPage: React.FC = () => {
   // ➕ Create client with authentication
   const handleCreateClient = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       const token = localStorage.getItem('auth_token');
       const currentCompanyId = localStorage.getItem('currentCompanyId');
-      
+
       if (!token || !currentCompanyId) {
         setError('Authentication or company context missing');
         return;
@@ -172,10 +179,10 @@ const ClientsPage: React.FC = () => {
 
       const response = await api.post('/api/company/clients', formData, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'x-company-id': currentCompanyId,
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       });
 
       if (response.data.success) {
@@ -187,7 +194,7 @@ const ClientsPage: React.FC = () => {
           phone: '',
           role: 'CLIENT',
           country: 'Germany',
-          currency: 'EUR'
+          currency: 'EUR',
         });
         console.log('✅ Client created successfully');
       } else {
@@ -195,7 +202,9 @@ const ClientsPage: React.FC = () => {
       }
     } catch (err: any) {
       console.error('❌ Error creating client:', err);
-      setError(err.response?.data?.error || err.message || 'Failed to create client');
+      setError(
+        err.response?.data?.error || err.message || 'Failed to create client'
+      );
     }
   };
 
@@ -211,13 +220,13 @@ const ClientsPage: React.FC = () => {
 
       await api.delete(`/api/company/clients/${clientId}`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'x-company-id': currentCompanyId,
-        }
+        },
       });
-      
+
       // Remove from local state
-      setClients(clients.filter(c => c.id !== clientId));
+      setClients(clients.filter((c) => c.id !== clientId));
       console.log('✅ Client deleted successfully');
     } catch (error: any) {
       console.error('❌ Error deleting client:', error);
@@ -230,25 +239,28 @@ const ClientsPage: React.FC = () => {
     try {
       const token = localStorage.getItem('auth_token');
       const currentCompanyId = localStorage.getItem('currentCompanyId');
-      const client = clients.find(c => c.id === clientId);
+      const client = clients.find((c) => c.id === clientId);
       if (!client) return;
 
       const newStatus = !client.is_active;
-      
-      await api.put(`/api/company/clients/${clientId}`, 
+
+      await api.put(
+        `/api/company/clients/${clientId}`,
         { is_active: newStatus },
         {
           headers: {
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
             'x-company-id': currentCompanyId,
-          }
+          },
         }
       );
 
-      setClients(clients.map(c => 
-        c.id === clientId ? { ...c, is_active: newStatus } : c
-      ));
-      
+      setClients(
+        clients.map((c) =>
+          c.id === clientId ? { ...c, is_active: newStatus } : c
+        )
+      );
+
       console.log('✅ Client status updated');
     } catch (error: any) {
       console.error('❌ Error updating client status:', error);
@@ -257,10 +269,13 @@ const ClientsPage: React.FC = () => {
   };
 
   // Filter clients
-  const filteredClients = clients.filter(client => 
-    client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    client.email.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredClients = clients.filter(
+    (client) =>
+      client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      client.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+
 
   return (
     <CompanyLayout>
@@ -269,12 +284,19 @@ const ClientsPage: React.FC = () => {
         <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-sm font-medium text-blue-800">Managing Clients for:</span>
-              <span className="ml-2 font-semibold text-blue-900">{companyName}</span>
-              <span className="ml-2 text-xs text-blue-600">(Company ID: {companyId})</span>
+              <span className="text-sm font-medium text-blue-800">
+                Managing Clients for:
+              </span>
+              <span className="ml-2 font-semibold text-blue-900">
+                {companyName}
+              </span>
+              <span className="ml-2 text-xs text-blue-600">
+                (Company ID: {companyId})
+              </span>
             </div>
             <div className="text-sm text-blue-700">
-              {filteredClients.length} client{filteredClients.length !== 1 ? 's' : ''} found
+              {filteredClients.length} client
+              {filteredClients.length !== 1 ? 's' : ''} found
             </div>
           </div>
         </div>
@@ -283,7 +305,9 @@ const ClientsPage: React.FC = () => {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-800">👥 Clients Management</h1>
+              <h1 className="text-3xl font-bold text-gray-800">
+                👥 Clients Management
+              </h1>
               <p className="text-gray-600 mt-2">Manage your company clients</p>
             </div>
             <button
@@ -340,7 +364,9 @@ const ClientsPage: React.FC = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-gray-800">➕ Add New Client</h3>
+                <h3 className="text-xl font-bold text-gray-800">
+                  ➕ Add New Client
+                </h3>
                 <button
                   onClick={() => setShowCreateForm(false)}
                   className="text-gray-500 hover:text-gray-700"
@@ -351,35 +377,47 @@ const ClientsPage: React.FC = () => {
 
               <form onSubmit={handleCreateClient} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Name *
+                  </label>
                   <input
                     type="text"
                     required
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Client name"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email *
+                  </label>
                   <input
                     type="email"
                     required
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="client@company.com"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Phone
+                  </label>
                   <input
                     type="tel"
                     value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, phone: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="+49 123 456 7890"
                   />
@@ -387,10 +425,14 @@ const ClientsPage: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Role
+                    </label>
                     <select
                       value={formData.role}
-                      onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, role: e.target.value })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="CLIENT">Client</option>
@@ -400,10 +442,14 @@ const ClientsPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Currency
+                    </label>
                     <select
                       value={formData.currency}
-                      onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, currency: e.target.value })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="EUR">EUR</option>
@@ -445,9 +491,13 @@ const ClientsPage: React.FC = () => {
             {filteredClients.length === 0 ? (
               <div className="text-center py-12">
                 <div className="text-gray-400 text-6xl mb-4">👥</div>
-                <h3 className="text-xl font-medium text-gray-600 mb-2">No clients found</h3>
+                <h3 className="text-xl font-medium text-gray-600 mb-2">
+                  No clients found
+                </h3>
                 <p className="text-gray-500 mb-6">
-                  {searchQuery ? 'Try adjusting your search' : 'Start by adding your first client'}
+                  {searchQuery
+                    ? 'Try adjusting your search'
+                    : 'Start by adding your first client'}
                 </p>
                 {!searchQuery && (
                   <button
@@ -463,42 +513,70 @@ const ClientsPage: React.FC = () => {
                 <table className="w-full">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Client
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Contact
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Role
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Created
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {filteredClients.map((client) => (
-                      <tr key={client.id} className="hover:bg-gray-50 transition-colors">
+                      <tr
+                        key={client.id}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
                               {client.name.charAt(0).toUpperCase()}
                             </div>
                             <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">{client.name}</div>
-                              <div className="text-sm text-gray-500">ID: {client.id}</div>
+                              <Link
+                                to={`/clients/${client.id}`}
+                                className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                              >
+                                {client.name}
+                              </Link>
+                              <div className="text-sm text-gray-500">
+                                ID: {client.id}
+                              </div>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{client.email}</div>
+                          <div className="text-sm text-gray-900">
+                            {client.email}
+                          </div>
                           {client.phone && (
-                            <div className="text-sm text-gray-500">{client.phone}</div>
+                            <div className="text-sm text-gray-500">
+                              {client.phone}
+                            </div>
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            client.role === 'CLIENT' 
-                              ? 'bg-blue-100 text-blue-800'
-                              : client.role === 'SUPPLIER'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-purple-100 text-purple-800'
-                          }`}>
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              client.role === 'CLIENT'
+                                ? 'bg-blue-100 text-blue-800'
+                                : client.role === 'SUPPLIER'
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-purple-100 text-purple-800'
+                            }`}
+                          >
                             {client.role}
                           </span>
                         </td>
@@ -520,13 +598,17 @@ const ClientsPage: React.FC = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex gap-2">
                             <button
-                              onClick={() => console.log('View client:', client.id)}
+                              onClick={() =>
+                                console.log('View client:', client.id)
+                              }
                               className="text-blue-600 hover:text-blue-900 transition-colors"
                             >
                               View
                             </button>
                             <button
-                              onClick={() => console.log('Edit client:', client.id)}
+                              onClick={() =>
+                                console.log('Edit client:', client.id)
+                              }
                               className="text-green-600 hover:text-green-900 transition-colors"
                             >
                               Edit
@@ -557,7 +639,9 @@ const ClientsPage: React.FC = () => {
                   👥
                 </div>
                 <div className="ml-4">
-                  <div className="text-2xl font-bold text-gray-800">{clients.length}</div>
+                  <div className="text-2xl font-bold text-gray-800">
+                    {clients.length}
+                  </div>
                   <div className="text-gray-600">Total Clients</div>
                 </div>
               </div>
@@ -570,7 +654,7 @@ const ClientsPage: React.FC = () => {
                 </div>
                 <div className="ml-4">
                   <div className="text-2xl font-bold text-gray-800">
-                    {clients.filter(c => c.is_active).length}
+                    {clients.filter((c) => c.is_active).length}
                   </div>
                   <div className="text-gray-600">Active Clients</div>
                 </div>
@@ -584,7 +668,7 @@ const ClientsPage: React.FC = () => {
                 </div>
                 <div className="ml-4">
                   <div className="text-2xl font-bold text-gray-800">
-                    {clients.filter(c => c.role === 'SUPPLIER').length}
+                    {clients.filter((c) => c.role === 'SUPPLIER').length}
                   </div>
                   <div className="text-gray-600">Suppliers</div>
                 </div>
