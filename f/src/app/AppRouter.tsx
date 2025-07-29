@@ -1,22 +1,23 @@
 // f/src/app/AppRouter.tsx
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from 'react-router-dom';
 
-// Auth components
 import LoginPage from '../pages/auth/LoginPage';
 import AuthGuard from '../components/account/AuthGuard';
-
-// Account Level - System Management
 import AccountDashboardPage from '../pages/account/dashboard/AccountDashboardPage';
-
-// Company Level - Business Operations
-import DashboardPage from '../pages/company/dashboard/DashboardPage'; 
+import DashboardPage from '../pages/company/dashboard/DashboardPage';
 import ClientsPage from '../pages/company/clients/ClientsPage';
 import ClientDetailPage from '../pages/company/clients/ClientDetailPage';
+import BankingPage from '../pages/company/banking/BankingPage';
 
 function App() {
   console.log('🚀 Solar ERP App loaded - Multi-tenant architecture');
-  
+
   return (
     <Router>
       <Routes>
@@ -25,43 +26,52 @@ function App() {
         {/* ============================================= */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/auth/login" element={<LoginPage />} />
-     
+
         {/* ============================================= */}
         {/* 🏢 ACCOUNT LEVEL - System management        */}
         {/* ============================================= */}
-        <Route 
-          path="/account/dashboard" 
+        <Route
+          path="/account/dashboard"
           element={
             <AuthGuard>
               <AccountDashboardPage />
             </AuthGuard>
-          } 
+          }
         />
 
         {/* ============================================= */}
         {/* 🏭 COMPANY LEVEL - Business Operations      */}
         {/* ============================================= */}
-        <Route 
-          path="/dashboard" 
+        <Route
+          path="/dashboard"
           element={
             <AuthGuard>
               <DashboardPage />
             </AuthGuard>
-          } 
+          }
         />
 
-        <Route 
-          path="/clients" 
+        <Route
+          path="/banking"
+          element={
+            <AuthGuard>
+              <BankingPage />
+            </AuthGuard>
+          }
+        />
+
+        <Route
+          path="/clients"
           element={
             <AuthGuard>
               <ClientsPage />
             </AuthGuard>
-          } 
+          }
         />
 
         {/* Company sub-pages (future development) */}
-        <Route 
-          path="/warehouse" 
+        <Route
+          path="/warehouse"
           element={
             <AuthGuard>
               <div className="p-6">
@@ -69,11 +79,11 @@ function App() {
                 <p>This page will be implemented in future versions</p>
               </div>
             </AuthGuard>
-          } 
+          }
         />
 
-        <Route 
-          path="/ledger" 
+        <Route
+          path="/ledger"
           element={
             <AuthGuard>
               <div className="p-6">
@@ -81,11 +91,11 @@ function App() {
                 <p>This page will be implemented in future versions</p>
               </div>
             </AuthGuard>
-          } 
+          }
         />
 
-        <Route 
-          path="/cashier" 
+        <Route
+          path="/cashier"
           element={
             <AuthGuard>
               <div className="p-6">
@@ -93,11 +103,11 @@ function App() {
                 <p>This page will be implemented in future versions</p>
               </div>
             </AuthGuard>
-          } 
+          }
         />
 
-        <Route 
-          path="/reports" 
+        <Route
+          path="/reports"
           element={
             <AuthGuard>
               <div className="p-6">
@@ -105,11 +115,11 @@ function App() {
                 <p>This page will be implemented in future versions</p>
               </div>
             </AuthGuard>
-          } 
+          }
         />
 
-        <Route 
-          path="/personnel" 
+        <Route
+          path="/personnel"
           element={
             <AuthGuard>
               <div className="p-6">
@@ -117,11 +127,11 @@ function App() {
                 <p>This page will be implemented in future versions</p>
               </div>
             </AuthGuard>
-          } 
+          }
         />
 
-        <Route 
-          path="/production" 
+        <Route
+          path="/production"
           element={
             <AuthGuard>
               <div className="p-6">
@@ -129,11 +139,11 @@ function App() {
                 <p>This page will be implemented in future versions</p>
               </div>
             </AuthGuard>
-          } 
+          }
         />
 
-        <Route 
-          path="/assets" 
+        <Route
+          path="/assets"
           element={
             <AuthGuard>
               <div className="p-6">
@@ -141,11 +151,11 @@ function App() {
                 <p>This page will be implemented in future versions</p>
               </div>
             </AuthGuard>
-          } 
+          }
         />
 
-        <Route 
-          path="/documents" 
+        <Route
+          path="/documents"
           element={
             <AuthGuard>
               <div className="p-6">
@@ -153,11 +163,11 @@ function App() {
                 <p>This page will be implemented in future versions</p>
               </div>
             </AuthGuard>
-          } 
+          }
         />
 
-        <Route 
-          path="/salary" 
+        <Route
+          path="/salary"
           element={
             <AuthGuard>
               <div className="p-6">
@@ -165,11 +175,11 @@ function App() {
                 <p>This page will be implemented in future versions</p>
               </div>
             </AuthGuard>
-          } 
+          }
         />
 
-        <Route 
-          path="/declaration" 
+        <Route
+          path="/declaration"
           element={
             <AuthGuard>
               <div className="p-6">
@@ -177,11 +187,11 @@ function App() {
                 <p>This page will be implemented in future versions</p>
               </div>
             </AuthGuard>
-          } 
+          }
         />
 
-        <Route 
-          path="/settings" 
+        <Route
+          path="/settings"
           element={
             <AuthGuard>
               <div className="p-6">
@@ -189,14 +199,14 @@ function App() {
                 <p>This page will be implemented in future versions</p>
               </div>
             </AuthGuard>
-          } 
+          }
         />
 
         {/* ============================================= */}
         {/* 🔄 REDIRECTS                                */}
         {/* ============================================= */}
         <Route path="/" element={<Navigate to="/login" />} />
-        
+
         {/* Catch all - redirect to login */}
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>

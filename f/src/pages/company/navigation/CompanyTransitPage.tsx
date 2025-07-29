@@ -37,7 +37,7 @@ const CompanyTransitPage: React.FC = () => {
     const timer = setTimeout(() => {
       // ✅ ГОТОВО:
       // 1. Проверка прав доступа к компании → middleware проверяет
-      // 2. Установка контекста компании → X-Company-Id header
+      // 2. Установка контекста компании → x-company-id header
       // 3. Подключение к схеме БД → Prisma middleware работает
       // 4. Инициализация рабочего пространства → frontend готов
 

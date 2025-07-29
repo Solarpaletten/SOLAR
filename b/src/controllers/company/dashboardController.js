@@ -12,7 +12,7 @@ const getCompanyDashboard = async (req, res) => {
     if (!companyId) {
       return res.status(400).json({
         success: false,
-        error: 'Company ID required in X-Company-Id header'
+        error: 'Company ID required in x-company-id header'
       });
     }
 

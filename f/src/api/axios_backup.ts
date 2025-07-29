@@ -53,7 +53,7 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // 2. Автоматически добавляем X-Company-Id для Company Level запросов
+    // 2. Автоматически добавляем x-company-id для Company Level запросов
     const currentCompanyId = localStorage.getItem('current_company_id');
 
     // ===============================================
@@ -63,7 +63,7 @@ api.interceptors.request.use(
       // Прямые Company Level endpoints
       if (url.includes('/api/company/')) return true;
 
-      // Endpoints которые требуют X-Company-Id
+      // Endpoints которые требуют x-company-id
       const companyEndpoints = [
         '/api/company/clients',
         '/sales',
@@ -90,10 +90,10 @@ api.interceptors.request.use(
     // ===============================================
     if (config.url && isCompanyLevelRequest(config.url)) {
       if (currentCompanyId) {
-        config.headers['X-Company-Id'] = currentCompanyId;
-        console.log(`🏢 Added X-Company-Id: ${currentCompanyId} to ${config.url}`);
+        config.headers['x-company-id'] = currentCompanyId;
+        console.log(`🏢 Added x-company-id: ${currentCompanyId} to ${config.url}`);
       } else {
-        console.warn(`⚠️ Company Level request to ${config.url} without X-Company-Id!`);
+        console.warn(`⚠️ Company Level request to ${config.url} without x-company-id!`);
         console.warn('💡 Hint: Select a company first on /account/dashboard');
       }
     }
@@ -113,7 +113,7 @@ api.interceptors.request.use(
     };
 
     if (config.url && isAccountLevelRequest(config.url)) {
-      console.log(`🏛️ Account Level request: ${config.url} (no X-Company-Id needed)`);
+      console.log(`🏛️ Account Level request: ${config.url} (no x-company-id needed)`);
     }
 
     return config;
@@ -188,7 +188,7 @@ api.interceptors.response.use(
     }
 
     if (status === 404 && url?.includes('/api/company/')) {
-      console.info('💡 Tip: Check if X-Company-Id header is present and valid');
+      console.info('💡 Tip: Check if x-company-id header is present and valid');
     }
 
     return Promise.reject(error);

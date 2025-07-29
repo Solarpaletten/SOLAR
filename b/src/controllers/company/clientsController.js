@@ -18,7 +18,7 @@ const getAllClients = async (req, res) => {
     if (!companyId) {
       return res.status(400).json({ 
         error: 'Company context required',
-        hint: 'Add X-Company-Id header'
+        hint: 'Add x-company-id header'
       });
     }
     

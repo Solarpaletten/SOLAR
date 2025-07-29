@@ -76,7 +76,7 @@ const ClientsPage: React.FC = () => {
 
       if (!currentCompanyId || currentCompanyId === '0') {
         setError('No company selected. Please select a company first.');
-        navigate('/account/dashboard');
+        // navigate('/account/dashboard');
         return;
       }
 

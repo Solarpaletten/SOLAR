@@ -153,7 +153,7 @@ const authService = {
       // Если пришел ID компании, сохраняем его
       if (response.data.company && response.data.company.id) {
         localStorage.setItem(
-          'selectedCompanyId',
+          'currentCompanyId',
           response.data.company.id.toString()
         );
       }
@@ -219,7 +219,7 @@ const authService = {
       }
 
       // Сохраняем ID выбранной компании
-      localStorage.setItem('selectedCompanyId', companyId.toString());
+      localStorage.setItem('currentCompanyId', companyId.toString());
 
       // Проверяем, есть ли указание для редиректа
       if (response.data.redirectTo) {
@@ -254,7 +254,7 @@ const authService = {
    * Получение ID выбранной компании
    */
   getSelectedCompanyId: (): number | null => {
-    const id = localStorage.getItem('selectedCompanyId');
+    const id = localStorage.getItem('currentCompanyId');
     return id ? parseInt(id, 10) : null;
   },
 
@@ -290,7 +290,7 @@ const authService = {
     // Очищаем все данные пользователя из localStorage
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user');
-    localStorage.removeItem('selectedCompanyId');
+    localStorage.removeItem('currentCompanyId');
     localStorage.removeItem('needsOnboarding');
     localStorage.removeItem('companyName');
     localStorage.removeItem('email');

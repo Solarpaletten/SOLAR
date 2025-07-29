@@ -54,7 +54,7 @@ api.interceptors.request.use(
       console.log(`🔑 Added auth token`);
     }
 
-    // 2. Автоматически добавляем X-Company-Id для Company Level запросов
+    // 2. Автоматически добавляем x-company-id для Company Level запросов
     // 🔥 ИСПРАВЛЕНИЕ: Используем тот же ключ что и в ClientsPage.tsx
     const currentCompanyId = localStorage.getItem('currentCompanyId'); // camelCase!
 
@@ -65,7 +65,7 @@ api.interceptors.request.use(
       // Прямые Company Level endpoints
       if (url.includes('/api/company/')) return true;
 
-      // Endpoints которые требуют X-Company-Id
+      // Endpoints которые требуют x-company-id
       const companyEndpoints = [
         '/clients',
         '/sales',

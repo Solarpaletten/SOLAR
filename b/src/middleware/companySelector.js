@@ -33,7 +33,7 @@ function companyContextMiddleware(req, res, next) {
   let companyId = null;
   
   // Способы получения company_id:
-  // 1. Из заголовка X-Company-Id
+  // 1. Из заголовка x-company-id
   if (req.headers['x-company-id']) {
     companyId = parseInt(req.headers['x-company-id']);
   }
@@ -56,7 +56,7 @@ function companyContextMiddleware(req, res, next) {
   if (!companyId) {
     return res.status(400).json({
       error: 'Company ID is required for this operation',
-      hint: 'Add X-Company-Id header or company_id parameter'
+      hint: 'Add x-company-id header or company_id parameter'
     });
   }
   
