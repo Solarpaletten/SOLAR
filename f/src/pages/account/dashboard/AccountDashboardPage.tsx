@@ -2,7 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../../api/axios';
-import companyService, { CreateCompanyData } from '../../../services/company/companyService';
+import companyService, {
+  CreateCompanyData,
+} from '../../../services/company/companyService';
 
 interface Company {
   id: number;
@@ -10,11 +12,14 @@ interface Company {
   code: string;
   is_active: boolean;
   created_at: string;
+  clientsCount?: number;
+  salesCount?: number;
+  productsCount?: number;
 }
 
 const AccountDashboardPage: React.FC = () => {
   const navigate = useNavigate();
-  
+
   // State переменные
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,7 +31,7 @@ const AccountDashboardPage: React.FC = () => {
     code: '',
     description: '',
     industry: 'RENEWABLE_ENERGY',
-    country: 'DE'
+    country: 'DE',
   });
 
   // Функция загрузки компаний
@@ -36,26 +41,33 @@ const AccountDashboardPage: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      const response = await api.get('/api/account/companies');
+      const response = await api.get('/api/account/companies/stats');
       console.log('✅ API Response:', response.data);
 
       if (response.data.success && response.data.companies) {
         setCompanies(response.data.companies);
         setIsConnected(true);
-        console.log(`✅ Loaded ${response.data.companies.length} companies from API`);
+        console.log(
+          `✅ Loaded ${response.data.companies.length} companies from API`
+        );
       } else {
         throw new Error('Invalid API response format');
       }
-
     } catch (error: any) {
       console.error('❌ Error loading companies:', error);
-      
+
       setError(error.message || 'Failed to load companies');
       setIsConnected(false);
-      
+
       // Fallback data
       setCompanies([
-        { id: 1, name: 'SOLAR Energy Ltd', code: 'SOLAR', is_active: true, created_at: new Date().toISOString() },
+        {
+          id: 1,
+          name: 'SOLAR Energy Ltd',
+          code: 'SOLAR',
+          is_active: true,
+          created_at: new Date().toISOString(),
+        },
       ]);
     } finally {
       setLoading(false);
@@ -71,32 +83,31 @@ const AccountDashboardPage: React.FC = () => {
   const handleEnterCompany = async (companyId: number) => {
     try {
       console.log('🔄 Switching to company:', companyId);
-      
+
       // 1. Переключаем контекст на backend
-      const response = await api.post('/api/account/switch-to-company', { 
-        companyId: companyId 
+      const response = await api.post('/api/account/switch-to-company', {
+        companyId: companyId,
       });
-      
+
       console.log('✅ Backend context switched:', response.data);
-      
+
       // 2. Сохраняем правильный ID в localStorage
       localStorage.setItem('currentCompanyId', companyId.toString());
-      
+
       // 3. Сохраняем имя компании
-      const selectedCompany = companies.find(c => c.id === companyId);
+      const selectedCompany = companies.find((c) => c.id === companyId);
       if (selectedCompany) {
         localStorage.setItem('currentCompanyName', selectedCompany.name);
       }
-      
+
       // 4. Перенаправляем на company dashboard
       navigate('/dashboard');
-      
     } catch (error: any) {
       console.error('❌ Failed to switch company:', error);
-      
+
       // Fallback - переходим даже если backend не отвечает
       localStorage.setItem('currentCompanyId', companyId.toString());
-      const selectedCompany = companies.find(c => c.id === companyId);
+      const selectedCompany = companies.find((c) => c.id === companyId);
       if (selectedCompany) {
         localStorage.setItem('currentCompanyName', selectedCompany.name);
       }
@@ -107,16 +118,16 @@ const AccountDashboardPage: React.FC = () => {
   // Функция создания компании
   const handleCreateCompany = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       console.log('🏢 Creating new company:', createFormData);
-      
+
       const newCompany = await companyService.createCompany(createFormData);
       console.log('✅ Company created:', newCompany);
-      
+
       // Обновляем список компаний
       await fetchCompanies();
-      
+
       // Закрываем форму и очищаем данные
       setShowCreateForm(false);
       setCreateFormData({
@@ -124,9 +135,8 @@ const AccountDashboardPage: React.FC = () => {
         code: '',
         description: '',
         industry: 'RENEWABLE_ENERGY',
-        country: 'DE'
+        country: 'DE',
       });
-      
     } catch (error: any) {
       console.error('❌ Error creating company:', error);
       setError(error.message || 'Failed to create company');
@@ -157,11 +167,15 @@ const AccountDashboardPage: React.FC = () => {
           <p className="text-gray-600 text-lg">
             Two-Level Multi-Tenant Architecture
           </p>
-          
+
           {/* Connection Status */}
           <div className="mt-4 inline-flex items-center space-x-2">
-            <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-            <span className={`font-medium ${isConnected ? 'text-green-700' : 'text-red-700'}`}>
+            <div
+              className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}
+            ></div>
+            <span
+              className={`font-medium ${isConnected ? 'text-green-700' : 'text-red-700'}`}
+            >
               {isConnected ? '✅ Connected' : '❌ Connection Error'}
             </span>
           </div>
@@ -174,7 +188,9 @@ const AccountDashboardPage: React.FC = () => {
               <div>
                 <p className="font-medium">⚠️ API Issue:</p>
                 <p className="text-sm">{error}</p>
-                <p className="text-sm mt-1">Using fallback data for demonstration.</p>
+                <p className="text-sm mt-1">
+                  Using fallback data for demonstration.
+                </p>
               </div>
               <button
                 onClick={() => setError(null)}
@@ -190,7 +206,9 @@ const AccountDashboardPage: React.FC = () => {
         <div className="mb-8 text-center">
           <div className="inline-flex bg-white rounded-lg shadow-md px-6 py-3">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{companies.length}</div>
+              <div className="text-2xl font-bold text-blue-600">
+                {companies.length}
+              </div>
               <div className="text-sm text-gray-600">
                 companies loaded {isConnected ? '(from API)' : '(fallback)'}
               </div>
@@ -211,7 +229,9 @@ const AccountDashboardPage: React.FC = () => {
                   {company.code.charAt(0)}
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-xl font-bold text-gray-800">{company.name}</h3>
+                  <h3 className="text-xl font-bold text-gray-800">
+                    {company.name}
+                  </h3>
                   <p className="text-gray-500 text-sm">Code: {company.code}</p>
                 </div>
               </div>
@@ -219,11 +239,15 @@ const AccountDashboardPage: React.FC = () => {
               <div className="space-y-2 text-sm text-gray-600">
                 <div className="flex justify-between">
                   <span>Employees:</span>
-                  <span className="font-medium">15</span>
+                  <span className="font-medium">
+                    {company.clientsCount || 0}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Status:</span>
-                  <span className={`font-medium ${company.is_active ? 'text-green-600' : 'text-red-600'}`}>
+                  <span
+                    className={`font-medium ${company.is_active ? 'text-green-600' : 'text-red-600'}`}
+                  >
                     {company.is_active ? 'Active' : 'Inactive'}
                   </span>
                 </div>
@@ -240,20 +264,37 @@ const AccountDashboardPage: React.FC = () => {
 
         {/* Create New Company */}
         <div className="text-center">
-          <button 
+          <button
             onClick={() => setShowCreateForm(true)}
             className="bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-3 rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 font-medium"
           >
             + Create New Company
           </button>
         </div>
-
+        {/* Companies Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {companies.map((company) => (
+            <div key={company.id} className="bg-white rounded-xl...">
+              {/* Здесь должна быть статистика! */}
+              <div className="space-y-2 text-sm text-gray-600">
+                <div className="flex justify-between">
+                  <span>👥 Clients:</span>
+                  <span className="font-medium">
+                    {company.clientsCount || 0}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
         {/* Modal форма создания компании */}
         {showCreateForm && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-gray-800">🏢 Create New Company</h3>
+                <h3 className="text-xl font-bold text-gray-800">
+                  🏢 Create New Company
+                </h3>
                 <button
                   onClick={() => setShowCreateForm(false)}
                   className="text-gray-500 hover:text-gray-700"
@@ -271,7 +312,12 @@ const AccountDashboardPage: React.FC = () => {
                     type="text"
                     required
                     value={createFormData.name}
-                    onChange={(e) => setCreateFormData({ ...createFormData, name: e.target.value })}
+                    onChange={(e) =>
+                      setCreateFormData({
+                        ...createFormData,
+                        name: e.target.value,
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     placeholder="My Company Ltd"
                   />
@@ -285,7 +331,12 @@ const AccountDashboardPage: React.FC = () => {
                     type="text"
                     required
                     value={createFormData.code}
-                    onChange={(e) => setCreateFormData({ ...createFormData, code: e.target.value.toUpperCase() })}
+                    onChange={(e) =>
+                      setCreateFormData({
+                        ...createFormData,
+                        code: e.target.value.toUpperCase(),
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     placeholder="MYCO"
                     maxLength={6}
@@ -298,7 +349,12 @@ const AccountDashboardPage: React.FC = () => {
                   </label>
                   <textarea
                     value={createFormData.description}
-                    onChange={(e) => setCreateFormData({ ...createFormData, description: e.target.value })}
+                    onChange={(e) =>
+                      setCreateFormData({
+                        ...createFormData,
+                        description: e.target.value,
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     placeholder="Brief company description"
                     rows={3}
@@ -312,7 +368,12 @@ const AccountDashboardPage: React.FC = () => {
                     </label>
                     <select
                       value={createFormData.industry}
-                      onChange={(e) => setCreateFormData({ ...createFormData, industry: e.target.value })}
+                      onChange={(e) =>
+                        setCreateFormData({
+                          ...createFormData,
+                          industry: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     >
                       <option value="RENEWABLE_ENERGY">Renewable Energy</option>
@@ -330,7 +391,12 @@ const AccountDashboardPage: React.FC = () => {
                     </label>
                     <select
                       value={createFormData.country}
-                      onChange={(e) => setCreateFormData({ ...createFormData, country: e.target.value })}
+                      onChange={(e) =>
+                        setCreateFormData({
+                          ...createFormData,
+                          country: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     >
                       <option value="DE">Germany</option>
@@ -365,11 +431,20 @@ const AccountDashboardPage: React.FC = () => {
         {/* Debug Info */}
         <div className="mt-8 text-center text-sm text-gray-500">
           <div className="bg-white rounded-lg shadow-sm p-4 max-w-2xl mx-auto">
-            <h4 className="font-medium text-gray-700 mb-2">🔧 Debug Information</h4>
+            <h4 className="font-medium text-gray-700 mb-2">
+              🔧 Debug Information
+            </h4>
             <div className="space-y-1 text-left">
-              <p>• Backend Connection: {isConnected ? 'Connected ✅' : 'Error ❌'}</p>
-              <p>• Endpoint: <code>/api/account/companies</code></p>
-              <p>• Companies loaded: <strong>{companies.length}</strong></p>
+              <p>
+                • Backend Connection:{' '}
+                {isConnected ? 'Connected ✅' : 'Error ❌'}
+              </p>
+              <p>
+                • Endpoint: <code>/api/account/companies</code>
+              </p>
+              <p>
+                • Companies loaded: <strong>{companies.length}</strong>
+              </p>
               <p>• Data source: {isConnected ? 'Real API' : 'Fallback mock'}</p>
               <p>• Company Service: f/src/services/company/companyService.ts</p>
               <p>• Create Form: {showCreateForm ? 'Open' : 'Closed'}</p>
@@ -379,15 +454,17 @@ const AccountDashboardPage: React.FC = () => {
 
         {/* System Message */}
         <div className="mt-6 text-center">
-          <div className={`inline-flex items-center space-x-2 px-4 py-2 rounded-full text-sm ${
-            isConnected 
-              ? 'bg-green-100 text-green-800' 
-              : 'bg-yellow-100 text-yellow-800'
-          }`}>
+          <div
+            className={`inline-flex items-center space-x-2 px-4 py-2 rounded-full text-sm ${
+              isConnected
+                ? 'bg-green-100 text-green-800'
+                : 'bg-yellow-100 text-yellow-800'
+            }`}
+          >
             <span className="w-2 h-2 bg-current rounded-full"></span>
             <span>
-              {isConnected 
-                ? 'Multi-tenant system operational! Companies loaded from real API. All systems connected.' 
+              {isConnected
+                ? 'Multi-tenant system operational! Companies loaded from real API. All systems connected.'
                 : 'System running in fallback mode. Check API connection for full functionality.'}
             </span>
           </div>
