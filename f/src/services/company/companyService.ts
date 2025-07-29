@@ -1,138 +1,137 @@
-// f/src/services/company/companyService.ts
-import api from '../../api/axios';
+// f/src/services/companyService.ts
+// ===============================================
+// 🏗️ COMPANY SERVICE ДЛЯ ДВУХУРОВНЕВОЙ АРХИТЕКТУРЫ
+// ===============================================
+
+import { api } from '../../api/axios'; // ✅ Правильный путь к axios
 
 export interface Company {
   id: number;
-  name: string;
   code: string;
+  name: string;
+  short_name?: string;
   description?: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
+  status?: string;
+  created_at?: string;
+  is_active?: boolean;
+  clientsCount?: number;
+  salesCount?: number;
+  productsCount?: number;
+  owner?: {
+    id: number;
+    email: string;
+    first_name: string;
+    last_name: string;
+  };
 }
 
-export interface CreateCompanyData {
-  name: string;
-  code: string;
-  description?: string;
-  industry?: string;
-  country?: string;
+export interface CompaniesResponse {
+  success: boolean;
+  companies: Company[];
+  count: number;
 }
 
-// 🏭 Company Management Service
-const companyService = {
-  // 📋 Получить все компании пользователя (ACCOUNT LEVEL)
-  getCompanies: async (): Promise<Company[]> => {
+export const companyService = {
+  // ===============================================
+  // 📋 Получить список компаний (Account Level)
+  // ===============================================
+  getCompanies: async (): Promise<CompaniesResponse> => {
+    console.log('🏢 Getting companies...');
+    
     try {
-      console.log('📋 Fetching user companies...');
-      
-      const response = await api.get<{success: boolean, companies: Company[]}>('/api/account/companies');
-      
-      if (response.data.success) {
-        console.log('✅ Companies loaded:', response.data.companies);
-        return response.data.companies;
-      } else {
-        throw new Error('Failed to fetch companies');
-      }
+      const response = await api.get<CompaniesResponse>('/api/account/companies/stats');
+      console.log('✅ Companies loaded from API:', response.data.companies?.length || 0);
+      return response.data;
     } catch (error) {
       console.error('❌ Error fetching companies:', error);
-      
-      // 🧪 Fallback к моковым данным для демо
-      return [
-        {
-          id: 1,
-          name: 'Desert Solar DMCC',
-          code: 'DSOL',
-          description: 'Solar energy solutions',
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        },
-        {
-          id: 2,
-          name: 'Emirates Energy Ltd',
-          code: 'EEGY',
-          description: 'Renewable energy trading',
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-      ];
+      throw new Error('Failed to fetch companies');
     }
   },
 
-  // 🏢 Получить текущую активную компанию (COMPANY LEVEL)
-  getCurrentCompany: async (): Promise<Company | null> => {
+  // ===============================================
+  // 🎯 Выбрать компанию и установить контекст
+  // ===============================================
+  selectCompany: async (companyId: number): Promise<{ success: boolean; companyId: number }> => {
+    console.log(`🎯 Selecting company ID: ${companyId}`);
+    
     try {
-      const companyId = localStorage.getItem('selectedCompanyId') || localStorage.getItem('currentCompanyId');
-      
-      if (!companyId) {
-        console.log('🔍 No selected company found');
-        return null;
-      }
-
-      console.log('🔍 Getting current company:', companyId);
-      
-      const companies = await companyService.getCompanies();
-      const currentCompany = companies.find(c => c.id === parseInt(companyId));
-      
-      if (currentCompany) {
-        console.log('✅ Current company loaded:', currentCompany);
-        return currentCompany;
-      } else {
-        console.warn('⚠️ Company not found, clearing selection');
-        localStorage.removeItem('selectedCompanyId');
-        localStorage.removeItem('currentCompanyId');
-        return null;
-      }
-    } catch (error) {
-      console.error('❌ Error getting current company:', error);
-      return null;
-    }
-  },
-
-  // 🔄 Выбрать компанию (переключение контекста)
-  selectCompany: async (companyId: number): Promise<{success: boolean, companyId: number}> => {
-    try {
-      console.log('🔄 Selecting company:', companyId);
-      
-      // 1. Сохраняем ID выбранной компании
-      localStorage.setItem('selectedCompanyId', companyId.toString());
+      // 1. Сохраняем в localStorage
       localStorage.setItem('currentCompanyId', companyId.toString());
+      localStorage.setItem('companySelectedAt', new Date().toISOString());
       
-      // 2. Сохраняем имя компании для отображения
-      const companies = await companyService.getCompanies();
-      const selectedCompany = companies.find(c => c.id === companyId);
-      if (selectedCompany) {
-        localStorage.setItem('currentCompanyName', selectedCompany.name);
-      }
-
-      // 3. API вызов для переключения контекста (если нужен)
+      console.log(`✅ Company ${companyId} saved to localStorage`);
+      
+      // 2. Обновляем axios headers
+      api.defaults.headers['x-company-id'] = companyId.toString();
+      
+      console.log(`✅ x-company-id header set to: ${companyId}`);
+      
+      // 3. Уведомляем backend о переключении компании
       try {
-        await api.post('/account/switch-to-company', { companyId });
-        console.log('✅ Company context switched on backend');
-      } catch (apiError) {
-        console.warn('⚠️ Backend context switch failed, using local only:', apiError);
+        await api.post('/api/account/switch-to-company', {
+          companyId: companyId
+        });
+        console.log('✅ Backend notified about company selection');
+      } catch (error) {
+        console.warn('⚠️ Failed to notify backend, but continuing...', error);
       }
-
-      console.log('✅ Company selected successfully:', companyId);
+      
       return { success: true, companyId };
       
     } catch (error) {
       console.error('❌ Error selecting company:', error);
-      throw new Error('Failed to select company');
+      throw error;
     }
   },
 
-  // ➕ Создать новую компанию (ACCOUNT LEVEL)
-  createCompany: async (companyData: CreateCompanyData): Promise<Company> => {
-    try {
-      console.log('🏢 Creating new company:', companyData);
+  // ===============================================
+  // 📋 Получить текущую выбранную компанию
+  // ===============================================
+  getCurrentCompany: (): { id: number; selectedAt: Date } | null => {
+    const companyId = localStorage.getItem('currentCompanyId');
+    const selectedAt = localStorage.getItem('companySelectedAt');
+    
+    if (companyId) {
+      console.log(`📋 Current company: ${companyId} (selected at ${selectedAt})`);
+      return {
+        id: parseInt(companyId),
+        selectedAt: selectedAt ? new Date(selectedAt) : new Date()
+      };
+    }
+    
+    console.log('📋 No company currently selected');
+    return null;
+  },
 
+  // ===============================================
+  // 🧹 Очистить выбор компании (переход на Account Level)
+  // ===============================================
+  clearCompanySelection: (): void => {
+    console.log('🧹 Clearing company selection');
+    
+    localStorage.removeItem('currentCompanyId');
+    localStorage.removeItem('currentCompanyName');
+    localStorage.removeItem('companySelectedAt');
+    
+    // Убираем header из axios
+    if (api.defaults.headers['x-company-id']) {
+      delete api.defaults.headers['x-company-id'];
+    }
+    
+    console.log('✅ Company selection cleared');
+  },
+
+  // ===============================================
+  // 🆕 Создать новую компанию
+  // ===============================================
+  createCompany: async (companyData: Partial<Company>): Promise<Company> => {
+    console.log('🆕 Creating new company...', companyData);
+    
+    try {
       const response = await api.post<{success: boolean, company: Company}>('/api/account/companies', companyData);
       
       if (response.data.success && response.data.company) {
-        console.log('✅ Company created successfully:', response.data.company);
+        console.log('✅ Company created:', response.data.company);
         return response.data.company;
       } else {
         throw new Error('Failed to create company');
@@ -140,70 +139,37 @@ const companyService = {
     } catch (error: any) {
       console.error('❌ Error creating company:', error);
       
-      // 🔍 Детальная обработка ошибок
       if (error.response?.data?.error) {
         throw new Error(error.response.data.error);
       } else if (error.response?.status === 409) {
         throw new Error('Company with this code already exists');
-      } else if (error.response?.status === 400) {
-        throw new Error('Invalid company data provided');
       } else {
         throw new Error('Failed to create company. Please try again.');
       }
     }
   },
 
-  // �� Получить статистику компании (COMPANY LEVEL)
-  getCompanyStats: async (companyId?: number): Promise<any> => {
-    try {
-      const targetCompanyId = companyId || localStorage.getItem('currentCompanyId');
+  // ===============================================
+  // 🔧 Автоматическое восстановление контекста при загрузке
+  // ===============================================
+  restoreCompanyContext: (): boolean => {
+    const currentCompany = companyService.getCurrentCompany();
+    
+    if (currentCompany) {
+      api.defaults.headers['x-company-id'] = currentCompany.id.toString();
       
-      if (!targetCompanyId) {
-        throw new Error('No company selected');
-      }
-
-      console.log('📊 Fetching stats for company:', targetCompanyId);
-
-      const response = await api.get('/company/dashboard/stats', {
-        headers: {
-          'X-Company-Id': targetCompanyId.toString()
-        }
-      });
-      
-      console.log('✅ Company stats loaded:', response.data);
-      return response.data;
-      
-    } catch (error) {
-      console.error('❌ Error fetching company stats:', error);
-      
-      // 🧪 Fallback моковые данные
-      return {
-        success: true,
-        stats: {
-          clients: 5,
-          products: 15,
-          sales: 12500,
-          orders: 8,
-          revenue: '$12,500'
-        }
-      };
+      console.log(`🔄 Company context restored: ${currentCompany.id}`);
+      return true;
     }
-  },
-
-  // 🔧 Utility функции
-  clearCompanyContext: () => {
-    localStorage.removeItem('selectedCompanyId');
-    localStorage.removeItem('currentCompanyId');
-    localStorage.removeItem('currentCompanyName');
-    console.log('🧹 Company context cleared');
-  },
-
-  // 📍 Проверить есть ли активная компания
-  hasActiveCompany: (): boolean => {
-    const companyId = localStorage.getItem('currentCompanyId');
-    return !!companyId;
+    
+    console.log('🔄 No company context to restore');
+    return false;
   }
 };
 
-export { companyService };
+// ===============================================
+// 🚀 АВТОМАТИЧЕСКОЕ ВОССТАНОВЛЕНИЕ КОНТЕКСТА ПРИ ИМПОРТЕ
+// ===============================================
+companyService.restoreCompanyContext();
+
 export default companyService;
