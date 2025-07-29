@@ -10,9 +10,9 @@ const testAccount = async (req, res) => {
       level: 'account',
       user: {
         id: req.user?.id,
-        email: req.user?.email
+        email: req.user?.email,
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     logger.error('Account test error:', error);
@@ -24,28 +24,28 @@ const testAccount = async (req, res) => {
 const getAllCompanies = async (req, res) => {
   try {
     logger.info('Getting companies for user:', req.user?.id);
-    
+
     // Используем Account Level Prisma
     const accountPrisma = prismaManager.getAccountPrisma();
-    
+
     // Получаем компании где пользователь владелец ИЛИ сотрудник
     const companies = await accountPrisma.companies.findMany({
       where: {
         OR: [
           // Пользователь - владелец компании
           {
-            owner_id: req.user.id
+            owner_id: req.user.id,
           },
           // Пользователь - сотрудник компании
           {
             employees: {
               some: {
                 user_id: req.user.id,
-                is_active: true
-              }
-            }
-          }
-        ]
+                is_active: true,
+              },
+            },
+          },
+        ],
       },
       include: {
         owner: {
@@ -53,12 +53,12 @@ const getAllCompanies = async (req, res) => {
             id: true,
             email: true,
             first_name: true,
-            last_name: true
-          }
+            last_name: true,
+          },
         },
         employees: {
           where: {
-            user_id: req.user.id
+            user_id: req.user.id,
           },
           include: {
             user: {
@@ -66,15 +66,15 @@ const getAllCompanies = async (req, res) => {
                 id: true,
                 email: true,
                 first_name: true,
-                last_name: true
-              }
-            }
-          }
-        }
+                last_name: true,
+              },
+            },
+          },
+        },
       },
       orderBy: {
-        created_at: 'desc'
-      }
+        created_at: 'desc',
+      },
     });
 
     logger.info(`Found ${companies.length} companies for user ${req.user.id}`);
@@ -82,15 +82,14 @@ const getAllCompanies = async (req, res) => {
     res.json({
       success: true,
       companies: companies,
-      count: companies.length
+      count: companies.length,
     });
-
   } catch (error) {
     logger.error('Ошибка получения списка компаний:', error);
     res.status(500).json({
       success: false,
       error: 'Ошибка получения списка компаний',
-      details: error.message
+      details: error.message,
     });
   }
 };
@@ -98,12 +97,20 @@ const getAllCompanies = async (req, res) => {
 // Создать новую компанию
 const createCompany = async (req, res) => {
   try {
-    const { name, code, description, director_name, legal_entity_type, phone, email } = req.body;
-    
-    logger.info('Creating company:', { 
-      name, 
-      code, 
-      user_id: req.user.id 
+    const {
+      name,
+      code,
+      description,
+      director_name,
+      legal_entity_type,
+      phone,
+      email,
+    } = req.body;
+
+    logger.info('Creating company:', {
+      name,
+      code,
+      user_id: req.user.id,
     });
 
     // Используем Account Level Prisma
@@ -117,14 +124,17 @@ const createCompany = async (req, res) => {
           name,
           code: code.toUpperCase(),
           description: description || null,
-          director_name: director_name || `${req.user.first_name || ''} ${req.user.last_name || ''}`.trim() || 'Director',
+          director_name:
+            director_name ||
+            `${req.user.first_name || ''} ${req.user.last_name || ''}`.trim() ||
+            'Director',
           legal_entity_type: legal_entity_type || 'LLC', // Значение по умолчанию
           phone: phone || null,
           email: email || null,
           owner_id: req.user.id, // Владелец компании
           is_active: true,
-          setup_completed: true
-        }
+          setup_completed: true,
+        },
       });
 
       // Создаем связь пользователь-компания (владелец)
@@ -133,8 +143,8 @@ const createCompany = async (req, res) => {
           company_id: company.id,
           user_id: req.user.id,
           role: 'OWNER',
-          is_active: true
-        }
+          is_active: true,
+        },
       });
 
       return company;
@@ -145,25 +155,24 @@ const createCompany = async (req, res) => {
     res.status(201).json({
       success: true,
       company: result,
-      message: 'Компания успешно создана!'
+      message: 'Компания успешно создана!',
     });
-
   } catch (error) {
     logger.error('Ошибка создания компании:', error);
-    
+
     // Обработка ошибок дублирования
     if (error.code === 'P2002' && error.meta?.target?.includes('code')) {
       return res.status(409).json({
         success: false,
         error: 'Код компании уже используется',
-        message: 'Выберите другой код компании'
+        message: 'Выберите другой код компании',
       });
     }
-    
+
     res.status(500).json({
       success: false,
       error: 'Ошибка создания компании',
-      details: error.message
+      details: error.message,
     });
   }
 };
@@ -172,9 +181,9 @@ const createCompany = async (req, res) => {
 const getCompanyById = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const accountPrisma = prismaManager.getAccountPrisma();
-    
+
     const company = await accountPrisma.companies.findFirst({
       where: {
         id: parseInt(id),
@@ -184,11 +193,11 @@ const getCompanyById = async (req, res) => {
             employees: {
               some: {
                 user_id: req.user.id,
-                is_active: true
-              }
-            }
-          }
-        ]
+                is_active: true,
+              },
+            },
+          },
+        ],
       },
       include: {
         owner: {
@@ -196,8 +205,8 @@ const getCompanyById = async (req, res) => {
             id: true,
             email: true,
             first_name: true,
-            last_name: true
-          }
+            last_name: true,
+          },
         },
         employees: {
           include: {
@@ -206,32 +215,31 @@ const getCompanyById = async (req, res) => {
                 id: true,
                 email: true,
                 first_name: true,
-                last_name: true
-              }
-            }
-          }
-        }
-      }
+                last_name: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!company) {
       return res.status(404).json({
         success: false,
-        error: 'Компания не найдена'
+        error: 'Компания не найдена',
       });
     }
 
     res.json({
       success: true,
-      company: company
+      company: company,
     });
-
   } catch (error) {
     logger.error('Ошибка получения компании:', error);
     res.status(500).json({
       success: false,
       error: 'Ошибка получения компании',
-      details: error.message
+      details: error.message,
     });
   }
 };
@@ -240,10 +248,10 @@ const getCompanyById = async (req, res) => {
 const selectCompany = async (req, res) => {
   try {
     const { company_id } = req.body;
-    
+
     // Проверяем, что пользователь имеет доступ к компании
     const accountPrisma = prismaManager.getAccountPrisma();
-    
+
     const company = await accountPrisma.companies.findFirst({
       where: {
         id: parseInt(company_id),
@@ -253,25 +261,25 @@ const selectCompany = async (req, res) => {
             employees: {
               some: {
                 user_id: req.user.id,
-                is_active: true
-              }
-            }
-          }
-        ]
-      }
+                is_active: true,
+              },
+            },
+          },
+        ],
+      },
     });
 
     if (!company) {
       return res.status(404).json({
         success: false,
-        error: 'Компания не найдена или нет доступа'
+        error: 'Компания не найдена или нет доступа',
       });
     }
 
     // Обновляем current_company_id у пользователя
     await accountPrisma.users.update({
       where: { id: req.user.id },
-      data: { current_company_id: parseInt(company_id) }
+      data: { current_company_id: parseInt(company_id) },
     });
 
     res.json({
@@ -280,16 +288,15 @@ const selectCompany = async (req, res) => {
       company: {
         id: company.id,
         name: company.name,
-        code: company.code
-      }
+        code: company.code,
+      },
     });
-
   } catch (error) {
     logger.error('Ошибка переключения компании:', error);
     res.status(500).json({
       success: false,
       error: 'Ошибка переключения компании',
-      details: error.message
+      details: error.message,
     });
   }
 };
@@ -298,13 +305,13 @@ const selectCompany = async (req, res) => {
 const getSystemAnalytics = async (req, res) => {
   try {
     const accountPrisma = prismaManager.getAccountPrisma();
-    
+
     const [totalUsers, totalCompanies, activeCompanies] = await Promise.all([
       accountPrisma.users.count(),
       accountPrisma.companies.count(),
       accountPrisma.companies.count({
-        where: { is_active: true }
-      })
+        where: { is_active: true },
+      }),
     ]);
 
     res.json({
@@ -314,16 +321,77 @@ const getSystemAnalytics = async (req, res) => {
         companies: {
           total: totalCompanies,
           active: activeCompanies,
-          inactive: totalCompanies - activeCompanies
-        }
-      }
+          inactive: totalCompanies - activeCompanies,
+        },
+      },
     });
-
   } catch (error) {
     logger.error('Ошибка получения аналитики:', error);
     res.status(500).json({
       success: false,
-      error: 'Ошибка получения аналитики'
+      error: 'Ошибка получения аналитики',
+    });
+  }
+};
+
+const getCompaniesWithStats = async (req, res) => {
+  try {
+    const accountPrisma = prismaManager.getAccountPrisma();
+
+    // Получаем компании пользователя с количеством клиентов
+    const companies = await accountPrisma.companies.findMany({
+      where: {
+        OR: [
+          { owner_id: req.user.id },
+          {
+            employees: {
+              some: {
+                user_id: req.user.id,
+                is_active: true,
+              },
+            },
+          },
+        ],
+      },
+      include: {
+        owner: {
+          select: {
+            id: true,
+            email: true,
+            first_name: true,
+            last_name: true,
+          },
+        },
+        _count: {
+          select: {
+            clients: true,
+            sales: true,
+            products: true,
+          },
+        },
+      },
+      orderBy: {
+        created_at: 'desc',
+      },
+    });
+
+    const companiesWithStats = companies.map((company) => ({
+      ...company,
+      clientsCount: company._count.clients,
+      salesCount: company._count.sales,
+      productsCount: company._count.products,
+    }));
+
+    res.json({
+      success: true,
+      companies: companiesWithStats,
+      count: companiesWithStats.length,
+    });
+  } catch (error) {
+    logger.error('Ошибка получения компаний со статистикой:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Ошибка получения статистики компаний',
     });
   }
 };
@@ -334,5 +402,6 @@ module.exports = {
   createCompany,
   getCompanyById,
   selectCompany,
-  getSystemAnalytics
+  getSystemAnalytics,
+  getCompaniesWithStats,
 };

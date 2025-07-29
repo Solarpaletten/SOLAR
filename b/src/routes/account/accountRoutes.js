@@ -13,20 +13,11 @@ logger.info('Account routes initialized');
 // 🏢 ACCOUNT LEVEL ROUTES (Управление компаниями)
 // ===========================================
 
-// Получить все компании пользователя
 router.get('/companies', auth, accountController.getAllCompanies);
-
-// Создать новую компанию
 router.post('/companies', auth, accountController.createCompany);
-
-// Получить системную аналитику
+router.get('/companies/stats', auth, accountController.getCompaniesWithStats);
 router.get('/analytics', auth, accountController.getSystemAnalytics);
 
-// ===========================================
-// 🔄 CONTEXT SWITCHING ROUTES (Переключение уровней)
-// ===========================================
-
-// Переключиться на компанию (Account → Company Level)
 router.post('/switch-to-company', auth, accountContextController.switchToCompany);
 
 // Получить доступные компании

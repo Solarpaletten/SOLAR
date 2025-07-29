@@ -1,6 +1,6 @@
 // f/src/api/axios.ts
 // ===============================================
-// 🌐 ИСПРАВЛЕННЫЙ AXIOS КЛИЕНТ С ПРАВИЛЬНЫМИ КЛЮЧАМИ LOCALSTORAGE
+// 🌐 ОБНОВЛЕННЫЙ AXIOS КЛИЕНТ С АВТОМАТИЧЕСКИМ X-COMPANY-ID
 // ===============================================
 
 import axios from 'axios';
@@ -21,12 +21,12 @@ const getApiUrl = (): string => {
 
     // Локальная разработка
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      return 'http://localhost:4000';
+      return 'http://localhost:4000/api';
     }
   }
 
   // Fallback
-  return 'http://localhost:4000';
+  return 'https://api.solar.swapoil.de';
 };
 
 // Создаем экземпляр axios
@@ -41,22 +41,20 @@ export const api = axios.create({
 console.log(`🔗 API URL: ${getApiUrl()}`);
 
 // ===============================================
-// 🔧 ИСПРАВЛЕННЫЙ REQUEST INTERCEPTOR
+// 🔧 УЛУЧШЕННЫЙ REQUEST INTERCEPTOR
 // ===============================================
 api.interceptors.request.use(
   (config) => {
-    console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`);
+    console.log(`�� API Request: ${config.method?.toUpperCase()} ${config.url}`);
 
     // 1. Добавляем токен авторизации
     const token = localStorage.getItem('auth_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log(`🔑 Added auth token`);
     }
 
     // 2. Автоматически добавляем X-Company-Id для Company Level запросов
-    // 🔥 ИСПРАВЛЕНИЕ: Используем тот же ключ что и в ClientsPage.tsx
-    const currentCompanyId = localStorage.getItem('currentCompanyId'); // camelCase!
+    const currentCompanyId = localStorage.getItem('current_company_id');
 
     // ===============================================
     // 🎯 ОПРЕДЕЛЕНИЕ COMPANY LEVEL ЗАПРОСОВ
@@ -67,13 +65,21 @@ api.interceptors.request.use(
 
       // Endpoints которые требуют X-Company-Id
       const companyEndpoints = [
-        '/clients',
+        '/api/company/clients',
         '/sales',
         '/purchases',
         '/stats',
         '/bank-operations',
         '/assistant',
         '/dashboard',
+        // 🔥 ДОБАВИТЬ ЭТИ:
+        '/clients',              // Для обратной совместимости  
+        '/api/company/sales',
+        '/api/company/purchases',
+        '/api/company/stats',
+        '/api/company/bank-operations',
+        '/api/company/assistant',
+        '/api/company/dashboard'
       ];
 
       return companyEndpoints.some(endpoint => url.includes(endpoint));
@@ -83,12 +89,11 @@ api.interceptors.request.use(
     // 🏢 АВТОМАТИЧЕСКОЕ ДОБАВЛЕНИЕ X-COMPANY-ID
     // ===============================================
     if (config.url && isCompanyLevelRequest(config.url)) {
-      if (currentCompanyId && currentCompanyId !== '0') {
-        config.headers['x-company-id'] = currentCompanyId; // Используем lowercase как в middleware
-        console.log(`🏢 Added x-company-id: ${currentCompanyId} to ${config.url}`);
+      if (currentCompanyId) {
+        config.headers['X-Company-Id'] = currentCompanyId;
+        console.log(`🏢 Added X-Company-Id: ${currentCompanyId} to ${config.url}`);
       } else {
-        console.warn(`⚠️ Company Level request to ${config.url} without valid company ID!`);
-        console.warn(`💡 Current Company ID: ${currentCompanyId}`);
+        console.warn(`⚠️ Company Level request to ${config.url} without X-Company-Id!`);
         console.warn('💡 Hint: Select a company first on /account/dashboard');
       }
     }
@@ -100,15 +105,15 @@ api.interceptors.request.use(
       const accountEndpoints = [
         '/api/account/',
         '/api/auth/',
-        '/login',
-        '/register'
+        '/api/company-context/',
+        '/api/mock/'
       ];
 
       return accountEndpoints.some(endpoint => url.includes(endpoint));
     };
 
     if (config.url && isAccountLevelRequest(config.url)) {
-      console.log(`🏛️ Account Level request: ${config.url} (no x-company-id needed)`);
+      console.log(`🏛️ Account Level request: ${config.url} (no X-Company-Id needed)`);
     }
 
     return config;
@@ -129,10 +134,10 @@ api.interceptors.response.use(
     // Логируем успешные ответы с данными
     if (response.data && response.config.url) {
       if (response.config.url.includes('/companies')) {
-        console.log(`📊 Companies data:`, response.data.length || response.data.count || 'unknown');
+        console.log(`📊 Companies data:`, response.data.count || response.data.length);
       }
       if (response.config.url.includes('/clients')) {
-        console.log(`👥 Clients data:`, Array.isArray(response.data.clients) ? response.data.clients.length : 'unknown count');
+        console.log(`👥 Clients data:`, response.data.length || 'unknown count');
       }
     }
 
@@ -141,10 +146,8 @@ api.interceptors.response.use(
   (error) => {
     const status = error.response?.status;
     const url = error.config?.url;
-    const errorMessage = error.response?.data?.error || error.message;
 
     console.error(`❌ API Error: ${status || 'Network'} ${url}`);
-    console.error(`❌ Error details:`, errorMessage);
 
     // ===============================================
     // 🔒 ОБРАБОТКА ОШИБОК АВТОРИЗАЦИИ
@@ -152,12 +155,11 @@ api.interceptors.response.use(
     if (status === 401) {
       console.warn('🔒 Unauthorized - clearing auth data');
       localStorage.removeItem('auth_token');
-      localStorage.removeItem('currentCompanyId');
-      localStorage.removeItem('currentCompanyName');
+      localStorage.removeItem('current_company_id');
+      localStorage.removeItem('company_selected_at');
 
       // Редирект на логин (если не уже там)
       if (!window.location.pathname.includes('/login')) {
-        console.log('🔀 Redirecting to login...');
         window.location.href = '/login';
       }
     }
@@ -165,33 +167,28 @@ api.interceptors.response.use(
     // ===============================================
     // 🏢 ОБРАБОТКА ОШИБОК КОНТЕКСТА КОМПАНИИ
     // ===============================================
-    if (status === 400 && (
-      errorMessage?.includes('Company context') || 
-      errorMessage?.includes('Company ID') ||
-      errorMessage?.includes('x-company-id')
-    )) {
+    if (status === 400 && error.response?.data?.error?.includes('Company ID')) {
       console.warn('🏢 Company context error - redirecting to company selection');
-      
+
       // Очищаем неверный контекст
-      localStorage.removeItem('currentCompanyId');
-      localStorage.removeItem('currentCompanyName');
+      localStorage.removeItem('current_company_id');
+      localStorage.removeItem('company_selected_at');
 
       // Редирект на выбор компании
       if (!window.location.pathname.includes('/account/dashboard')) {
-        console.log('🔀 Redirecting to account dashboard...');
         window.location.href = '/account/dashboard';
       }
     }
 
     // ===============================================
-    // 📊 ПОЛЕЗНЫЕ СОВЕТЫ ПО ОШИБКАМ
+    // 📊 ЛОГИРОВАНИЕ ПОЛЕЗНОЙ ИНФОРМАЦИИ ОБ ОШИБКАХ
     // ===============================================
     if (status === 404 && url?.includes('/clients')) {
       console.info('💡 Tip: Make sure you have selected a company and it has clients');
     }
 
-    if (url?.includes('/api/company/') && !error.config?.headers?.['x-company-id']) {
-      console.info('💡 Tip: x-company-id header is missing - check localStorage currentCompanyId');
+    if (status === 404 && url?.includes('/api/company/')) {
+      console.info('💡 Tip: Check if X-Company-Id header is present and valid');
     }
 
     return Promise.reject(error);
@@ -199,3 +196,4 @@ api.interceptors.response.use(
 );
 
 export default api;
+
