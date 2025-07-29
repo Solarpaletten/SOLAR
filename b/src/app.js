@@ -1,4 +1,4 @@
-// b/src/app.js - БЕЗ app.listen() в конце
+// b/src/app.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -7,9 +7,33 @@ const session = require('express-session');
 const { logger } = require('./config/logger');
 const prismaManager = require('./utils/prismaManager');
 
+// ===============================================
+// 📁 ИМПОРТЫ MIDDLEWARE
+// ===============================================
+const auth = require('./middleware/auth');
+const companyContext = require('./middleware/companyContext');
+
+// ===============================================
+// 📁 ИМПОРТЫ ROUTES
+// ===============================================
+// Account Level Routes
+const accountRoutes = require('./routes/account/accountRoutes');
+const authRoutes = require('./routes/account/authRoutes');
+
+// Company Level Routes  
+const clientsRoutes = require('./routes/company/clientsRoutes');
+const dashboardRoutes = require('./routes/company/dashboardRoutes');
+const productsRoutes = require('./routes/company/productsRoutes');
+
+// Опционально (если существуют):
+// const salesRoutes = require('./routes/company/salesRoutes');
+// const purchasesRoutes = require('./routes/company/purchasesRoutes');
+
 const app = express();
 
-// Middleware
+// ===============================================
+// 🛡️ SECURITY & MIDDLEWARE SETUP
+// ===============================================
 app.use(compression());
 app.use(
   cors({
@@ -41,7 +65,9 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Логирование запросов
+// ===============================================
+// 📊 LOGGING MIDDLEWARE
+// ===============================================
 app.use((req, res, next) => {
   const startTime = Date.now();
   res.on('finish', () => {
@@ -51,92 +77,111 @@ app.use((req, res, next) => {
   next();
 });
 
-// Health check endpoint
+// ===============================================
+// 🏥 HEALTH CHECK
+// ===============================================
 app.get('/health', (req, res) => {
   res.json({
     status: 'OK',
     timestamp: new Date().toISOString(),
     service: 'Solar ERP Backend',
-    version: '1.7.0'
+    version: '1.8.0-preview'
   });
 });
 
-// API Router
-const apiRouter = express.Router();
-
-// ===========================================
+// ===============================================
 // 🏢 ACCOUNT LEVEL ROUTES (БЕЗ company middleware)
-// ===========================================
+// ===============================================
 try {
-  apiRouter.use('/account', require('./routes/account/accountRoutes'));
+  app.use('/api/account', auth, accountRoutes);
   logger.info('✅ Account routes loaded');
 } catch (error) {
   logger.error('❌ Failed to load account routes:', error);
 }
 
 try {
-  apiRouter.use('/auth', require('./routes/account/authRoutes'));
+  app.use('/api/auth', authRoutes);
   logger.info('✅ Auth routes loaded');
 } catch (error) {
   logger.error('❌ Failed to load auth routes:', error);
 }
 
-// ===========================================
-// 🏭 COMPANY LEVEL ROUTES (С company middleware)
-// ===========================================
+// ===============================================
+// 🏭 COMPANY LEVEL ROUTES (С auth + company middleware)
+// ===============================================
 try {
-  apiRouter.use('/company/clients', require('./routes/company/clientsRoutes'));
+  app.use('/api/company/clients', auth, companyContext, clientsRoutes);
   logger.info('✅ Company clients routes loaded');
 } catch (error) {
   logger.error('❌ Failed to load company clients routes:', error);
 }
 
 try {
-  apiRouter.use('/company/dashboard', require('./routes/company/dashboardRoutes'));
+  app.use('/api/company/dashboard', auth, companyContext, dashboardRoutes);
   logger.info('✅ Company dashboard routes loaded');
 } catch (error) {
   logger.error('❌ Failed to load company dashboard routes:', error);
 }
 
-// Тестовые роуты
-apiRouter.get('/test', (req, res) => {
+try {
+  app.use('/api/company/products', auth, companyContext, productsRoutes);
+  logger.info('✅ Company products routes loaded');
+} catch (error) {
+  logger.error('❌ Failed to load company products routes:', error);
+}
+
+// Опционально (если файлы существуют):
+/*
+try {
+  app.use('/api/company/sales', auth, companyContext, salesRoutes);
+  logger.info('✅ Company sales routes loaded');
+} catch (error) {
+  logger.error('❌ Failed to load company sales routes:', error);
+}
+
+try {
+  app.use('/api/company/purchases', auth, companyContext, purchasesRoutes);
+  logger.info('✅ Company purchases routes loaded');
+} catch (error) {
+  logger.error('❌ Failed to load company purchases routes:', error);
+}
+*/
+
+// ===============================================
+// 🧪 TEST ENDPOINTS
+// ===============================================
+app.get('/api/test', (req, res) => {
   res.json({
     message: 'Backend API is working!',
     timestamp: new Date().toISOString(),
+    version: '1.8.0-preview',
     endpoints: {
       account: '/api/account/*',
       auth: '/api/auth/*',
       clients: '/api/company/clients',
-      dashboard: '/api/company/dashboard'
+      dashboard: '/api/company/dashboard',
+      products: '/api/company/products'
     }
   });
 });
 
 // Company context test endpoint
-apiRouter.get('/company/test', (req, res) => {
-  const companyId = req.headers['x-company-id'];
-  const authorization = req.headers.authorization;
-  
+app.get('/api/company/test', auth, companyContext, (req, res) => {
   res.json({
     message: 'Company context test endpoint',
-    receivedCompanyId: companyId,
-    companyIdType: typeof companyId,
-    authorization: authorization ? 'Present' : 'Missing',
-    timestamp: new Date().toISOString(),
-    headers: {
-      'x-company-id': companyId,
-      'authorization': authorization ? 'Bearer ***' : 'Missing'
+    companyId: req.companyId,
+    user: {
+      id: req.user.id,
+      email: req.user.email
     },
-    instructions: {
-      usage: 'Send x-company-id header and Authorization Bearer token',
-      example: 'curl -H "x-company-id: 1" -H "Authorization: Bearer TOKEN" http://localhost:4000/api/company/test'
-    }
+    timestamp: new Date().toISOString(),
+    status: 'Company context is working!'
   });
 });
 
-// Подключаем API роуты
-app.use('/api', apiRouter);
-
+// ===============================================
+// 🚫 ERROR HANDLERS
+// ===============================================
 // 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({
@@ -144,11 +189,18 @@ app.use('*', (req, res) => {
     error: 'API endpoint not found',
     path: req.originalUrl,
     method: req.method,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    availableEndpoints: [
+      '/api/auth/login',
+      '/api/account/companies', 
+      '/api/company/clients',
+      '/api/company/dashboard',
+      '/api/company/products'
+    ]
   });
 });
 
-// Error handler
+// Global error handler
 app.use((error, req, res, next) => {
   logger.error('Global error handler:', error);
   
