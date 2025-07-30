@@ -1,5 +1,8 @@
 // b/src/controllers/company/salesController.js
+const { PrismaClient } = require('@prisma/client');
 const { logger } = require('../../config/logger');
+
+const prisma = new PrismaClient();
 
 // 📊 GET /api/company/sales/stats - Статистика продаж
 const getSalesStats = async (req, res) => {
@@ -8,14 +11,72 @@ const getSalesStats = async (req, res) => {
     
     logger.info(`📊 Fetching sales stats for company: ${companyId}`);
 
-    // TODO: Implement real sales statistics
+    // Получаем статистику продаж
+    const totalCount = await prisma.sales.count({
+      where: { company_id: companyId }
+    });
+
+    const statusStats = await prisma.sales.groupBy({
+      by: ['payment_status'],
+      where: { company_id: companyId },
+      _count: true
+    });
+
+    const deliveryStats = await prisma.sales.groupBy({
+      by: ['delivery_status'],
+      where: { company_id: companyId },
+      _count: true
+    });
+
+    const totalRevenue = await prisma.sales.aggregate({
+      where: { company_id: companyId },
+      _sum: { total_amount: true }
+    });
+
+    const avgOrderValue = await prisma.sales.aggregate({
+      where: { 
+        company_id: companyId,
+        total_amount: { gt: 0 }
+      },
+      _avg: { total_amount: true }
+    });
+
+    // Статистика по клиентам
+    const topClients = await prisma.sales.groupBy({
+      by: ['client_id'],
+      where: { company_id: companyId },
+      _count: true,
+      _sum: { total_amount: true },
+      orderBy: { _sum: { total_amount: 'desc' } },
+      take: 5
+    });
+
+    // Продажи по месяцам (последние 12 месяцев)
+    const monthlyStats = await prisma.$queryRaw`
+      SELECT 
+        DATE_TRUNC('month', document_date) as month,
+        COUNT(*)::int as count,
+        SUM(total_amount)::decimal as revenue
+      FROM sales 
+      WHERE company_id = ${companyId} 
+        AND document_date >= NOW() - INTERVAL '12 months'
+      GROUP BY DATE_TRUNC('month', document_date)
+      ORDER BY month DESC
+      LIMIT 12
+    `;
+
     const stats = {
-      total: 0,
-      pending: 0,
-      completed: 0,
-      cancelled: 0,
-      totalRevenue: 0,
-      averageOrderValue: 0
+      total: totalCount,
+      pending: statusStats.find(s => s.payment_status === 'PENDING')?._count || 0,
+      paid: statusStats.find(s => s.payment_status === 'PAID')?._count || 0,
+      overdue: statusStats.find(s => s.payment_status === 'OVERDUE')?._count || 0,
+      cancelled: statusStats.find(s => s.payment_status === 'CANCELLED')?._count || 0,
+      delivered: deliveryStats.find(s => s.delivery_status === 'DELIVERED')?._count || 0,
+      pending_delivery: deliveryStats.find(s => s.delivery_status === 'PENDING')?._count || 0,
+      totalRevenue: totalRevenue._sum.total_amount || 0,
+      averageOrderValue: avgOrderValue._avg.total_amount || 0,
+      topClients: topClients.length,
+      monthlyRevenue: monthlyStats
     };
 
     res.json({
@@ -36,12 +97,105 @@ const getSalesStats = async (req, res) => {
 const getAllSales = async (req, res) => {
   try {
     const companyId = req.companyContext?.companyId;
-    const { page = 1, limit = 50, search, status } = req.query;
+    const { 
+      page = 1, 
+      limit = 50, 
+      search, 
+      payment_status, 
+      delivery_status,
+      client_id,
+      date_from,
+      date_to,
+      sort_by = 'document_date',
+      sort_order = 'desc'
+    } = req.query;
 
     logger.info(`📋 Fetching sales for company: ${companyId}`);
 
-    // TODO: Implement real sales fetching from database
-    const sales = [];
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    
+    // Построение условий фильтрации
+    const whereConditions = {
+      company_id: companyId
+    };
+
+    if (search) {
+      whereConditions.OR = [
+        { document_number: { contains: search, mode: 'insensitive' } },
+        { client: { name: { contains: search, mode: 'insensitive' } } }
+      ];
+    }
+
+    if (payment_status) {
+      whereConditions.payment_status = payment_status;
+    }
+
+    if (delivery_status) {
+      whereConditions.delivery_status = delivery_status;
+    }
+
+    if (client_id) {
+      whereConditions.client_id = parseInt(client_id);
+    }
+
+    if (date_from || date_to) {
+      whereConditions.document_date = {};
+      if (date_from) whereConditions.document_date.gte = new Date(date_from);
+      if (date_to) whereConditions.document_date.lte = new Date(date_to);
+    }
+
+    // Получение данных
+    const [sales, totalCount] = await Promise.all([
+      prisma.sales.findMany({
+        where: whereConditions,
+        include: {
+          client: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+              code: true
+            }
+          },
+          warehouse: {
+            select: {
+              id: true,
+              name: true,
+              code: true
+            }
+          },
+          sales_manager: {
+            select: {
+              id: true,
+              first_name: true,
+              last_name: true,
+              email: true
+            }
+          },
+          items: {
+            include: {
+              product: {
+                select: {
+                  id: true,
+                  code: true,
+                  name: true,
+                  unit: true
+                }
+              }
+            }
+          }
+        },
+        orderBy: {
+          [sort_by]: sort_order
+        },
+        skip,
+        take: parseInt(limit)
+      }),
+      prisma.sales.count({ where: whereConditions })
+    ]);
+
+    const totalPages = Math.ceil(totalCount / parseInt(limit));
 
     res.json({
       success: true,
@@ -49,8 +203,10 @@ const getAllSales = async (req, res) => {
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
-        total: 0,
-        pages: 0
+        total: totalCount,
+        pages: totalPages,
+        hasNext: parseInt(page) < totalPages,
+        hasPrev: parseInt(page) > 1
       },
       companyId
     });
@@ -71,10 +227,67 @@ const getSaleById = async (req, res) => {
 
     logger.info(`📄 Fetching sale ${id} for company: ${companyId}`);
 
-    // TODO: Implement real sale fetching
-    res.status(404).json({
-      success: false,
-      error: 'Sale not found'
+    const sale = await prisma.sales.findFirst({
+      where: {
+        id: parseInt(id),
+        company_id: companyId
+      },
+      include: {
+        client: true,
+        warehouse: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+            address: true
+          }
+        },
+        sales_manager: {
+          select: {
+            id: true,
+            first_name: true,
+            last_name: true,
+            email: true
+          }
+        },
+        creator: {
+          select: {
+            id: true,
+            first_name: true,
+            last_name: true,
+            email: true
+          }
+        },
+        modifier: {
+          select: {
+            id: true,
+            first_name: true,
+            last_name: true,
+            email: true
+          }
+        },
+        items: {
+          include: {
+            product: true
+          },
+          orderBy: {
+            line_number: 'asc'
+          }
+        }
+      }
+    });
+
+    if (!sale) {
+      return res.status(404).json({
+        success: false,
+        error: 'Sale not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      sale,
+      companyId
     });
   } catch (error) {
     logger.error('Error fetching sale:', error);
@@ -89,14 +302,142 @@ const getSaleById = async (req, res) => {
 const createSale = async (req, res) => {
   try {
     const companyId = req.companyContext?.companyId;
-    const saleData = req.body;
+    const userId = req.user.id;
+    const {
+      document_number,
+      document_date,
+      document_type = 'INVOICE',
+      delivery_date,
+      due_date,
+      client_id,
+      warehouse_id,
+      sales_manager_id,
+      currency = 'EUR',
+      payment_status = 'PENDING',
+      delivery_status = 'PENDING',
+      document_status = 'DRAFT',
+      items = []
+    } = req.body;
 
     logger.info(`➕ Creating sale for company: ${companyId}`);
 
-    // TODO: Implement real sale creation
-    res.status(501).json({
-      success: false,
-      error: 'Sale creation not implemented yet'
+    // Валидация
+    if (!document_number || !document_date || !client_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'Required fields: document_number, document_date, client_id'
+      });
+    }
+
+    // Проверяем уникальность номера документа
+    const existingSale = await prisma.sales.findFirst({
+      where: {
+        company_id: companyId,
+        document_number
+      }
+    });
+
+    if (existingSale) {
+      return res.status(400).json({
+        success: false,
+        error: 'Sale with this document number already exists'
+      });
+    }
+
+    // Расчёт сумм
+    let subtotal = 0;
+    let vat_amount = 0;
+    let discount_amount = 0;
+
+    const processedItems = items.map((item, index) => {
+      const lineSubtotal = parseFloat(item.quantity) * parseFloat(item.unit_price_base);
+      const lineDiscount = parseFloat(item.total_discount || 0);
+      const lineAfterDiscount = lineSubtotal - lineDiscount;
+      const vatAmount = lineAfterDiscount * (parseFloat(item.vat_rate || 0) / 100);
+      const lineTotal = lineAfterDiscount + vatAmount;
+      
+      subtotal += lineSubtotal;
+      vat_amount += vatAmount;
+      discount_amount += lineDiscount;
+
+      return {
+        ...item,
+        line_number: index + 1,
+        line_total: lineTotal,
+        vat_amount: vatAmount,
+        total_discount: lineDiscount
+      };
+    });
+
+    const total_amount = subtotal - discount_amount + vat_amount;
+
+    // Создание продажи с элементами в транзакции
+    const sale = await prisma.$transaction(async (tx) => {
+      const newSale = await tx.sales.create({
+        data: {
+          company_id: companyId,
+          document_number,
+          document_date: new Date(document_date),
+          document_type,
+          delivery_date: delivery_date ? new Date(delivery_date) : null,
+          due_date: due_date ? new Date(due_date) : null,
+          client_id: parseInt(client_id),
+          warehouse_id: warehouse_id ? parseInt(warehouse_id) : null,
+          sales_manager_id: sales_manager_id ? parseInt(sales_manager_id) : null,
+          subtotal,
+          vat_amount,
+          discount_amount,
+          total_amount,
+          currency,
+          payment_status,
+          delivery_status,
+          document_status,
+          created_by: userId
+        }
+      });
+
+      // Создание элементов продажи
+      if (processedItems.length > 0) {
+        await tx.sale_items.createMany({
+          data: processedItems.map(item => ({
+            sale_id: newSale.id,
+            product_id: parseInt(item.product_id),
+            line_number: item.line_number,
+            quantity: parseFloat(item.quantity),
+            unit_price_base: parseFloat(item.unit_price_base),
+            discount_percent: parseFloat(item.discount_percent || 0),
+            total_discount: item.total_discount,
+            vat_rate: parseFloat(item.vat_rate || 0),
+            vat_amount: item.vat_amount,
+            line_total: item.line_total,
+            description: item.description || null
+          }))
+        });
+      }
+
+      return newSale;
+    });
+
+    // Получение созданной продажи с связанными данными
+    const createdSale = await prisma.sales.findUnique({
+      where: { id: sale.id },
+      include: {
+        client: true,
+        warehouse: true,
+        sales_manager: true,
+        items: {
+          include: {
+            product: true
+          }
+        }
+      }
+    });
+
+    res.status(201).json({
+      success: true,
+      sale: createdSale,
+      message: 'Sale created successfully',
+      companyId
     });
   } catch (error) {
     logger.error('Error creating sale:', error);
@@ -112,14 +453,123 @@ const updateSale = async (req, res) => {
   try {
     const { id } = req.params;
     const companyId = req.companyContext?.companyId;
+    const userId = req.user.id;
     const updateData = req.body;
 
     logger.info(`✏️ Updating sale ${id} for company: ${companyId}`);
 
-    // TODO: Implement real sale update
-    res.status(501).json({
-      success: false,
-      error: 'Sale update not implemented yet'
+    // Проверяем существование продажи
+    const existingSale = await prisma.sales.findFirst({
+      where: {
+        id: parseInt(id),
+        company_id: companyId
+      }
+    });
+
+    if (!existingSale) {
+      return res.status(404).json({
+        success: false,
+        error: 'Sale not found'
+      });
+    }
+
+    // Подготовка данных для обновления
+    const {
+      items,
+      ...saleFields
+    } = updateData;
+
+    // Обновляем продажу
+    const updatedSale = await prisma.$transaction(async (tx) => {
+      // Обновляем основные поля продажи
+      const sale = await tx.sales.update({
+        where: { id: parseInt(id) },
+        data: {
+          ...saleFields,
+          updated_by: userId,
+          updated_at: new Date()
+        }
+      });
+
+      // Если есть items, обновляем их
+      if (items && Array.isArray(items)) {
+        // Удаляем старые items
+        await tx.sale_items.deleteMany({
+          where: { sale_id: parseInt(id) }
+        });
+
+        // Создаём новые items
+        if (items.length > 0) {
+          let subtotal = 0;
+          let vat_amount = 0;
+          let discount_amount = 0;
+
+          const processedItems = items.map((item, index) => {
+            const lineSubtotal = parseFloat(item.quantity) * parseFloat(item.unit_price_base);
+            const lineDiscount = parseFloat(item.total_discount || 0);
+            const lineAfterDiscount = lineSubtotal - lineDiscount;
+            const vatAmount = lineAfterDiscount * (parseFloat(item.vat_rate || 0) / 100);
+            const lineTotal = lineAfterDiscount + vatAmount;
+            
+            subtotal += lineSubtotal;
+            vat_amount += vatAmount;
+            discount_amount += lineDiscount;
+
+            return {
+              sale_id: parseInt(id),
+              product_id: parseInt(item.product_id),
+              line_number: index + 1,
+              quantity: parseFloat(item.quantity),
+              unit_price_base: parseFloat(item.unit_price_base),
+              discount_percent: parseFloat(item.discount_percent || 0),
+              total_discount: lineDiscount,
+              vat_rate: parseFloat(item.vat_rate || 0),
+              vat_amount: vatAmount,
+              line_total: lineTotal,
+              description: item.description || null
+            };
+          });
+
+          await tx.sale_items.createMany({
+            data: processedItems
+          });
+
+          // Обновляем суммы в продаже
+          await tx.sales.update({
+            where: { id: parseInt(id) },
+            data: {
+              subtotal,
+              vat_amount,
+              discount_amount,
+              total_amount: subtotal - discount_amount + vat_amount
+            }
+          });
+        }
+      }
+
+      return sale;
+    });
+
+    // Получаем обновлённую продажу с связанными данными
+    const sale = await prisma.sales.findUnique({
+      where: { id: parseInt(id) },
+      include: {
+        client: true,
+        warehouse: true,
+        sales_manager: true,
+        items: {
+          include: {
+            product: true
+          }
+        }
+      }
+    });
+
+    res.json({
+      success: true,
+      sale,
+      message: 'Sale updated successfully',
+      companyId
     });
   } catch (error) {
     logger.error('Error updating sale:', error);
@@ -138,10 +588,30 @@ const deleteSale = async (req, res) => {
 
     logger.info(`🗑️ Deleting sale ${id} for company: ${companyId}`);
 
-    // TODO: Implement real sale deletion
-    res.status(501).json({
-      success: false,
-      error: 'Sale deletion not implemented yet'
+    // Проверяем существование продажи
+    const existingSale = await prisma.sales.findFirst({
+      where: {
+        id: parseInt(id),
+        company_id: companyId
+      }
+    });
+
+    if (!existingSale) {
+      return res.status(404).json({
+        success: false,
+        error: 'Sale not found'
+      });
+    }
+
+    // Удаляем продажу (items удалятся автоматически по CASCADE)
+    await prisma.sales.delete({
+      where: { id: parseInt(id) }
+    });
+
+    res.json({
+      success: true,
+      message: 'Sale deleted successfully',
+      companyId
     });
   } catch (error) {
     logger.error('Error deleting sale:', error);
