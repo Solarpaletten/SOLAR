@@ -1,7 +1,6 @@
 // f/src/components/company/CompanyLayout.tsx
-import path from 'path';
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 
 interface CompanyLayoutProps {
   children: React.ReactNode;
@@ -16,9 +15,9 @@ const CompanyLayout: React.FC<CompanyLayoutProps> = ({ children }) => {
     { path: '/products', icon: '📦', label: 'Products' },
     { path: '/sales', icon: '💰', label: 'Sales' },
     { path: '/purchases', icon: '🛍️', label: 'Purchases' },
+    { path: '/warehouse', icon: '🏭', label: 'Warehouse' },
     { path: '/chart-of-accounts', icon: '📋', label: 'Chart of Accounts' },
     { path: '/banking', icon: '🏦', label: 'Banking' },
-    { path: '/warehouse', icon: '📦', label: 'Warehouse' },
     { path: '/settings', icon: '⚙️', label: 'Settings' },
   ];
 
@@ -32,37 +31,36 @@ const CompanyLayout: React.FC<CompanyLayoutProps> = ({ children }) => {
 
         <nav className="mt-8">
           {menuItems.map((item) => (
-            <Link
+            <NavLink
               key={item.path}
               to={item.path}
-              className={`block px-4 py-3 text-sm hover:bg-slate-700 transition-colors ${
-                location.pathname === item.path
-                  ? 'bg-slate-700 border-r-2 border-orange-500'
-                  : ''
-              }`}
+              className={({ isActive }) =>
+                `block px-4 py-3 text-sm hover:bg-slate-700 transition-colors ${
+                  isActive
+                    ? 'bg-slate-700 border-r-2 border-orange-500'
+                    : ''
+                }`
+              }
             >
               <span className="mr-3">{item.icon}</span>
               {item.label}
-            </Link>
+            </NavLink>
           ))}
         </nav>
 
         <div className="absolute bottom-4 left-4">
-          <Link
+          <NavLink
             to="/account/dashboard"
             className="text-sm text-slate-400 hover:text-white transition-colors"
           >
             🔙 Back to Companies
-          </Link>
+          </NavLink>
         </div>
       </div>
 
-      <NavLink to="/warehouse" className="nav-link">
-        🏭 Warehouse
-      </NavLink>
-
-      {/* Header */}
+      {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
+        {/* Header */}
         <header className="bg-orange-500 text-white p-4 flex justify-between items-center">
           <div className="flex items-center space-x-4">
             <span>Invite users</span>

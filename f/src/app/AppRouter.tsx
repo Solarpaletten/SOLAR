@@ -18,7 +18,7 @@ import BankingPage from '../pages/company/banking/BankingPage';
 import SalesPage from '../pages/company/sales/SalesPage';
 import PurchasesPage from '../pages/company/purchases/PurchasesPage';
 import WarehousePage from '../pages/company/warehouse/WarehousePage';
-import ChartOfAccountsPage from '../pages/company/chart-of-accounts/ChartOfAccountsPage';
+import ChartOfAccountsPage from '../pages/company/chart-of-accounts/ChartOfAccountsPage'; 
 import SettingsPage from '../pages/company/settings/SettingsPage';
 
 
@@ -117,15 +117,10 @@ function App() {
           path="/warehouse"
           element={
             <AuthGuard>
-              <div className="p-6">
-                <h1 className="text-2xl font-bold">Warehouse Management</h1>
-                <p>This page will be implemented in future versions</p>
-              </div>
+          Page />
             </AuthGuard>
           }
         />
-
-        <Route path="/warehouse" element={<WarehousePage />} />
 
         <Route
           path="/chart-of-accounts"
@@ -140,10 +135,7 @@ function App() {
           path="/settings"
           element={
             <AuthGuard>
-              <div className="p-6">
-                <h1 className="text-2xl font-bold">Company Settings</h1>
-                <p>This page will be implemented in future versions</p>
-              </div>
+              <SettingsPage />
             </AuthGuard>
           }
         />
