@@ -26,8 +26,8 @@ const dashboardRoutes = require('./routes/company/dashboardRoutes');
 const productsRoutes = require('./routes/company/productsRoutes');
 
 // Опционально (если существуют):
-// const salesRoutes = require('./routes/company/salesRoutes');
-// const purchasesRoutes = require('./routes/company/purchasesRoutes');
+const salesRoutes = require('./routes/company/salesRoutes');
+const purchasesRoutes = require('./routes/company/purchasesRoutes');
 
 const app = express();
 
@@ -130,8 +130,7 @@ try {
   logger.error('❌ Failed to load company products routes:', error);
 }
 
-// Опционально (если файлы существуют):
-/*
+//
 try {
   app.use('/api/company/sales', auth, companyContext, salesRoutes);
   logger.info('✅ Company sales routes loaded');
@@ -145,7 +144,7 @@ try {
 } catch (error) {
   logger.error('❌ Failed to load company purchases routes:', error);
 }
-*/
+
 
 // ===============================================
 // 🧪 TEST ENDPOINTS

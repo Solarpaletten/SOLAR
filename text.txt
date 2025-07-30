@@ -1,0 +1,13 @@
+// f/src/pages/company/sales/SalesPurchasesPage.tsx
+import React from 'react';
+
+const SalesPurchasesPage: React.FC = () => {
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold">Sales & Purchases</h1>
+      <p>This page will be implemented in future versions</p>
+    </div>
+  );
+};
+
+export default SalesPurchasesPage;

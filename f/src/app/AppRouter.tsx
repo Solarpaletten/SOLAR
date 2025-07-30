@@ -14,6 +14,10 @@ import DashboardPage from '../pages/company/dashboard/DashboardPage';
 import ClientsPage from '../pages/company/clients/ClientsPage';
 import ClientDetailPage from '../pages/company/clients/ClientDetailPage';
 import BankingPage from '../pages/company/banking/BankingPage';
+import SalesPage from '@/pages/company/sales/SalesPage';  
+import PurchasesPage from '@/pages/company/purchases/PurchasesPage';
+import WarehousePage from '@/pages/company/warehouse/WarehousePage';
+
 
 function App() {
   console.log('🚀 Solar ERP App loaded - Multi-tenant architecture');
@@ -81,6 +85,30 @@ function App() {
             </AuthGuard>
           }
         />
+
+        <Route
+          path="/sales"
+          element={
+            <AuthGuard>
+              <div className="p-6">
+                <h1 className="text-2xl font-bold">Sales Management</h1>
+                <p>This page will be implemented in future versions</p>
+              </div>
+            </AuthGuard>
+          }
+        />
+
+        <Route
+          path="/purchases"
+          element={
+            <AuthGuard>
+              <div className="p-6">
+                <h1 className="text-2xl font-bold">Purchases Management</h1>
+                <p>This page will be implemented in future versions</p>
+              </div>
+            </AuthGuard>
+          }
+        />  
 
         <Route
           path="/ledger"
