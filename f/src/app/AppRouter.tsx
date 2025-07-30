@@ -125,6 +125,8 @@ function App() {
           }
         />
 
+        <Route path="/warehouse" element={<WarehousePage />} />
+
         <Route
           path="/chart-of-accounts"
           element={

@@ -30,6 +30,7 @@ const salesRoutes = require('./routes/company/salesRoutes');
 const purchasesRoutes = require('./routes/company/purchasesRoutes');
 // Chart of Accounts routes
 const chartOfAccountsRoutes = require('./routes/company/chartOfAccountsRoutes');
+const warehouseRoutes = require('./routes/company/warehouseRoutes'); 
 
 
 const app = express();
@@ -153,6 +154,13 @@ app.use('/api/company/chart-of-accounts', auth, companyContext, chartOfAccountsR
 logger.info('✅ Company chart of accounts routes loaded');
 } catch (error) {
   ogger.error('❌ Failed to load company chart of accounts routes:', error);
+}
+
+try {
+  app.use('/api/company/warehouses', auth, companyContext, warehouseRoutes);
+  logger.info('✅ Company warehouse routes loaded');
+} catch (error) {
+  logger.error('❌ Failed to load company warehouse routes:', error);
 }
 
 // ===============================================
