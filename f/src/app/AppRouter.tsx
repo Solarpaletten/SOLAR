@@ -1,67 +1,161 @@
-// f/src/app/AppRouter.tsx - ИСПРАВЛЕННАЯ ВЕРСИЯ
-
+// f/src/app/AppRouter.tsx
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { AuthGuard } from '../components/auth/AuthGuard';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from 'react-router-dom';
 
-// Account Level Pages
-import AccountDashboard from '../pages/account/dashboard/AccountDashboard';
-import CompaniesPage from '../pages/account/companies/CompaniesPage';
-import TransitPage from '../pages/account/companies/TransitPage';
-
-// Company Level Pages  
+import LoginPage from '../pages/auth/LoginPage';
+import AuthGuard from '../components/account/AuthGuard';
+import AccountDashboardPage from '../pages/account/dashboard/AccountDashboardPage';
 import DashboardPage from '../pages/company/dashboard/DashboardPage';
 import ClientsPage from '../pages/company/clients/ClientsPage';
+import ClientDetailPage from '../pages/company/clients/ClientDetailPage';
 import ProductsPage from '../pages/company/products/ProductsPage';
 import BankingPage from '../pages/company/banking/BankingPage';
+import SalesPage from '../pages/company/sales/SalesPage';
+import PurchasesPage from '../pages/company/purchases/PurchasesPage';
+import WarehousePage from '../pages/company/warehouse/WarehousePage';
+import ChartOfAccountsPage from '../pages/company/chart-of-accounts/ChartOfAccountsPage';
+import SettingsPage from '../pages/company/settings/SettingsPage';
 
-import ChartOfAccountsPage from "../pages/company/chart-of-accounts/ChartOfAccountsPage";
 
-// Auth Pages
-import LoginPage from '../pages/auth/LoginPage';
-import RegisterPage from '../pages/auth/RegisterPage';
+function App() {
+  console.log('🚀 Solar ERP App loaded - Multi-tenant architecture');
 
-const AppRouter: React.FC = () => {
   return (
-    <Routes>
-      {/* Auth Routes */}
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      
-      {/* Account Level Routes */}
-      <Route path="/account/dashboard" element={
-        <AuthGuard><AccountDashboard /></AuthGuard>
-      } />
-      <Route path="/account/companies" element={
-        <AuthGuard><CompaniesPage /></AuthGuard>
-      } />
-      <Route path="/account/companies/transit/:companyId" element={
-        <AuthGuard><TransitPage /></AuthGuard>
-      } />
+    <Router>
+      <Routes>
+        {/* ============================================= */}
+        {/* 🔓 PUBLIC ROUTES - No authentication needed */}
+        {/* ============================================= */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/auth/login" element={<LoginPage />} />
 
-      {/* Company Level Routes */}
-      <Route path="/dashboard" element={
-        <AuthGuard><DashboardPage /></AuthGuard>
-      } />
-      <Route path="/clients" element={
-        <AuthGuard><ClientsPage /></AuthGuard>
-      } />
-      <Route path="/products" element={
-        <AuthGuard><ProductsPage /></AuthGuard>
-      } />
-      <Route path="/banking" element={
-        <AuthGuard><BankingPage /></AuthGuard>
-      } />
-      <Route path="/chart-of-accounts" element={
-        <AuthGuard><ChartOfAccountsPage /></AuthGuard>
-      } />
-      
+        {/* ============================================= */}
+        {/* 🏢 ACCOUNT LEVEL - System management        */}
+        {/* ============================================= */}
+        <Route
+          path="/account/dashboard"
+          element={
+            <AuthGuard>
+              <AccountDashboardPage />
+            </AuthGuard>
+          }
+        />
 
-      {/* Default Redirects */}
-      <Route path="/" element={<Navigate to="/account/dashboard" replace />} />
-      <Route path="*" element={<Navigate to="/account/dashboard" replace />} />
-    </Routes>
+        {/* ============================================= */}
+        {/* 🏭 COMPANY LEVEL - Business Operations      */}
+        {/* ============================================= */}
+        
+        <Route
+          path="/dashboard"
+          element={
+            <AuthGuard>
+              <DashboardPage />
+            </AuthGuard>
+          }
+        />
+
+        <Route
+          path="/clients"
+          element={
+            <AuthGuard>
+              <ClientsPage />
+            </AuthGuard>
+          }
+        />
+
+        <Route
+          path="/clients/:id"
+          element={
+            <AuthGuard>
+              <ClientDetailPage />
+            </AuthGuard>
+          }
+        />
+
+        <Route
+          path="/products"
+          element={
+            <AuthGuard>
+              <ProductsPage />
+            </AuthGuard>
+          }
+        />
+
+        <Route
+          path="/banking"
+          element={
+            <AuthGuard>
+              <BankingPage />
+            </AuthGuard>
+          }
+        />
+
+        <Route
+          path="/sales"
+          element={
+            <AuthGuard>
+              <SalesPage />
+            </AuthGuard>
+          }
+        />
+
+        <Route
+          path="/purchases"
+          element={
+            <AuthGuard>
+              <PurchasesPage />
+            </AuthGuard>
+          }
+        />
+
+        <Route
+          path="/warehouse"
+          element={
+            <AuthGuard>
+              <div className="p-6">
+                <h1 className="text-2xl font-bold">Warehouse Management</h1>
+                <p>This page will be implemented in future versions</p>
+              </div>
+            </AuthGuard>
+          }
+        />
+
+        <Route
+          path="/chart-of-accounts"
+          element={
+            <AuthGuard>
+              <ChartOfAccountsPage />
+            </AuthGuard>
+          }
+        />
+
+        <Route
+          path="/settings"
+          element={
+            <AuthGuard>
+              <div className="p-6">
+                <h1 className="text-2xl font-bold">Company Settings</h1>
+                <p>This page will be implemented in future versions</p>
+              </div>
+            </AuthGuard>
+          }
+        />
+
+        {/* ============================================= */}
+        {/* 🔄 REDIRECTS                                */}
+        {/* ============================================= */}
+        <Route path="/" element={<Navigate to="/login" />} />
+
+        {/* Catch all - redirect to login */}
+        <Route path="*" element={<Navigate to="/login" />} />
+      </Routes>
+    </Router>
   );
-};
+}
 
-export default AppRouter;
+export default App;
