@@ -1,4 +1,5 @@
 // f/src/components/company/CompanyLayout.tsx
+import path from 'path';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -14,6 +15,8 @@ const CompanyLayout: React.FC<CompanyLayoutProps> = ({ children }) => {
     { path: '/clients', icon: '👥', label: 'Clients' },
     { path: '/banking', icon: '🏦', label: 'Banking' },
     { path: '/warehouse', icon: '📦', label: 'Warehouse' },
+    { path: '/sales', icon: '🛒', label: 'Sales' },
+    { path: '/purchases', icon: '🛍️', label: 'Purchases' },
     { path: '/ledger', icon: '📋', label: 'General ledger' },
     { path: '/cashier', icon: '💰', label: 'Cashier' },
     { path: '/reports', icon: '📈', label: 'Reports' },
