@@ -7,7 +7,8 @@ const DashboardPage: React.FC = () => {
   const [companyId, setCompanyId] = useState<string>('');
 
   useEffect(() => {
-    const name = localStorage.getItem('currentCompanyName') || 'Unknown Company';
+    const name =
+      localStorage.getItem('currentCompanyName') || 'Unknown Company';
     const id = localStorage.getItem('currentCompanyId') || '0';
     setCompanyName(name);
     setCompanyId(id);
@@ -18,7 +19,9 @@ const DashboardPage: React.FC = () => {
       <div className="p-6">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">📊 Company Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-800">
+            📊 Company Dashboard
+          </h1>
           <p className="text-gray-600 mt-1">
             Welcome to {companyName} (ID: {companyId})
           </p>
@@ -70,12 +73,56 @@ const DashboardPage: React.FC = () => {
         {/* Quick Actions */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">🚀 Quick Actions</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              🚀 Quick Actions
+            </h3>
             <div className="grid grid-cols-2 gap-4">
               <button className="flex items-center justify-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
                 <span className="text-2xl mr-2">👥</span>
                 <span className="text-sm font-medium">Add Client</span>
               </button>
+              // В секции Quick Actions добавьте:
+              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    📦 Products
+                  </h3>
+                  <Link
+                    to="/products"
+                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                  >
+                    View All →
+                  </Link>
+                </div>
+
+                <div className="space-y-3">
+                  <Link
+                    to="/products"
+                    className="flex items-center justify-between p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <span className="text-green-600">➕</span>
+                      <span className="font-medium text-gray-800">
+                        Add New Product
+                      </span>
+                    </div>
+                    <span className="text-green-600">→</span>
+                  </Link>
+
+                  <Link
+                    to="/products"
+                    className="flex items-center justify-between p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <span className="text-blue-600">📋</span>
+                      <span className="font-medium text-gray-800">
+                        Manage Catalog
+                      </span>
+                    </div>
+                    <span className="text-blue-600">→</span>
+                  </Link>
+                </div>
+              </div>
               <button className="flex items-center justify-center p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors">
                 <span className="text-2xl mr-2">🏦</span>
                 <span className="text-sm font-medium">Banking</span>
@@ -92,7 +139,9 @@ const DashboardPage: React.FC = () => {
           </div>
 
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">📈 Recent Activity</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              📈 Recent Activity
+            </h3>
             <div className="space-y-3">
               <div className="flex items-center p-3 bg-gray-50 rounded-lg">
                 <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
@@ -127,7 +176,9 @@ const DashboardPage: React.FC = () => {
 
         {/* Company Info */}
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">🏢 Company Information</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+            🏢 Company Information
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <p className="text-sm text-gray-500">Company Name</p>
