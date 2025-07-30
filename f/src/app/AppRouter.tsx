@@ -13,10 +13,11 @@ import AccountDashboardPage from '../pages/account/dashboard/AccountDashboardPag
 import DashboardPage from '../pages/company/dashboard/DashboardPage';
 import ClientsPage from '../pages/company/clients/ClientsPage';
 import ClientDetailPage from '../pages/company/clients/ClientDetailPage';
+import ProductsPage from '../pages/company/products/ProductsPage';
 import BankingPage from '../pages/company/banking/BankingPage';
-import SalesPage from '@/pages/company/sales/SalesPage';  
-import PurchasesPage from '@/pages/company/purchases/PurchasesPage';
-import WarehousePage from '@/pages/company/warehouse/WarehousePage';
+import SalesPage from '../pages/company/sales/SalesPage';  
+import PurchasesPage from '../pages/company/purchases/PurchasesPage';
+import WarehousePage from '../pages/company/warehouse/WarehousePage';
 
 
 function App() {
@@ -73,6 +74,15 @@ function App() {
           }
         />
 
+        <Route
+          path="/products"
+          element={
+            <AuthGuard>
+              <ProductsPage />
+            </AuthGuard>
+          }
+        />
+
         {/* Company sub-pages (future development) */}
         <Route
           path="/warehouse"
@@ -110,7 +120,7 @@ function App() {
           }
         />  
 
-        <Route
+        {/* <Route
           path="/ledger"
           element={
             <AuthGuard>
@@ -216,7 +226,7 @@ function App() {
               </div>
             </AuthGuard>
           }
-        />
+        /> */}
 
         <Route
           path="/settings"
