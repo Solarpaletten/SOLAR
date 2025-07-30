@@ -93,6 +93,30 @@ const DashboardPage: React.FC = () => {
               </Link>
 
               <Link
+                to="/sales"
+                className="flex items-center justify-center p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors"
+              >
+                <span className="text-2xl mr-2">💼</span>
+                <span className="text-sm font-medium">Sales</span>
+              </Link>
+
+              <Link
+                to="/purchases"
+                className="flex items-center justify-center p-4 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+              >
+                <span className="text-2xl mr-2">🛒</span>
+                <span className="text-sm font-medium">Purchases</span>
+              </Link>
+                
+              <Link
+                to="/warehouse"
+                className="flex items-center justify-center p-4 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition-colors"
+              >
+                <span className="text-2xl mr-2">🏭</span>
+                <span className="text-sm font-medium">Warehouse</span>
+              </Link>
+
+              <Link
                 to="/chart-of-accounts"
                 className="flex items-center justify-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
               >
