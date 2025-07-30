@@ -117,7 +117,7 @@ function App() {
           path="/warehouse"
           element={
             <AuthGuard>
-          Page />
+          <WarehousePage />
             </AuthGuard>
           }
         />
