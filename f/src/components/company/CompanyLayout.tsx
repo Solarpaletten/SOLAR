@@ -13,12 +13,12 @@ const CompanyLayout: React.FC<CompanyLayoutProps> = ({ children }) => {
   const menuItems = [
     { path: '/dashboard', icon: '📊', label: 'Dashboard' },
     { path: '/clients', icon: '👥', label: 'Clients' },
-    { path: '/products', icon: '📦', label: 'Products' }, // ← ДОБАВИТЬ
+    { path: '/products', icon: '📦', label: 'Products' },
+    { path: '/chart-of-accounts', icon: '📊', label: 'Chart of Accounts' }, // ✅ ДОБАВИТЬ ЗАПЯТУЮ
     { path: '/banking', icon: '🏦', label: 'Banking' },
     { path: '/warehouse', icon: '📦', label: 'Warehouse' },
-    { path: '/sales', icon: '🛒', label: 'Sales' },
-    { path: '/purchases', icon: '🛍️', label: 'Purchases' },
-    { path: '/chart-of-accounts', icon: '📊', label: 'Chart of Accounts' }
+    // { path: '/sales', icon: '🛒', label: 'Sales' },        
+    // { path: '/purchases', icon: '🛍️', label: 'Purchases' }, 
     // { path: '/ledger', icon: '📋', label: 'General ledger' },
     // { path: '/cashier', icon: '💰', label: 'Cashier' },
     // { path: '/reports', icon: '📈', label: 'Reports' },
@@ -28,7 +28,7 @@ const CompanyLayout: React.FC<CompanyLayoutProps> = ({ children }) => {
     // { path: '/documents', icon: '📄', label: 'Documents' },
     // { path: '/salary', icon: '💰', label: 'Salary' },
     // { path: '/declaration', icon: '📋', label: 'Declaration' },
-    { path: '/settings', icon: '⚙️', label: 'Settings' },
+    { path: '/settings', icon: '⚙️', label: 'Settings' }
   ];
 
   return (
