@@ -5,7 +5,7 @@ import AccountsStats from './components/AccountsStats';
 import AccountsToolbar from './components/AccountsToolbar';
 import AccountsTable from './components/AccountsTable';
 import AddAccountModal from './components/AddAccountModal';
-import EditAccountModal from './components/AddAccountModal';
+import EditAccountModal from './components/EditAccountModal';
 import ImportLithuanianModal from './components/ImportLithuanianModal';
 import { ChartAccount, AccountFormData, AccountsStats as StatsType } from './types/chartTypes';
 
