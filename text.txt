@@ -1,5 +1,0 @@
-// Chart of Accounts routes
-const chartOfAccountsRoutes = require('./routes/company/chartOfAccountsRoutes');
-
-app.use('/api/company/chart-of-accounts', auth, companyContext, chartOfAccountsRoutes);
-logger.info('✅ Company chart of accounts routes loaded');

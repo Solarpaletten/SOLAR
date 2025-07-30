@@ -15,10 +15,11 @@ import ClientsPage from '../pages/company/clients/ClientsPage';
 import ClientDetailPage from '../pages/company/clients/ClientDetailPage';
 import ProductsPage from '../pages/company/products/ProductsPage';
 import BankingPage from '../pages/company/banking/BankingPage';
-import SalesPage from '../pages/company/sales/SalesPage';  
+import SalesPage from '../pages/company/sales/SalesPage';
 import PurchasesPage from '../pages/company/purchases/PurchasesPage';
 import WarehousePage from '../pages/company/warehouse/WarehousePage';
-
+import ChartOfAccountsPage from '../pages/company/chart-of-accounts/ChartOfAccountsPage';
+import SettingsPage from '../pages/company/settings/SettingsPage';
 
 function App() {
   console.log('🚀 Solar ERP App loaded - Multi-tenant architecture');
@@ -47,20 +48,12 @@ function App() {
         {/* ============================================= */}
         {/* 🏭 COMPANY LEVEL - Business Operations      */}
         {/* ============================================= */}
+
         <Route
           path="/dashboard"
           element={
             <AuthGuard>
               <DashboardPage />
-            </AuthGuard>
-          }
-        />
-
-        <Route
-          path="/banking"
-          element={
-            <AuthGuard>
-              <BankingPage />
             </AuthGuard>
           }
         />
@@ -75,6 +68,15 @@ function App() {
         />
 
         <Route
+          path="/clients/:id"
+          element={
+            <AuthGuard>
+              <ClientDetailPage />
+            </AuthGuard>
+          }
+        />
+
+        <Route
           path="/products"
           element={
             <AuthGuard>
@@ -83,7 +85,33 @@ function App() {
           }
         />
 
-        {/* Company sub-pages (future development) */}
+        <Route
+          path="/banking"
+          element={
+            <AuthGuard>
+              <BankingPage />
+            </AuthGuard>
+          }
+        />
+
+        <Route
+          path="/sales"
+          element={
+            <AuthGuard>
+              <SalesPage />
+            </AuthGuard>
+          }
+        />
+
+        <Route
+          path="/purchases"
+          element={
+            <AuthGuard>
+              <PurchasesPage />
+            </AuthGuard>
+          }
+        />
+
         <Route
           path="/warehouse"
           element={
@@ -96,137 +124,7 @@ function App() {
           }
         />
 
-        <Route
-          path="/sales"
-          element={
-            <AuthGuard>
-              <div className="p-6">
-                <h1 className="text-2xl font-bold">Sales Management</h1>
-                <p>This page will be implemented in future versions</p>
-              </div>
-            </AuthGuard>
-          }
-        />
-
-        <Route
-          path="/purchases"
-          element={
-            <AuthGuard>
-              <div className="p-6">
-                <h1 className="text-2xl font-bold">Purchases Management</h1>
-                <p>This page will be implemented in future versions</p>
-              </div>
-            </AuthGuard>
-          }
-        />  
-
-        {/* <Route
-          path="/ledger"
-          element={
-            <AuthGuard>
-              <div className="p-6">
-                <h1 className="text-2xl font-bold">General Ledger</h1>
-                <p>This page will be implemented in future versions</p>
-              </div>
-            </AuthGuard>
-          }
-        />
-
-        <Route
-          path="/cashier"
-          element={
-            <AuthGuard>
-              <div className="p-6">
-                <h1 className="text-2xl font-bold">Cashier Operations</h1>
-                <p>This page will be implemented in future versions</p>
-              </div>
-            </AuthGuard>
-          }
-        />
-
-        <Route
-          path="/reports"
-          element={
-            <AuthGuard>
-              <div className="p-6">
-                <h1 className="text-2xl font-bold">Reports & Analytics</h1>
-                <p>This page will be implemented in future versions</p>
-              </div>
-            </AuthGuard>
-          }
-        />
-
-        <Route
-          path="/personnel"
-          element={
-            <AuthGuard>
-              <div className="p-6">
-                <h1 className="text-2xl font-bold">Personnel Management</h1>
-                <p>This page will be implemented in future versions</p>
-              </div>
-            </AuthGuard>
-          }
-        />
-
-        <Route
-          path="/production"
-          element={
-            <AuthGuard>
-              <div className="p-6">
-                <h1 className="text-2xl font-bold">Production Management</h1>
-                <p>This page will be implemented in future versions</p>
-              </div>
-            </AuthGuard>
-          }
-        />
-
-        <Route
-          path="/assets"
-          element={
-            <AuthGuard>
-              <div className="p-6">
-                <h1 className="text-2xl font-bold">Asset Management</h1>
-                <p>This page will be implemented in future versions</p>
-              </div>
-            </AuthGuard>
-          }
-        />
-
-        <Route
-          path="/documents"
-          element={
-            <AuthGuard>
-              <div className="p-6">
-                <h1 className="text-2xl font-bold">Document Management</h1>
-                <p>This page will be implemented in future versions</p>
-              </div>
-            </AuthGuard>
-          }
-        />
-
-        <Route
-          path="/salary"
-          element={
-            <AuthGuard>
-              <div className="p-6">
-                <h1 className="text-2xl font-bold">Salary Management</h1>
-                <p>This page will be implemented in future versions</p>
-              </div>
-            </AuthGuard>
-          }
-        />
-
-        <Route
-          path="/declaration"
-          element={
-            <AuthGuard>
-              <div className="p-6">
-                <h1 className="text-2xl font-bold">Tax Declaration</h1>
-                <p>This page will be implemented in future versions</p>
-              </div>
-            </AuthGuard>
-          }
-        /> */}
+        <Route path="/chart-of-accounts" element={<ChartOfAccountsPage />} />
 
         <Route
           path="/settings"

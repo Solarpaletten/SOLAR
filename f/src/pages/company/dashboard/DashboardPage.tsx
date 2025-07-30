@@ -91,6 +91,14 @@ const DashboardPage: React.FC = () => {
                 <span className="text-2xl mr-2">📦</span>
                 <span className="text-sm font-medium">Products</span>
               </Link>
+
+              <Link
+                to="/chart-of-accounts"
+                className="flex items-center justify-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+              >
+                <span className="text-2xl mr-2">📊</span>
+                <span className="text-sm font-medium">Chart of Accounts</span>
+              </Link>
               
               <Link
                 to="/banking"
