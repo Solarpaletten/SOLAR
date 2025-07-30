@@ -28,6 +28,9 @@ const productsRoutes = require('./routes/company/productsRoutes');
 // Опционально (если существуют):
 const salesRoutes = require('./routes/company/salesRoutes');
 const purchasesRoutes = require('./routes/company/purchasesRoutes');
+// Chart of Accounts routes
+const chartOfAccountsRoutes = require('./routes/company/chartOfAccountsRoutes');
+
 
 const app = express();
 
@@ -145,6 +148,12 @@ try {
   logger.error('❌ Failed to load company purchases routes:', error);
 }
 
+try {
+app.use('/api/company/chart-of-accounts', auth, companyContext, chartOfAccountsRoutes);
+logger.info('✅ Company chart of accounts routes loaded');
+} catch (error) {
+  ogger.error('❌ Failed to load company chart of accounts routes:', error);
+}
 
 // ===============================================
 // 🧪 TEST ENDPOINTS
