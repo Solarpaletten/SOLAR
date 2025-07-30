@@ -18,6 +18,7 @@ const CompanyLayout: React.FC<CompanyLayoutProps> = ({ children }) => {
     { path: '/warehouse', icon: '📦', label: 'Warehouse' },
     { path: '/sales', icon: '🛒', label: 'Sales' },
     { path: '/purchases', icon: '🛍️', label: 'Purchases' },
+    { path: '/chart-of-accounts', icon: '📊', label: 'Chart of Accounts' }
     // { path: '/ledger', icon: '📋', label: 'General ledger' },
     // { path: '/cashier', icon: '💰', label: 'Cashier' },
     // { path: '/reports', icon: '📈', label: 'Reports' },
