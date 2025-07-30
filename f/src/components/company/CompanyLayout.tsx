@@ -14,21 +14,12 @@ const CompanyLayout: React.FC<CompanyLayoutProps> = ({ children }) => {
     { path: '/dashboard', icon: '📊', label: 'Dashboard' },
     { path: '/clients', icon: '👥', label: 'Clients' },
     { path: '/products', icon: '📦', label: 'Products' },
-    { path: '/chart-of-accounts', icon: '📊', label: 'Chart of Accounts' }, // ✅ ДОБАВИТЬ ЗАПЯТУЮ
+    { path: '/sales', icon: '💰', label: 'Sales' },
+    { path: '/purchases', icon: '🛍️', label: 'Purchases' },
+    { path: '/chart-of-accounts', icon: '📋', label: 'Chart of Accounts' },
     { path: '/banking', icon: '🏦', label: 'Banking' },
     { path: '/warehouse', icon: '📦', label: 'Warehouse' },
-    // { path: '/sales', icon: '🛒', label: 'Sales' },        
-    // { path: '/purchases', icon: '🛍️', label: 'Purchases' }, 
-    // { path: '/ledger', icon: '📋', label: 'General ledger' },
-    // { path: '/cashier', icon: '💰', label: 'Cashier' },
-    // { path: '/reports', icon: '📈', label: 'Reports' },
-    // { path: '/personnel', icon: '👨‍💼', label: 'Personnel' },
-    // { path: '/production', icon: '🏭', label: 'Production' },
-    // { path: '/assets', icon: '📦', label: 'Assets' },
-    // { path: '/documents', icon: '📄', label: 'Documents' },
-    // { path: '/salary', icon: '💰', label: 'Salary' },
-    // { path: '/declaration', icon: '📋', label: 'Declaration' },
-    { path: '/settings', icon: '⚙️', label: 'Settings' }
+    { path: '/settings', icon: '⚙️', label: 'Settings' },
   ];
 
   return (
@@ -38,14 +29,16 @@ const CompanyLayout: React.FC<CompanyLayoutProps> = ({ children }) => {
         <div className="p-4">
           <h2 className="text-lg font-bold">Solar</h2>
         </div>
-        
+
         <nav className="mt-8">
           {menuItems.map((item) => (
             <Link
               key={item.path}
               to={item.path}
               className={`block px-4 py-3 text-sm hover:bg-slate-700 transition-colors ${
-                location.pathname === item.path ? 'bg-slate-700 border-r-2 border-orange-500' : ''
+                location.pathname === item.path
+                  ? 'bg-slate-700 border-r-2 border-orange-500'
+                  : ''
               }`}
             >
               <span className="mr-3">{item.icon}</span>
@@ -63,6 +56,10 @@ const CompanyLayout: React.FC<CompanyLayoutProps> = ({ children }) => {
           </Link>
         </div>
       </div>
+
+      <NavLink to="/warehouse" className="nav-link">
+        🏭 Warehouse
+      </NavLink>
 
       {/* Header */}
       <div className="flex-1 flex flex-col">
@@ -85,9 +82,7 @@ const CompanyLayout: React.FC<CompanyLayoutProps> = ({ children }) => {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-auto">
-          {children}
-        </main>
+        <main className="flex-1 overflow-auto">{children}</main>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-// f/src/pages/company/purchases/PurchasesPage.tsx
+// f/src/pages/company/purchases/PurchasesPage.tsx - ИСПРАВЛЕН
 import React, { useState, useEffect } from 'react';
 import CompanyLayout from '../../../components/company/CompanyLayout';
 import { 
@@ -77,14 +77,14 @@ const purchasesService = {
   }
 };
 
-// Stats Component
+// Stats Component - ИСПРАВЛЕН С БЕЗОПАСНОЙ ТИПИЗАЦИЕЙ
 const StatsCards: React.FC<{ stats: PurchasesStats }> = ({ stats }) => (
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
     <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-lg p-6 text-white">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-indigo-100 text-sm font-medium">Total Purchases</p>
-          <p className="text-3xl font-bold">{stats.total}</p>
+          <p className="text-3xl font-bold">{stats?.total_purchases || 0}</p>
         </div>
         <div className="bg-indigo-400 rounded-full p-3">
           🛍️
@@ -95,8 +95,8 @@ const StatsCards: React.FC<{ stats: PurchasesStats }> = ({ stats }) => (
     <div className="bg-gradient-to-r from-red-500 to-red-600 rounded-lg p-6 text-white">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-red-100 text-sm font-medium">Total Spent</p>
-          <p className="text-2xl font-bold">€{stats.totalSpent.toLocaleString()}</p>
+          <p className="text-red-100 text-sm font-medium">Total Amount</p>
+          <p className="text-2xl font-bold">€{(stats?.total_amount || 0).toLocaleString()}</p>
         </div>
         <div className="bg-red-400 rounded-full p-3">
           💸
@@ -108,7 +108,7 @@ const StatsCards: React.FC<{ stats: PurchasesStats }> = ({ stats }) => (
       <div className="flex items-center justify-between">
         <div>
           <p className="text-yellow-100 text-sm font-medium">Pending Payment</p>
-          <p className="text-3xl font-bold">{stats.pending}</p>
+          <p className="text-3xl font-bold">{stats?.pending_purchases || 0}</p>
         </div>
         <div className="bg-yellow-400 rounded-full p-3">
           ⏳
@@ -119,8 +119,8 @@ const StatsCards: React.FC<{ stats: PurchasesStats }> = ({ stats }) => (
     <div className="bg-gradient-to-r from-teal-500 to-teal-600 rounded-lg p-6 text-white">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-teal-100 text-sm font-medium">Avg Order Value</p>
-          <p className="text-2xl font-bold">€{stats.averageOrderValue.toLocaleString()}</p>
+          <p className="text-teal-100 text-sm font-medium">This Month</p>
+          <p className="text-2xl font-bold">€{(stats?.this_month_amount || 0).toLocaleString()}</p>
         </div>
         <div className="bg-teal-400 rounded-full p-3">
           📊
@@ -151,18 +151,28 @@ const PurchasesPage: React.FC = () => {
       setStats(statsData);
     } catch (err) {
       console.error('Failed to fetch purchases stats:', err);
-      setError('Failed to fetch purchases statistics');
+      // Don't set error for stats, just log it
+      setStats({
+        total_purchases: 0,
+        total_amount: 0,
+        pending_purchases: 0,
+        this_month_purchases: 0,
+        this_month_amount: 0,
+        average_purchase: 0
+      });
     }
   };
 
   const fetchPurchases = async () => {
     try {
       setLoading(true);
+      setError(null);
       const response = await purchasesService.getPurchases(filters);
-      setPurchases(response.purchases);
+      setPurchases(response.purchases || []);
     } catch (err) {
       console.error('Failed to fetch purchases:', err);
-      setError('Failed to fetch purchases');
+      setError('Failed to fetch purchases. Please check your connection and try again.');
+      setPurchases([]);
     } finally {
       setLoading(false);
     }
@@ -225,7 +235,8 @@ const PurchasesPage: React.FC = () => {
     setFilters(prev => ({ ...prev, ...newFilters, page: 1 }));
   };
 
-  if (error) {
+  // Error State with Retry
+  if (error && !loading && purchases.length === 0) {
     return (
       <CompanyLayout>
         <div className="p-6">
@@ -233,18 +244,26 @@ const PurchasesPage: React.FC = () => {
             <div className="flex">
               <div className="text-red-400 text-xl mr-3">⚠️</div>
               <div>
-                <h3 className="text-red-800 font-medium">Error</h3>
+                <h3 className="text-red-800 font-medium">Connection Error</h3>
                 <p className="text-red-700 mt-1">{error}</p>
-                <button
-                  onClick={() => {
-                    setError(null);
-                    fetchStats();
-                    fetchPurchases();
-                  }}
-                  className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  Retry
-                </button>
+                <div className="mt-3 flex gap-2">
+                  <button
+                    onClick={() => {
+                      setError(null);
+                      fetchStats();
+                      fetchPurchases();
+                    }}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  >
+                    🔄 Retry Connection
+                  </button>
+                  <button
+                    onClick={() => window.location.reload()}
+                    className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                  >
+                    🔄 Reload Page
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -273,8 +292,29 @@ const PurchasesPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Stats */}
+        {/* Stats - Only show if available */}
         {stats && <StatsCards stats={stats} />}
+
+        {/* Error banner for API issues */}
+        {error && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div className="flex items-center">
+              <div className="text-yellow-400 text-lg mr-3">⚠️</div>
+              <div className="flex-1">
+                <p className="text-yellow-800 text-sm">{error}</p>
+              </div>
+              <button
+                onClick={() => {
+                  setError(null);
+                  fetchPurchases();
+                }}
+                className="text-yellow-600 hover:text-yellow-800 ml-3"
+              >
+                🔄 Retry
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Toolbar */}
         <PurchasesToolbar 
