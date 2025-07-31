@@ -15,8 +15,8 @@ const getApiUrl = (): string => {
     const hostname = window.location.hostname;
 
     // Продакшен
-    if (hostname === 'solar.swapoil.de') {
-      return 'https://api.solar.swapoil.de';
+    if (hostname === 'itsolar.pl') {
+      return 'https://api.itsolar.pl';
     }
 
     // Локальная разработка

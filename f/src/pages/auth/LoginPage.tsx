@@ -145,7 +145,7 @@ const LoginPage: React.FC = () => {
               <div className="text-xs text-blue-700 space-y-1">
                 <p>• Email: <strong>solar@solar.com</strong></p>
                 <p>• Password: <strong>pass123</strong></p>
-                <p>• Backend: <strong>http://localhost:4000</strong></p>
+                <p>• Backend: <strong>api.itsolar.pl</strong></p>
                 <p>• Database: <strong>PostgreSQL</strong></p>
               </div>
             </div>
