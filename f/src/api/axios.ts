@@ -48,7 +48,7 @@ api.interceptors.request.use(
     console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`);
 
     // 1. Добавляем токен авторизации
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token'); // Исправлено: используем auth_token как в ClientsPage.tsx
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
       console.log(`🔑 Added auth token`);
