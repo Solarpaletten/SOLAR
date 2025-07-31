@@ -24,7 +24,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requireAuth = true }) =
     try {
       // Проверяем наличие токенов (старый и новый формат)
       const authToken = localStorage.getItem('auth_token');
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token') || localStorage.getItem('token');
       const userEmail = localStorage.getItem('user_email');
 
       console.log('🔍 Checking authentication...', {

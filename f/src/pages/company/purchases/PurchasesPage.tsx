@@ -18,7 +18,7 @@ import AddPurchaseModal from './components/AddPurchaseModal';
 // API service
 const purchasesService = {
   async getStats(): Promise<PurchasesStats> {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token') || localStorage.getItem('token');
     const companyId = localStorage.getItem('currentCompanyId');
     
     const response = await fetch('/api/company/purchases/stats', {
@@ -35,7 +35,7 @@ const purchasesService = {
   },
 
   async getPurchases(filters: PurchasesFilter = {}): Promise<PurchasesResponse> {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token') || localStorage.getItem('token');
     const companyId = localStorage.getItem('currentCompanyId');
     
     const params = new URLSearchParams();
@@ -58,7 +58,7 @@ const purchasesService = {
   },
 
   async createPurchase(data: PurchaseFormData): Promise<Purchase> {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token') || localStorage.getItem('token');
     const companyId = localStorage.getItem('currentCompanyId');
     
     const response = await fetch('/api/company/purchases', {

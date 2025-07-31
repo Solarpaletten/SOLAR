@@ -32,7 +32,7 @@ const ChartOfAccountsPage: React.FC = () => {
 
   // Get auth headers
   const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token') || localStorage.getItem('token');
     const companyId = localStorage.getItem('currentCompanyId');
     
     return {
