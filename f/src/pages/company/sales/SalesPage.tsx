@@ -18,7 +18,7 @@ import AddSaleModal from './components/AddSaleModal';
 // API service
 const salesService = {
   async getStats(): Promise<SalesStats> {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token') || localStorage.getItem('token');;
     const companyId = localStorage.getItem('currentCompanyId');
     
     const response = await fetch('/api/company/sales/stats', {
@@ -35,7 +35,7 @@ const salesService = {
   },
 
   async getSales(filters: SalesFilter = {}): Promise<SalesResponse> {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token') || localStorage.getItem('token');
     const companyId = localStorage.getItem('currentCompanyId');
     
     const params = new URLSearchParams();
@@ -58,7 +58,7 @@ const salesService = {
   },
 
   async createSale(data: SaleFormData): Promise<Sale> {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token') || localStorage.getItem('token');
     const companyId = localStorage.getItem('currentCompanyId');
     
     const response = await fetch('/api/company/sales', {

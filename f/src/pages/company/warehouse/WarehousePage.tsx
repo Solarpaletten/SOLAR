@@ -13,7 +13,7 @@ import {
 // API service
 const warehouseService = {
   async getStats(): Promise<WarehouseStats> {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token') || localStorage.getItem('token');
     const companyId = localStorage.getItem('currentCompanyId');
     
     const response = await fetch('/api/company/warehouses/stats', {
@@ -30,7 +30,7 @@ const warehouseService = {
   },
 
   async getWarehouses(filters: WarehouseFilter = {}): Promise<WarehousesResponse> {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token') || localStorage.getItem('token');
     const companyId = localStorage.getItem('currentCompanyId');
     
     const params = new URLSearchParams();
@@ -53,7 +53,7 @@ const warehouseService = {
   },
 
   async createWarehouse(data: WarehouseFormData): Promise<Warehouse> {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token') || localStorage.getItem('token');
     const companyId = localStorage.getItem('currentCompanyId');
     
     const response = await fetch('/api/company/warehouses', {
