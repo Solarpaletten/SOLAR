@@ -1,72 +1,84 @@
 // b/src/controllers/company/salesController.js
-const { PrismaClient } = require('@prisma/client');
+const { prisma } = require('../../utils/prismaManager');
 const { logger } = require('../../config/logger');
-
-const prisma = new PrismaClient();
 
 // 📊 GET /api/company/sales/stats - Статистика продаж
 const getSalesStats = async (req, res) => {
   try {
     const companyId = req.companyContext?.companyId;
     
+    if (!companyId) {
+      return res.status(400).json({ error: 'Company context required' });
+    }
+
     logger.info(`📊 Fetching sales stats for company: ${companyId}`);
 
-    // Получаем статистику продаж
-    const totalCount = await prisma.sales.count({
-      where: { company_id: companyId }
-    });
-
-    const statusStats = await prisma.sales.groupBy({
-      by: ['payment_status'],
-      where: { company_id: companyId },
-      _count: true
-    });
-
-    const deliveryStats = await prisma.sales.groupBy({
-      by: ['delivery_status'],
-      where: { company_id: companyId },
-      _count: true
-    });
-
-    const totalRevenue = await prisma.sales.aggregate({
-      where: { company_id: companyId },
-      _sum: { total_amount: true }
-    });
-
-    const avgOrderValue = await prisma.sales.aggregate({
-      where: { 
-        company_id: companyId,
-        total_amount: { gt: 0 }
-      },
-      _avg: { total_amount: true }
-    });
-
-    // Статистика по клиентам
-    const topClients = await prisma.sales.groupBy({
-      by: ['client_id'],
-      where: { company_id: companyId },
-      _count: true,
-      _sum: { total_amount: true },
-      orderBy: { _sum: { total_amount: 'desc' } },
-      take: 5
-    });
-
-    // Продажи по месяцам (последние 12 месяцев)
-    const monthlyStats = await prisma.$queryRaw`
-      SELECT 
-        DATE_TRUNC('month', document_date) as month,
-        COUNT(*)::int as count,
-        SUM(total_amount)::decimal as revenue
-      FROM sales 
-      WHERE company_id = ${companyId} 
-        AND document_date >= NOW() - INTERVAL '12 months'
-      GROUP BY DATE_TRUNC('month', document_date)
-      ORDER BY month DESC
-      LIMIT 12
-    `;
+    const [
+      totalSales,
+      totalRevenue,
+      avgOrderValue,
+      statusStats,
+      deliveryStats,
+      topClients,
+      monthlyStats
+    ] = await Promise.all([
+      // Общее количество продаж
+      prisma.sales.count({
+        where: { company_id: companyId }
+      }),
+      
+      // Общая выручка
+      prisma.sales.aggregate({
+        where: { company_id: companyId },
+        _sum: { total_amount: true }
+      }),
+      
+      // Средний чек
+      prisma.sales.aggregate({
+        where: { company_id: companyId },
+        _avg: { total_amount: true }
+      }),
+      
+      // Статистика по статусам платежей
+      prisma.sales.groupBy({
+        by: ['payment_status'],
+        where: { company_id: companyId },
+        _count: true
+      }),
+      
+      // Статистика по доставке
+      prisma.sales.groupBy({
+        by: ['delivery_status'],
+        where: { company_id: companyId },
+        _count: true
+      }),
+      
+      // Топ клиенты
+      prisma.sales.groupBy({
+        by: ['client_id'],
+        where: { company_id: companyId },
+        _count: true,
+        _sum: { total_amount: true },
+        orderBy: { _sum: { total_amount: 'desc' } },
+        take: 5
+      }),
+      
+      // Продажи по месяцам (последние 12 месяцев)
+      prisma.sales.groupBy({
+        by: ['document_date'],
+        where: {
+          company_id: companyId,
+          document_date: {
+            gte: new Date(new Date().getFullYear(), new Date().getMonth() - 11, 1)
+          }
+        },
+        _sum: { total_amount: true },
+        _count: true
+      })
+    ]);
 
     const stats = {
-      total: totalCount,
+      total: totalSales,
       pending: statusStats.find(s => s.payment_status === 'PENDING')?._count || 0,
       paid: statusStats.find(s => s.payment_status === 'PAID')?._count || 0,
       overdue: statusStats.find(s => s.payment_status === 'OVERDUE')?._count || 0,
@@ -144,7 +156,6 @@ const getAllSales = async (req, res) => {
       if (date_to) whereConditions.document_date.lte = new Date(date_to);
     }
 
-    // Получение данных
     const [sales, totalCount] = await Promise.all([
       prisma.sales.findMany({
         where: whereConditions,
@@ -154,8 +165,7 @@ const getAllSales = async (req, res) => {
               id: true,
               name: true,
               email: true,
-              phone: true,
-              code: true
+              phone: true
             }
           },
           warehouse: {
@@ -173,16 +183,9 @@ const getAllSales = async (req, res) => {
               email: true
             }
           },
-          items: {
-            include: {
-              product: {
-                select: {
-                  id: true,
-                  code: true,
-                  name: true,
-                  unit: true
-                }
-              }
+          _count: {
+            select: {
+              items: true
             }
           }
         },
@@ -192,10 +195,9 @@ const getAllSales = async (req, res) => {
         skip,
         take: parseInt(limit)
       }),
+      
       prisma.sales.count({ where: whereConditions })
     ]);
-
-    const totalPages = Math.ceil(totalCount / parseInt(limit));
 
     res.json({
       success: true,
@@ -204,9 +206,7 @@ const getAllSales = async (req, res) => {
         page: parseInt(page),
         limit: parseInt(limit),
         total: totalCount,
-        pages: totalPages,
-        hasNext: parseInt(page) < totalPages,
-        hasPrev: parseInt(page) > 1
+        pages: Math.ceil(totalCount / parseInt(limit))
       },
       companyId
     });
@@ -234,22 +234,8 @@ const getSaleById = async (req, res) => {
       },
       include: {
         client: true,
-        warehouse: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
-            address: true
-          }
-        },
-        sales_manager: {
-          select: {
-            id: true,
-            first_name: true,
-            last_name: true,
-            email: true
-          }
-        },
+        warehouse: true,
+        sales_manager: true,
         creator: {
           select: {
             id: true,
@@ -302,7 +288,8 @@ const getSaleById = async (req, res) => {
 const createSale = async (req, res) => {
   try {
     const companyId = req.companyContext?.companyId;
-    const userId = req.user.id;
+    const userId = req.user?.id || 1;
+    
     const {
       document_number,
       document_date,
@@ -319,7 +306,21 @@ const createSale = async (req, res) => {
       items = []
     } = req.body;
 
+    if (!companyId) {
+      return res.status(400).json({ 
+        error: 'Company context required'
+      });
+    }
+
     logger.info(`➕ Creating sale for company: ${companyId}`);
+    logger.info(`📝 Sale data:`, {
+      document_number,
+      client_id,
+      warehouse_id,
+      items: items.length,
+      companyId,
+      userId
+    });
 
     // Валидация
     if (!document_number || !document_date || !client_id) {
@@ -344,6 +345,19 @@ const createSale = async (req, res) => {
       });
     }
 
+    // Проверяем что клиент существует
+    const client = await prisma.clients.findFirst({
+      where: { id: parseInt(client_id), company_id: companyId }
+    });
+
+    if (!client) {
+      logger.error('❌ Client not found:', client_id);
+      return res.status(400).json({
+        success: false,
+        error: `Client ${client_id} not found`
+      });
+    }
+
     // Расчёт сумм
     let subtotal = 0;
     let vat_amount = 0;
@@ -365,11 +379,24 @@ const createSale = async (req, res) => {
         line_number: index + 1,
         line_total: lineTotal,
         vat_amount: vatAmount,
-        total_discount: lineDiscount
+        total_discount: lineDiscount,
+        product_id: parseInt(item.product_id),
+        quantity: parseFloat(item.quantity),
+        unit_price_base: parseFloat(item.unit_price_base),
+        discount_percent: parseFloat(item.discount_percent || 0),
+        vat_rate: parseFloat(item.vat_rate || 0)
       };
     });
 
     const total_amount = subtotal - discount_amount + vat_amount;
+
+    logger.info(`💰 Calculated amounts:`, {
+      subtotal,
+      vat_amount,
+      discount_amount,
+      total_amount,
+      items: processedItems.length
+    });
 
     // Создание продажи с элементами в транзакции
     const sale = await prisma.$transaction(async (tx) => {
@@ -392,27 +419,32 @@ const createSale = async (req, res) => {
           payment_status,
           delivery_status,
           document_status,
-          created_by: userId
+          created_by: userId,
+          created_at: new Date()
         }
       });
+
+      logger.info(`✅ Created sale: ${newSale.id}`);
 
       // Создание элементов продажи
       if (processedItems.length > 0) {
         await tx.sale_items.createMany({
           data: processedItems.map(item => ({
             sale_id: newSale.id,
-            product_id: parseInt(item.product_id),
+            product_id: item.product_id,
             line_number: item.line_number,
-            quantity: parseFloat(item.quantity),
-            unit_price_base: parseFloat(item.unit_price_base),
-            discount_percent: parseFloat(item.discount_percent || 0),
+            quantity: item.quantity,
+            unit_price_base: item.unit_price_base,
+            discount_percent: item.discount_percent,
             total_discount: item.total_discount,
-            vat_rate: parseFloat(item.vat_rate || 0),
+            vat_rate: item.vat_rate,
             vat_amount: item.vat_amount,
             line_total: item.line_total,
             description: item.description || null
           }))
         });
+        
+        logger.info(`✅ Created ${processedItems.length} sale items`);
       }
 
       return newSale;
@@ -433,6 +465,8 @@ const createSale = async (req, res) => {
       }
     });
 
+    logger.info(`🎉 Sale created successfully: ${sale.id}`);
+
     res.status(201).json({
       success: true,
       sale: createdSale,
@@ -440,10 +474,19 @@ const createSale = async (req, res) => {
       companyId
     });
   } catch (error) {
-    logger.error('Error creating sale:', error);
+    logger.error('❌ Error creating sale:', error);
+    logger.error('Stack trace:', error.stack);
+    
+    // Более детальная диагностика ошибок Prisma
+    if (error.code) {
+      logger.error('Prisma error code:', error.code);
+      logger.error('Prisma error meta:', error.meta);
+    }
+    
     res.status(500).json({
       success: false,
-      error: 'Error creating sale'
+      error: 'Error creating sale',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
@@ -530,18 +573,20 @@ const updateSale = async (req, res) => {
             };
           });
 
+          const total_amount = subtotal - discount_amount + vat_amount;
+
           await tx.sale_items.createMany({
             data: processedItems
           });
 
-          // Обновляем суммы в продаже
+          // Обновляем итоговые суммы
           await tx.sales.update({
             where: { id: parseInt(id) },
             data: {
               subtotal,
               vat_amount,
               discount_amount,
-              total_amount: subtotal - discount_amount + vat_amount
+              total_amount
             }
           });
         }
@@ -550,7 +595,7 @@ const updateSale = async (req, res) => {
       return sale;
     });
 
-    // Получаем обновлённую продажу с связанными данными
+    // Получаем обновлённую продажу
     const sale = await prisma.sales.findUnique({
       where: { id: parseInt(id) },
       include: {

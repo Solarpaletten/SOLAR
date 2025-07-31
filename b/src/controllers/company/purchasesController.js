@@ -1,4 +1,4 @@
-// b/src/controllers/company/purchasesController.js - ИСПРАВЛЕН И ЗАВЕРШЁН
+// b/src/controllers/company/purchasesController.js
 const { prisma } = require('../../utils/prismaManager');
 const { logger } = require('../../config/logger');
 
@@ -13,38 +13,63 @@ const getPurchasesStats = async (req, res) => {
 
     logger.info(`📊 Fetching purchases stats for company: ${companyId}`);
 
-    // Параллельные запросы для статистики
     const [
       totalPurchases,
-      totalAmount,
-      pendingCount,
-      thisMonthStats
+      totalSpent,
+      avgOrderValue,
+      statusStats,
+      deliveryStats,
+      topSuppliers,
+      monthlyStats
     ] = await Promise.all([
       // Общее количество покупок
       prisma.purchases.count({
         where: { company_id: companyId }
       }),
       
-      // Общая сумма покупок
+      // Общие расходы
       prisma.purchases.aggregate({
         where: { company_id: companyId },
         _sum: { total_amount: true }
       }),
       
-      // Количество ожидающих покупок
-      prisma.purchases.count({
-        where: {
-          company_id: companyId,
-          payment_status: 'PENDING'
-        }
+      // Средний чек
+      prisma.purchases.aggregate({
+        where: { company_id: companyId },
+        _avg: { total_amount: true }
       }),
       
-      // Статистика за этот месяц
-      prisma.purchases.aggregate({
+      // Статистика по статусам платежей
+      prisma.purchases.groupBy({
+        by: ['payment_status'],
+        where: { company_id: companyId },
+        _count: true
+      }),
+      
+      // Статистика по доставке
+      prisma.purchases.groupBy({
+        by: ['delivery_status'],
+        where: { company_id: companyId },
+        _count: true
+      }),
+      
+      // Топ поставщики
+      prisma.purchases.groupBy({
+        by: ['supplier_id'],
+        where: { company_id: companyId },
+        _count: true,
+        _sum: { total_amount: true },
+        orderBy: { _sum: { total_amount: 'desc' } },
+        take: 5
+      }),
+      
+      // Покупки по месяцам (последние 12 месяцев)
+      prisma.purchases.groupBy({
+        by: ['document_date'],
         where: {
           company_id: companyId,
           document_date: {
-            gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+            gte: new Date(new Date().getFullYear(), new Date().getMonth() - 11, 1)
           }
         },
         _sum: { total_amount: true },
@@ -53,12 +78,17 @@ const getPurchasesStats = async (req, res) => {
     ]);
 
     const stats = {
-      total_purchases: totalPurchases,
-      total_amount: totalAmount._sum.total_amount || 0,
-      pending_purchases: pendingCount,
-      this_month_purchases: thisMonthStats._count,
-      this_month_amount: thisMonthStats._sum.total_amount || 0,
-      average_purchase: totalPurchases > 0 ? (totalAmount._sum.total_amount || 0) / totalPurchases : 0
+      total: totalPurchases,
+      pending: statusStats.find(s => s.payment_status === 'PENDING')?._count || 0,
+      paid: statusStats.find(s => s.payment_status === 'PAID')?._count || 0,
+      overdue: statusStats.find(s => s.payment_status === 'OVERDUE')?._count || 0,
+      cancelled: statusStats.find(s => s.payment_status === 'CANCELLED')?._count || 0,
+      delivered: deliveryStats.find(s => s.delivery_status === 'DELIVERED')?._count || 0,
+      pending_delivery: deliveryStats.find(s => s.delivery_status === 'PENDING')?._count || 0,
+      total_amount: totalSpent._sum.total_amount || 0,
+      average_order_value: avgOrderValue._avg.total_amount || 0,
+      top_suppliers: topSuppliers.length,
+      monthly_spending: monthlyStats
     };
 
     res.json({
@@ -67,10 +97,10 @@ const getPurchasesStats = async (req, res) => {
       companyId
     });
   } catch (error) {
-    logger.error('Error fetching purchases stats:', error);
+    logger.error('Error fetching purchases statistics:', error);
     res.status(500).json({
       success: false,
-      error: 'Error fetching purchases stats'
+      error: 'Error fetching purchases statistics'
     });
   }
 };
@@ -84,20 +114,23 @@ const getAllPurchases = async (req, res) => {
       return res.status(400).json({ error: 'Company context required' });
     }
 
-    const {
-      page = 1,
-      limit = 10,
-      search = '',
-      payment_status,
+    const { 
+      page = 1, 
+      limit = 50, 
+      search, 
+      payment_status, 
       delivery_status,
-      operation_type,
       supplier_id,
+      date_from,
+      date_to,
       sort_by = 'document_date',
       sort_order = 'desc'
     } = req.query;
 
     logger.info(`📋 Fetching purchases for company: ${companyId}`);
 
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    
     // Построение условий фильтрации
     const whereConditions = {
       company_id: companyId
@@ -110,12 +143,23 @@ const getAllPurchases = async (req, res) => {
       ];
     }
 
-    if (payment_status) whereConditions.payment_status = payment_status;
-    if (delivery_status) whereConditions.delivery_status = delivery_status;
-    if (operation_type) whereConditions.operation_type = operation_type;
-    if (supplier_id) whereConditions.supplier_id = parseInt(supplier_id);
+    if (payment_status) {
+      whereConditions.payment_status = payment_status;
+    }
 
-    const skip = (parseInt(page) - 1) * parseInt(limit);
+    if (delivery_status) {
+      whereConditions.delivery_status = delivery_status;
+    }
+
+    if (supplier_id) {
+      whereConditions.supplier_id = parseInt(supplier_id);
+    }
+
+    if (date_from || date_to) {
+      whereConditions.document_date = {};
+      if (date_from) whereConditions.document_date.gte = new Date(date_from);
+      if (date_to) whereConditions.document_date.lte = new Date(date_to);
+    }
 
     const [purchases, totalCount] = await Promise.all([
       prisma.purchases.findMany({
@@ -144,16 +188,9 @@ const getAllPurchases = async (req, res) => {
               email: true
             }
           },
-          items: {
-            include: {
-              product: {
-                select: {
-                  id: true,
-                  code: true,
-                  name: true,
-                  unit: true
-                }
-              }
+          _count: {
+            select: {
+              items: true
             }
           }
         },
@@ -163,10 +200,9 @@ const getAllPurchases = async (req, res) => {
         skip,
         take: parseInt(limit)
       }),
+      
       prisma.purchases.count({ where: whereConditions })
     ]);
-
-    const totalPages = Math.ceil(totalCount / parseInt(limit));
 
     res.json({
       success: true,
@@ -175,9 +211,7 @@ const getAllPurchases = async (req, res) => {
         page: parseInt(page),
         limit: parseInt(limit),
         total: totalCount,
-        pages: totalPages,
-        hasNext: parseInt(page) < totalPages,
-        hasPrev: parseInt(page) > 1
+        pages: Math.ceil(totalCount / parseInt(limit))
       },
       companyId
     });
@@ -205,22 +239,8 @@ const getPurchaseById = async (req, res) => {
       },
       include: {
         supplier: true,
-        warehouse: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
-            address: true
-          }
-        },
-        purchase_manager: {
-          select: {
-            id: true,
-            first_name: true,
-            last_name: true,
-            email: true
-          }
-        },
+        warehouse: true,
+        purchase_manager: true,
         creator: {
           select: {
             id: true,
@@ -276,8 +296,6 @@ const getPurchaseById = async (req, res) => {
   }
 };
 
-// ИСПРАВЛЕННАЯ ЧАСТЬ КОНТРОЛЛЕРА - только функция createPurchase
-
 // ➕ POST /api/company/purchases - Создать новую покупку
 const createPurchase = async (req, res) => {
   try {
@@ -310,10 +328,11 @@ const createPurchase = async (req, res) => {
       supplier_id,
       warehouse_id,
       items: items.length,
+      companyId,
       userId
     });
 
-    // Валидация обязательных полей
+    // Валидация
     if (!document_number || !document_date || !supplier_id) {
       return res.status(400).json({
         success: false,
@@ -321,25 +340,7 @@ const createPurchase = async (req, res) => {
       });
     }
 
-    // Проверяем supplier существует
-    const supplier = await prisma.clients.findFirst({
-      where: { 
-        id: parseInt(supplier_id), 
-        company_id: companyId 
-      }
-    });
-
-    if (!supplier) {
-      logger.error(`❌ Supplier ${supplier_id} not found for company ${companyId}`);
-      return res.status(400).json({
-        success: false,
-        error: `Supplier not found`
-      });
-    }
-
-    logger.info(`✅ Supplier found: ${supplier.name}`);
-
-    // Проверяем уникальность номера документа в рамках компании
+    // Проверяем уникальность номера документа
     const existingPurchase = await prisma.purchases.findFirst({
       where: {
         company_id: companyId,
@@ -354,41 +355,61 @@ const createPurchase = async (req, res) => {
       });
     }
 
+    // Проверяем что поставщик существует
+    const supplier = await prisma.clients.findFirst({
+      where: { id: parseInt(supplier_id), company_id: companyId }
+    });
+
+    if (!supplier) {
+      logger.error('❌ Supplier not found:', supplier_id);
+      return res.status(400).json({
+        success: false,
+        error: `Supplier ${supplier_id} not found`
+      });
+    }
+
+    logger.info(`✅ Supplier found: ${supplier.name}`);
+
     // Расчёт сумм
     let subtotal = 0;
     let vat_amount = 0;
 
     const processedItems = items.map((item, index) => {
-      const quantity = parseFloat(item.quantity || 0);
-      const unitPrice = parseFloat(item.unit_price_base || 0); // От frontend приходит unit_price_base
-      const vatRate = parseFloat(item.vat_rate || 0);
+      const quantity = parseFloat(item.quantity);
+      const unit_price = parseFloat(item.unit_price); // От frontend приходит unit_price
+      const vat_rate = parseFloat(item.vat_rate || 0);
       
-      const lineTotal = quantity * unitPrice;
-      const vatAmount = lineTotal * (vatRate / 100);
+      const line_subtotal = quantity * unit_price;
+      const line_vat = line_subtotal * (vat_rate / 100);
+      const line_total = line_subtotal + line_vat;
       
-      subtotal += lineTotal;
-      vat_amount += vatAmount;
+      subtotal += line_subtotal;
+      vat_amount += line_vat;
 
       return {
         product_id: parseInt(item.product_id),
         line_number: index + 1,
-        quantity,
-        unit_price: unitPrice,  // ← СОХРАНЯЕМ В БД КАК unit_price
-        vat_rate: vatRate,
-        vat_amount: vatAmount,
-        line_total: lineTotal,
-        description: item.description || null,
+        quantity: quantity,
+        unit_price: unit_price,
+        vat_rate: vat_rate,
+        vat_amount: line_vat,
+        line_total: line_total,
+        description: item.description || '',
         employee_id: item.employee_id ? parseInt(item.employee_id) : null
       };
     });
 
     const total_amount = subtotal + vat_amount;
 
-    logger.info(`💰 Purchase totals: subtotal=${subtotal}, vat=${vat_amount}, total=${total_amount}`);
+    logger.info(`💰 Calculated amounts:`, {
+      subtotal,
+      vat_amount,
+      total_amount,
+      items: processedItems.length
+    });
 
     // Создание покупки с элементами в транзакции
     const purchase = await prisma.$transaction(async (tx) => {
-      // Создаем основную покупку
       const newPurchase = await tx.purchases.create({
         data: {
           company_id: companyId,
@@ -420,11 +441,11 @@ const createPurchase = async (req, res) => {
             product_id: item.product_id,
             line_number: item.line_number,
             quantity: item.quantity,
-            unit_price: item.unit_price,  // ← ПРАВИЛЬНОЕ ПОЛЕ
+            unit_price: item.unit_price,
             vat_rate: item.vat_rate,
             vat_amount: item.vat_amount,
             line_total: item.line_total,
-            notes: item.description,  // ← В БД поле называется 'notes'
+            notes: item.description,
             employee_id: item.employee_id
           }))
         });
@@ -471,18 +492,17 @@ const createPurchase = async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Error creating purchase',
-      details: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
-
 
 // ✏️ PUT /api/company/purchases/:id - Обновить покупку
 const updatePurchase = async (req, res) => {
   try {
     const { id } = req.params;
     const companyId = req.companyContext?.companyId;
-    const userId = req.user?.id || 1;
+    const userId = req.user.id;
     const updateData = req.body;
 
     logger.info(`✏️ Updating purchase ${id} for company: ${companyId}`);
@@ -527,23 +547,51 @@ const updatePurchase = async (req, res) => {
           where: { purchase_id: parseInt(id) }
         });
 
-        // Создаем новые items
+        // Создаём новые items
         if (items.length > 0) {
-          await tx.purchase_items.createMany({
-            data: items.map((item, index) => ({
+          let subtotal = 0;
+          let vat_amount = 0;
+
+          const processedItems = items.map((item, index) => {
+            const quantity = parseFloat(item.quantity);
+            const unit_price = parseFloat(item.unit_price);
+            const vat_rate = parseFloat(item.vat_rate || 0);
+            
+            const line_subtotal = quantity * unit_price;
+            const line_vat = line_subtotal * (vat_rate / 100);
+            const line_total = line_subtotal + line_vat;
+            
+            subtotal += line_subtotal;
+            vat_amount += line_vat;
+
+            return {
               purchase_id: parseInt(id),
               product_id: parseInt(item.product_id),
               line_number: index + 1,
-              quantity: parseFloat(item.quantity),
-              unit_price_base: parseFloat(item.unit_price_base),
-              discount_percent: parseFloat(item.discount_percent || 0),
-              vat_rate: parseFloat(item.vat_rate || 0),
-              vat_amount: parseFloat(item.vat_amount || 0),
-              line_total: parseFloat(item.line_total || 0),
-              description: item.description || null,
-              warehouse_id: item.warehouse_id ? parseInt(item.warehouse_id) : null,
+              quantity: quantity,
+              unit_price: unit_price,
+              vat_rate: vat_rate,
+              vat_amount: line_vat,
+              line_total: line_total,
+              notes: item.description || '',
               employee_id: item.employee_id ? parseInt(item.employee_id) : null
-            }))
+            };
+          });
+
+          const total_amount = subtotal + vat_amount;
+
+          await tx.purchase_items.createMany({
+            data: processedItems
+          });
+
+          // Обновляем итоговые суммы
+          await tx.purchases.update({
+            where: { id: parseInt(id) },
+            data: {
+              subtotal,
+              vat_amount,
+              total_amount
+            }
           });
         }
       }
@@ -551,7 +599,7 @@ const updatePurchase = async (req, res) => {
       return purchase;
     });
 
-    // Получаем обновленную покупку с связанными данными
+    // Получаем обновлённую покупку
     const purchase = await prisma.purchases.findUnique({
       where: { id: parseInt(id) },
       include: {
@@ -604,17 +652,9 @@ const deletePurchase = async (req, res) => {
       });
     }
 
-    // Удаляем покупку в транзакции
-    await prisma.$transaction(async (tx) => {
-      // Сначала удаляем все items
-      await tx.purchase_items.deleteMany({
-        where: { purchase_id: parseInt(id) }
-      });
-
-      // Затем удаляем саму покупку
-      await tx.purchases.delete({
-        where: { id: parseInt(id) }
-      });
+    // Удаляем покупку (items удалятся автоматически по CASCADE)
+    await prisma.purchases.delete({
+      where: { id: parseInt(id) }
     });
 
     res.json({

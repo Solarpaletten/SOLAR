@@ -1,6 +1,6 @@
 
 WAREHOUSE MODULE
-
+SALE MODULE
 
 # 🌟 Solar ERP - Multi-Tenant Business Management System
 
