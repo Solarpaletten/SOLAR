@@ -21,65 +21,15 @@ interface AddPurchaseModalProps {
   loading?: boolean;
 }
 
-// Mock data - в реальной версии это будет из API
-const mockSuppliers: Client[] = [
-  { id: 1, name: 'ACME Corporation', email: 'supplier@acme.com', code: 'SUP001' },
-  { id: 2, name: 'Global Supplies Inc', email: 'orders@globalsupplies.com', code: 'SUP002' },
-  { id: 3, name: 'TechStart Ltd', email: 'procurement@techstart.com', code: 'SUP003' },
-];
-
-const mockProducts: Product[] = [
-  { 
-    id: 1, 
-    code: 'PRD001', 
-    name: 'Residius Oil technical', 
-    unit: 'liter', 
-    price: 80, 
-    cost_price: 65,
-    currency: 'EUR', 
-    vat_rate: 20,
-    is_active: true 
-  },
-  { 
-    id: 2, 
-    code: 'PRD002', 
-    name: 'Industrial Equipment', 
-    unit: 'piece', 
-    price: 1200, 
-    cost_price: 950,
-    currency: 'EUR', 
-    vat_rate: 20,
-    is_active: true 
-  },
-  { 
-    id: 3, 
-    code: 'PRD003', 
-    name: 'Maintenance Service', 
-    unit: 'hour', 
-    price: 120, 
-    cost_price: 100,
-    currency: 'EUR', 
-    vat_rate: 20,
-    is_active: true 
-  },
-];
-
-const mockWarehouses: Warehouse[] = [
-  { id: 1, name: 'Main Warehouse', code: 'WH001', address: 'Central District' },
-  { id: 2, name: 'Secondary Storage', code: 'WH002', address: 'Industrial Zone' },
-];
-
-const mockEmployees: User[] = [
-  { id: 1, first_name: 'John', last_name: 'Smith', email: 'john@company.com' },
-  { id: 2, first_name: 'Sarah', last_name: 'Johnson', email: 'sarah@company.com' },
-];
-
 const AddPurchaseModal: React.FC<AddPurchaseModalProps> = ({
   isOpen,
   onClose,
   onSubmit,
   loading = false
 }) => {
+  // ===============================================
+  // 🏗️ STATE MANAGEMENT
+  // ===============================================
   const [formData, setFormData] = useState<PurchaseFormData>({
     document_number: '',
     document_date: new Date().toISOString().split('T')[0],
@@ -96,22 +46,128 @@ const AddPurchaseModal: React.FC<AddPurchaseModalProps> = ({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Generate automatic document number
+  // ===============================================
+  // 🔄 REAL DATA FROM API (НЕ МОКИ!)
+  // ===============================================
+  const [suppliers, setSuppliers] = useState<Client[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+  const [employees, setEmployees] = useState<User[]>([]);
+  const [dataLoading, setDataLoading] = useState<boolean>(false);
+
+  // ===============================================
+  // 📡 ЗАГРУЗКА РЕАЛЬНЫХ ДАННЫХ
+  // ===============================================
+  const fetchRealData = async () => {
+    if (!isOpen) return;
+    
+    setDataLoading(true);
+    const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token') || localStorage.getItem('token');
+    const companyId = localStorage.getItem('currentCompanyId');
+
+    try {
+      // 1. Загружаем поставщиков (клиенты с ролью SUPPLIER)
+      const suppliersResponse = await fetch('/api/company/clients?role=SUPPLIER', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'x-company-id': companyId || '',
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (suppliersResponse.ok) {
+        const suppliersData = await suppliersResponse.json();
+        setSuppliers(suppliersData.clients || []);
+        console.log('✅ Loaded suppliers:', suppliersData.clients?.length || 0);
+      }
+
+      // 2. Загружаем склады
+      const warehousesResponse = await fetch('/api/company/warehouses', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'x-company-id': companyId || '',
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (warehousesResponse.ok) {
+        const warehousesData = await warehousesResponse.json();
+        setWarehouses(warehousesData.warehouses || []);
+        console.log('✅ Loaded warehouses:', warehousesData.warehouses?.length || 0);
+      }
+
+      // 3. Загружаем товары
+      const productsResponse = await fetch('/api/company/products', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'x-company-id': companyId || '',
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (productsResponse.ok) {
+        const productsData = await productsResponse.json();
+        setProducts(productsData.products || []);
+        console.log('✅ Loaded products:', productsData.products?.length || 0);
+      }
+
+      // 4. Загружаем сотрудников (пока используем пользователей компании)
+      // TODO: Создать отдельную таблицу employees
+      setEmployees([
+        { id: 1, first_name: 'John', last_name: 'Smith', email: 'john@company.com' },
+        { id: 2, first_name: 'Sarah', last_name: 'Johnson', email: 'sarah@company.com' }
+      ]);
+
+    } catch (error) {
+      console.error('❌ Error loading real data:', error);
+    } finally {
+      setDataLoading(false);
+    }
+  };
+
+  // ===============================================
+  // 🔄 EFFECTS
+  // ===============================================
   useEffect(() => {
-    if (isOpen && !formData.document_number) {
-      const date = new Date();
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-      
-      setFormData(prev => ({
-        ...prev,
-        document_number: `PO-${year}${month}${day}-${random}`
-      }));
+    if (isOpen) {
+      // Генерируем номер документа
+      if (!formData.document_number) {
+        const date = new Date();
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        
+        setFormData(prev => ({
+          ...prev,
+          document_number: `PO-${year}${month}${day}-${random}`
+        }));
+      }
+
+      // Загружаем реальные данные
+      fetchRealData();
+    } else {
+      // Сбрасываем форму при закрытии
+      setFormData({
+        document_number: '',
+        document_date: new Date().toISOString().split('T')[0],
+        operation_type: 'PURCHASE',
+        supplier_id: 0,
+        warehouse_id: undefined,
+        purchase_manager_id: undefined,
+        currency: 'EUR',
+        payment_status: 'PENDING',
+        delivery_status: 'PENDING',
+        document_status: 'DRAFT',
+        items: []
+      });
+      setErrors({});
     }
   }, [isOpen]);
 
+  // ===============================================
+  // 🔧 HELPER FUNCTIONS
+  // ===============================================
   const addItem = () => {
     const newItem: PurchaseItemFormData = {
       product_id: 0,
@@ -146,7 +202,7 @@ const AddPurchaseModal: React.FC<AddPurchaseModalProps> = ({
           
           // Auto-update price when product changes
           if (field === 'product_id') {
-            const product = mockProducts.find(p => p.id === parseInt(value));
+            const product = products.find(p => p.id === parseInt(value));
             if (product) {
               updatedItem.unit_price_base = product.cost_price || product.price;
               updatedItem.vat_rate = product.vat_rate || 20;
@@ -233,28 +289,10 @@ const AddPurchaseModal: React.FC<AddPurchaseModalProps> = ({
 
     try {
       await onSubmit(formData);
-      handleClose();
+      onClose();
     } catch (error) {
-      console.error('Error creating purchase:', error);
+      console.error('Error submitting purchase:', error);
     }
-  };
-
-  const handleClose = () => {
-    setFormData({
-      document_number: '',
-      document_date: new Date().toISOString().split('T')[0],
-      operation_type: 'PURCHASE',
-      supplier_id: 0,
-      warehouse_id: undefined,
-      purchase_manager_id: undefined,
-      currency: 'EUR',
-      payment_status: 'PENDING',
-      delivery_status: 'PENDING',
-      document_status: 'DRAFT',
-      items: []
-    });
-    setErrors({});
-    onClose();
   };
 
   if (!isOpen) return null;
@@ -263,22 +301,25 @@ const AddPurchaseModal: React.FC<AddPurchaseModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-5xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">🛍️ Create New Purchase</h2>
+      <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+              <span className="text-purple-600 text-lg">🛍️</span>
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900">Create New Purchase</h2>
+          </div>
           <button
-            onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-            disabled={loading}
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 text-xl font-bold w-8 h-8 flex items-center justify-center"
           >
-            ✕
+            ×
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Basic Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="p-6">
+          {/* Document Info */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Document Number *
@@ -303,10 +344,7 @@ const AddPurchaseModal: React.FC<AddPurchaseModalProps> = ({
               </label>
               <select
                 value={formData.operation_type}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  operation_type: e.target.value as PurchaseOperationType 
-                }))}
+                onChange={(e) => setFormData(prev => ({ ...prev, operation_type: e.target.value as PurchaseOperationType }))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 disabled={loading}
               >
@@ -344,10 +382,12 @@ const AddPurchaseModal: React.FC<AddPurchaseModalProps> = ({
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
                   errors.supplier_id ? 'border-red-300' : 'border-gray-300'
                 }`}
-                disabled={loading}
+                disabled={loading || dataLoading}
               >
-                <option value={0}>Select a supplier...</option>
-                {mockSuppliers.map(supplier => (
+                <option value={0}>
+                  {dataLoading ? 'Loading suppliers...' : 'Select a supplier...'}
+                </option>
+                {suppliers.map(supplier => (
                   <option key={supplier.id} value={supplier.id}>
                     {supplier.name} ({supplier.code})
                   </option>
@@ -355,6 +395,9 @@ const AddPurchaseModal: React.FC<AddPurchaseModalProps> = ({
               </select>
               {errors.supplier_id && (
                 <p className="text-red-600 text-sm mt-1">{errors.supplier_id}</p>
+              )}
+              {suppliers.length === 0 && !dataLoading && (
+                <p className="text-yellow-600 text-sm mt-1">No suppliers found. Create suppliers in Clients section first.</p>
               )}
             </div>
 
@@ -369,15 +412,20 @@ const AddPurchaseModal: React.FC<AddPurchaseModalProps> = ({
                   warehouse_id: e.target.value ? parseInt(e.target.value) : undefined 
                 }))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                disabled={loading}
+                disabled={loading || dataLoading}
               >
-                <option value="">Select warehouse...</option>
-                {mockWarehouses.map(warehouse => (
+                <option value="">
+                  {dataLoading ? 'Loading warehouses...' : 'Select warehouse...'}
+                </option>
+                {warehouses.map(warehouse => (
                   <option key={warehouse.id} value={warehouse.id}>
                     {warehouse.name} ({warehouse.code})
                   </option>
                 ))}
               </select>
+              {warehouses.length === 0 && !dataLoading && (
+                <p className="text-yellow-600 text-sm mt-1">No warehouses found. Create warehouses first.</p>
+              )}
             </div>
 
             <div>
@@ -394,7 +442,7 @@ const AddPurchaseModal: React.FC<AddPurchaseModalProps> = ({
                 disabled={loading}
               >
                 <option value="">Select manager...</option>
-                {mockEmployees.map(employee => (
+                {employees.map(employee => (
                   <option key={employee.id} value={employee.id}>
                     {employee.first_name} {employee.last_name}
                   </option>
@@ -403,8 +451,8 @@ const AddPurchaseModal: React.FC<AddPurchaseModalProps> = ({
             </div>
           </div>
 
-          {/* Status and Currency Section */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Status Fields */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Currency
@@ -416,10 +464,10 @@ const AddPurchaseModal: React.FC<AddPurchaseModalProps> = ({
                 disabled={loading}
               >
                 <option value="EUR">EUR - Euro</option>
-                <option value="USD">USD - US Dollar</option>
-                <option value="AED">AED - UAE Dirham</option>
-                <option value="RUB">RUB - Russian Ruble</option>
-                <option value="UAH">UAH - Ukrainian Hryvnia</option>
+                <option value="USD">USD - Dollar</option>
+                <option value="AED">AED - Dirham</option>
+                <option value="RUB">RUB - Ruble</option>
+                <option value="UAH">UAH - Hryvnia</option>
               </select>
             </div>
 
@@ -429,10 +477,7 @@ const AddPurchaseModal: React.FC<AddPurchaseModalProps> = ({
               </label>
               <select
                 value={formData.payment_status}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  payment_status: e.target.value as PaymentStatus 
-                }))}
+                onChange={(e) => setFormData(prev => ({ ...prev, payment_status: e.target.value as PaymentStatus }))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 disabled={loading}
               >
@@ -450,10 +495,7 @@ const AddPurchaseModal: React.FC<AddPurchaseModalProps> = ({
               </label>
               <select
                 value={formData.delivery_status}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  delivery_status: e.target.value as DeliveryStatus 
-                }))}
+                onChange={(e) => setFormData(prev => ({ ...prev, delivery_status: e.target.value as DeliveryStatus }))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 disabled={loading}
               >
@@ -471,10 +513,7 @@ const AddPurchaseModal: React.FC<AddPurchaseModalProps> = ({
               </label>
               <select
                 value={formData.document_status}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  document_status: e.target.value as DocumentStatus 
-                }))}
+                onChange={(e) => setFormData(prev => ({ ...prev, document_status: e.target.value as DocumentStatus }))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 disabled={loading}
               >
@@ -486,230 +525,220 @@ const AddPurchaseModal: React.FC<AddPurchaseModalProps> = ({
             </div>
           </div>
 
-          {/* Items Section */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
+          {/* Purchase Items */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-medium text-gray-900">Purchase Items</h3>
               <button
                 type="button"
                 onClick={addItem}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center gap-2"
                 disabled={loading}
               >
-                ➕ Add Item
+                <span>+</span>
+                Add Item
               </button>
             </div>
 
             {errors.items && (
-              <p className="text-red-600 text-sm">{errors.items}</p>
+              <p className="text-red-600 text-sm mb-4">{errors.items}</p>
             )}
 
-            <div className="space-y-3">
-              {formData.items.map((item, index) => (
-                <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                  <div className="grid grid-cols-1 md:grid-cols-7 gap-3 items-start">
-                    {/* Product */}
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Product *
-                      </label>
-                      <select
-                        value={item.product_id}
-                        onChange={(e) => updateItem(index, 'product_id', parseInt(e.target.value))}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
-                          errors[`item_${index}_product`] ? 'border-red-300' : 'border-gray-300'
-                        }`}
-                        disabled={loading}
-                      >
-                        <option value={0}>Select product...</option>
-                        {mockProducts.map(product => (
-                          <option key={product.id} value={product.id}>
-                            {product.name} ({product.code})
-                          </option>
-                        ))}
-                      </select>
-                      {errors[`item_${index}_product`] && (
-                        <p className="text-red-600 text-sm mt-1">{errors[`item_${index}_product`]}</p>
-                      )}
-                    </div>
-
-                    {/* Quantity */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Quantity *
-                      </label>
-                      <input
-                        type="number"
-                        min="0.01"
-                        step="0.01"
-                        value={item.quantity}
-                        onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value))}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
-                          errors[`item_${index}_quantity`] ? 'border-red-300' : 'border-gray-300'
-                        }`}
-                        disabled={loading}
-                      />
-                      {errors[`item_${index}_quantity`] && (
-                        <p className="text-red-600 text-sm mt-1">{errors[`item_${index}_quantity`]}</p>
-                      )}
-                    </div>
-
-                    {/* Unit Price */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Unit Price *
-                      </label>
-                      <input
-                        type="number"
-                        min="0.01"
-                        step="0.01"
-                        value={item.unit_price_base}
-                        onChange={(e) => updateItem(index, 'unit_price_base', parseFloat(e.target.value))}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
-                          errors[`item_${index}_price`] ? 'border-red-300' : 'border-gray-300'
-                        }`}
-                        disabled={loading}
-                      />
-                      {errors[`item_${index}_price`] && (
-                        <p className="text-red-600 text-sm mt-1">{errors[`item_${index}_price`]}</p>
-                      )}
-                    </div>
-
-                    {/* Discount % */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Discount %
-                      </label>
-                      <input
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="0.01"
-                        value={item.discount_percent || 0}
-                        onChange={(e) => updateItem(index, 'discount_percent', parseFloat(e.target.value))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        disabled={loading}
-                      />
-                    </div>
-
-                    {/* VAT Rate */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        VAT %
-                      </label>
-                      <input
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="0.01"
-                        value={item.vat_rate || 0}
-                        onChange={(e) => updateItem(index, 'vat_rate', parseFloat(e.target.value))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        disabled={loading}
-                      />
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex items-end">
-                      <button
-                        type="button"
-                        onClick={() => removeItem(index)}
-                        className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
-                        disabled={loading}
-                        title="Remove item"
-                      >
-                        🗑️
-                      </button>
-                    </div>
+            {formData.items.map((item, index) => (
+              <div key={index} className="border border-gray-200 rounded-lg p-4 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Product *
+                    </label>
+                    <select
+                      value={item.product_id}
+                      onChange={(e) => updateItem(index, 'product_id', parseInt(e.target.value))}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
+                        errors[`item_${index}_product`] ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                      disabled={loading || dataLoading}
+                    >
+                      <option value={0}>
+                        {dataLoading ? 'Loading products...' : 'Select product...'}
+                      </option>
+                      {products.map(product => (
+                        <option key={product.id} value={product.id}>
+                          {product.name} ({product.code})
+                        </option>
+                      ))}
+                    </select>
+                    {errors[`item_${index}_product`] && (
+                      <p className="text-red-600 text-sm mt-1">{errors[`item_${index}_product`]}</p>
+                    )}
                   </div>
 
-                  {/* Additional Fields Row */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-                    {/* Employee Assignment */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Assigned Employee
-                      </label>
-                      <select
-                        value={item.employee_id || ''}
-                        onChange={(e) => updateItem(index, 'employee_id', e.target.value ? parseInt(e.target.value) : undefined)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        disabled={loading}
-                      >
-                        <option value="">No assignment...</option>
-                        {mockEmployees.map(employee => (
-                          <option key={employee.id} value={employee.id}>
-                            {employee.first_name} {employee.last_name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Description */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Description
-                      </label>
-                      <input
-                        type="text"
-                        value={item.description || ''}
-                        onChange={(e) => updateItem(index, 'description', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        placeholder="Additional notes..."
-                        disabled={loading}
-                      />
-                    </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Quantity *
+                    </label>
+                    <input
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      value={item.quantity}
+                      onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value))}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
+                        errors[`item_${index}_quantity`] ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                      disabled={loading}
+                    />
+                    {errors[`item_${index}_quantity`] && (
+                      <p className="text-red-600 text-sm mt-1">{errors[`item_${index}_quantity`]}</p>
+                    )}
                   </div>
 
-                  {/* Item Total Display */}
-                  <div className="mt-3 text-right text-sm text-gray-600">
-                    Item Total: €{calculateItemTotal(item).toFixed(2)}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Unit Price *
+                    </label>
+                    <input
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      value={item.unit_price_base}
+                      onChange={(e) => updateItem(index, 'unit_price_base', parseFloat(e.target.value))}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
+                        errors[`item_${index}_price`] ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                      disabled={loading}
+                    />
+                    {errors[`item_${index}_price`] && (
+                      <p className="text-red-600 text-sm mt-1">{errors[`item_${index}_price`]}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Discount %
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.1"
+                      value={item.discount_percent || 0}
+                      onChange={(e) => updateItem(index, 'discount_percent', parseFloat(e.target.value))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      disabled={loading}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      VAT %
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.1"
+                      value={item.vat_rate || 0}
+                      onChange={(e) => updateItem(index, 'vat_rate', parseFloat(e.target.value))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      disabled={loading}
+                    />
+                  </div>
+
+                  <div className="flex items-end">
+                    <button
+                      type="button"
+                      onClick={() => removeItem(index)}
+                      className="w-full px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200"
+                      disabled={loading}
+                    >
+                      🗑️
+                    </button>
                   </div>
                 </div>
-              ))}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Assigned Employee
+                    </label>
+                    <select
+                      value={item.employee_id || ''}
+                      onChange={(e) => updateItem(index, 'employee_id', e.target.value ? parseInt(e.target.value) : undefined)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      disabled={loading}
+                    >
+                      <option value="">Select employee...</option>
+                      {employees.map(employee => (
+                        <option key={employee.id} value={employee.id}>
+                          {employee.first_name} {employee.last_name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Description
+                    </label>
+                    <input
+                      type="text"
+                      value={item.description || ''}
+                      onChange={(e) => updateItem(index, 'description', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      placeholder="Additional notes..."
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-4 text-right">
+                  <span className="text-sm font-medium text-gray-900">
+                    Item Total: €{calculateItemTotal(item).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            ))}
+
+            {products.length === 0 && !dataLoading && (
+              <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
+                <p className="text-gray-500">No products available. Create products first.</p>
+              </div>
+            )}
+          </div>
+
+          {/* Totals */}
+          <div className="bg-gray-50 rounded-lg p-4 mb-6">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium text-gray-700">Subtotal:</span>
+              <span className="text-sm font-bold text-gray-900">€{totals.subtotal.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium text-gray-700">Total VAT:</span>
+              <span className="text-sm font-bold text-gray-900">€{totals.totalVat.toFixed(2)}</span>
+            </div>
+            <div className="border-t pt-2">
+              <div className="flex justify-between items-center">
+                <span className="text-lg font-bold text-gray-900">Total:</span>
+                <span className="text-lg font-bold text-indigo-600">€{totals.total.toFixed(2)}</span>
+              </div>
             </div>
           </div>
 
-          {/* Totals Summary */}
-          {formData.items.length > 0 && (
-            <div className="bg-indigo-50 rounded-lg p-4">
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span>Subtotal:</span>
-                  <span>€{totals.subtotal.toFixed(2)}</span>
-                </div>
-                {totals.totalDiscount > 0 && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Total Discount:</span>
-                    <span>-€{totals.totalDiscount.toFixed(2)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between">
-                  <span>Total VAT:</span>
-                  <span>€{totals.totalVat.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between font-bold text-lg border-t pt-2">
-                  <span>Total:</span>
-                  <span>€{totals.total.toFixed(2)}</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Footer */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+          {/* Form Actions */}
+          <div className="flex items-center justify-end gap-4">
             <button
               type="button"
-              onClick={handleClose}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              onClick={onClose}
+              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
               disabled={loading}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
-              disabled={loading}
+              className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+              disabled={loading || dataLoading || formData.items.length === 0}
             >
               {loading ? 'Creating...' : 'Create Purchase'}
             </button>
