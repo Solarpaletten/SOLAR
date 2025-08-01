@@ -497,27 +497,18 @@ const deleteWarehouse = async (req, res) => {
   }
 };
 
-// 📦 GET /api/company/warehouses/:id/inventory - Получить остатки на складе
+// 📦 GET /api/company/warehouse/:id/inventory - Остатки товаров на складе
 const getWarehouseInventory = async (req, res) => {
   try {
     const { id } = req.params;
     const companyId = req.companyContext?.companyId;
-    
-    const {
-      page = 1,
-      limit = 50,
-      search = '',
-      low_stock_only = false
-    } = req.query;
+    const { search = '', low_stock_only = false, page = 1, limit = 100 } = req.query;
 
     logger.info(`📦 Fetching inventory for warehouse ${id}, company: ${companyId}`);
 
-    // Проверяем что склад существует
+    // Проверяем что склад принадлежит компании
     const warehouse = await prisma.warehouses.findFirst({
-      where: {
-        id: parseInt(id),
-        company_id: companyId
-      }
+      where: { id: parseInt(id), company_id: companyId }
     });
 
     if (!warehouse) {
@@ -527,7 +518,7 @@ const getWarehouseInventory = async (req, res) => {
       });
     }
 
-    // Построение условий фильтрации
+    // Получаем все товары с остатками
     const whereConditions = {
       company_id: companyId,
       is_active: true
@@ -540,52 +531,81 @@ const getWarehouseInventory = async (req, res) => {
       ];
     }
 
-    if (low_stock_only === 'true') {
-      whereConditions.current_stock = {
-        lte: prisma.products.fields.min_stock
+    const products = await prisma.products.findMany({
+      where: whereConditions,
+      select: {
+        id: true,
+        code: true,
+        name: true,
+        unit: true,
+        current_stock: true,
+        min_stock: true,
+        price: true,
+        cost_price: true,
+        currency: true,
+        category: true,
+        updated_at: true
+      },
+      orderBy: {
+        name: 'asc'
+      }
+    });
+
+    // Обогащаем данные вычисляемыми полями
+    let enrichedProducts = products.map(product => {
+      const currentStock = parseFloat(product.current_stock || 0);
+      const minStock = parseFloat(product.min_stock || 0);
+      const price = parseFloat(product.cost_price || product.price || 0);
+      
+      let stockStatus = 'OK';
+      let stockStatusIcon = '✅';
+      let stockStatusText = 'В наличии';
+      
+      if (currentStock <= 0) {
+        stockStatus = 'OUT';
+        stockStatusIcon = '🚨';
+        stockStatusText = 'Нет в наличии';
+      } else if (currentStock <= minStock) {
+        stockStatus = 'LOW';
+        stockStatusIcon = '⚠️';
+        stockStatusText = 'Низкий остаток';
+      }
+      
+      return {
+        ...product,
+        current_stock: currentStock,
+        min_stock: minStock,
+        stock_status: stockStatus,
+        stock_status_icon: stockStatusIcon,
+        stock_status_text: stockStatusText,
+        stock_value: currentStock * price
       };
+    });
+
+    // Фильтр низких остатков
+    if (low_stock_only === 'true') {
+      enrichedProducts = enrichedProducts.filter(p => p.stock_status === 'LOW' || p.stock_status === 'OUT');
     }
 
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-
-    const [products, totalCount] = await Promise.all([
-      prisma.products.findMany({
-        where: whereConditions,
-        select: {
-          id: true,
-          code: true,
-          name: true,
-          unit: true,
-          current_stock: true,
-          min_stock: true,
-          price: true,
-          cost_price: true,
-          currency: true,
-          category: true,
-          updated_at: true
-        },
-        orderBy: {
-          name: 'asc'
-        },
-        skip,
-        take: parseInt(limit)
-      }),
-      prisma.products.count({ where: whereConditions })
-    ]);
-
-    const totalPages = Math.ceil(totalCount / parseInt(limit));
+    const totalValue = enrichedProducts.reduce((sum, product) => sum + product.stock_value, 0);
+    const lowStockCount = enrichedProducts.filter(p => p.stock_status === 'LOW' || p.stock_status === 'OUT').length;
+    const outOfStockCount = enrichedProducts.filter(p => p.stock_status === 'OUT').length;
 
     res.json({
       success: true,
-      warehouse,
-      products,
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total: totalCount,
-        pages: totalPages,
-        hasNext: parseInt(page) < totalPages,
-        hasPrev: parseInt(page) > 1
+      warehouse: {
+        id: warehouse.id,
+        name: warehouse.name,
+        code: warehouse.code,
+        address: warehouse.address
+      },
+      products: enrichedProducts,
+      summary: {
+        total_products: enrichedProducts.length,
+        total_value: totalValue,
+        low_stock_count: lowStockCount,
+        out_of_stock_count: outOfStockCount,
+        currency: 'EUR'
       },
       companyId
     });
@@ -598,6 +618,73 @@ const getWarehouseInventory = async (req, res) => {
   }
 };
 
+// 📊 GET /api/company/warehouse/products/stocks - Остатки всех товаров
+const getAllProductStocks = async (req, res) => {
+  try {
+    const companyId = req.companyContext?.companyId;
+    const { search = '', low_stock_only = false } = req.query;
+
+    const whereConditions = {
+      company_id: companyId,
+      is_active: true
+    };
+
+    if (search) {
+      whereConditions.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { code: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+
+    const products = await prisma.products.findMany({
+      where: whereConditions,
+      select: {
+        id: true,
+        code: true,
+        name: true,
+        unit: true,
+        current_stock: true,
+        min_stock: true,
+        price: true,
+        cost_price: true
+      }
+    });
+
+    let enrichedProducts = products.map(product => {
+      const currentStock = parseFloat(product.current_stock || 0);
+      const minStock = parseFloat(product.min_stock || 0);
+      
+      let stockStatus = 'OK';
+      if (currentStock <= 0) stockStatus = 'OUT';
+      else if (currentStock <= minStock) stockStatus = 'LOW';
+      
+      return {
+        ...product,
+        current_stock: currentStock,
+        min_stock: minStock,
+        stock_status: stockStatus
+      };
+    });
+
+    if (low_stock_only === 'true') {
+      enrichedProducts = enrichedProducts.filter(p => p.stock_status === 'LOW' || p.stock_status === 'OUT');
+    }
+
+    res.json({
+      success: true,
+      products: enrichedProducts,
+      companyId
+    });
+  } catch (error) {
+    logger.error('Error fetching product stocks:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error fetching product stocks'
+    });
+  }
+};
+
+
 module.exports = {
   getWarehouseStats,
   getAllWarehouses,
@@ -605,5 +692,6 @@ module.exports = {
   createWarehouse,
   updateWarehouse,
   deleteWarehouse,
-  getWarehouseInventory
+  getWarehouseInventory,
+  getAllProductStocks
 };
