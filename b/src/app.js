@@ -30,8 +30,7 @@ const salesRoutes = require('./routes/company/salesRoutes');
 const purchasesRoutes = require('./routes/company/purchasesRoutes');
 // Chart of Accounts routes
 const chartOfAccountsRoutes = require('./routes/company/chartOfAccountsRoutes');
-const warehouseRoutes = require('./routes/company/warehouseRoutes'); 
-
+const warehouseRoutes = require('./routes/company/warehouseRoutes');
 
 const app = express();
 
