@@ -284,7 +284,7 @@ const getSaleById = async (req, res) => {
   }
 };
 
-// ➕ POST /api/company/sales - Создать новую продажу
+// ➕ POST /api/company/sales - Создать новую продажу С АВТОСПИСАНИЕМ СО СКЛАДА
 const createSale = async (req, res) => {
   try {
     const companyId = req.companyContext?.companyId;
@@ -358,6 +358,44 @@ const createSale = async (req, res) => {
       });
     }
 
+    logger.info(`✅ Client found: ${client.name}`);
+
+    // 🔥 ПРЕДВАРИТЕЛЬНАЯ ПРОВЕРКА ОСТАТКОВ НА СКЛАДЕ
+    logger.info(`📦 Checking stock availability for ${items.length} items...`);
+    
+    for (const item of items) {
+      const product = await prisma.products.findUnique({
+        where: { id: parseInt(item.product_id) },
+        select: { 
+          id: true,
+          code: true, 
+          name: true, 
+          current_stock: true,
+          unit: true 
+        }
+      });
+
+      if (!product) {
+        return res.status(400).json({
+          success: false,
+          error: `Product with ID ${item.product_id} not found`
+        });
+      }
+
+      const currentStock = parseFloat(product.current_stock || 0);
+      const requestedQuantity = parseFloat(item.quantity);
+
+      if (currentStock < requestedQuantity) {
+        logger.error(`❌ Insufficient stock for ${product.name}`);
+        return res.status(400).json({
+          success: false,
+          error: `Insufficient stock for "${product.name}" (${product.code}). Available: ${currentStock} ${product.unit}, requested: ${requestedQuantity} ${product.unit}`
+        });
+      }
+
+      logger.info(`✅ Stock OK: ${product.name} - Available: ${currentStock}, Requested: ${requestedQuantity}`);
+    }
+
     // Расчёт сумм
     let subtotal = 0;
     let vat_amount = 0;
@@ -375,16 +413,16 @@ const createSale = async (req, res) => {
       discount_amount += lineDiscount;
 
       return {
-        ...item,
-        line_number: index + 1,
-        line_total: lineTotal,
-        vat_amount: vatAmount,
-        total_discount: lineDiscount,
         product_id: parseInt(item.product_id),
+        line_number: index + 1,
         quantity: parseFloat(item.quantity),
         unit_price_base: parseFloat(item.unit_price_base),
         discount_percent: parseFloat(item.discount_percent || 0),
-        vat_rate: parseFloat(item.vat_rate || 0)
+        total_discount: lineDiscount,
+        vat_rate: parseFloat(item.vat_rate || 0),
+        vat_amount: vatAmount,
+        line_total: lineTotal,
+        description: item.description || null
       };
     });
 
@@ -398,8 +436,9 @@ const createSale = async (req, res) => {
       items: processedItems.length
     });
 
-    // Создание продажи с элементами в транзакции
+    // 🔥 СОЗДАНИЕ ПРОДАЖИ С АВТОМАТИЧЕСКИМ СПИСАНИЕМ СО СКЛАДА
     const sale = await prisma.$transaction(async (tx) => {
+      // 1. Создаём продажу
       const newSale = await tx.sales.create({
         data: {
           company_id: companyId,
@@ -426,7 +465,7 @@ const createSale = async (req, res) => {
 
       logger.info(`✅ Created sale: ${newSale.id}`);
 
-      // Создание элементов продажи
+      // 2. Создаём элементы продажи
       if (processedItems.length > 0) {
         await tx.sale_items.createMany({
           data: processedItems.map(item => ({
@@ -440,17 +479,57 @@ const createSale = async (req, res) => {
             vat_rate: item.vat_rate,
             vat_amount: item.vat_amount,
             line_total: item.line_total,
-            description: item.description || null
+            description: item.description
           }))
         });
         
         logger.info(`✅ Created ${processedItems.length} sale items`);
+
+        // 🔥 3. АВТОМАТИЧЕСКОЕ СПИСАНИЕ СО СКЛАДА
+        logger.info(`📦 Starting automatic stock decrease for ${processedItems.length} items...`);
+        
+        for (const item of processedItems) {
+          // Получаем текущий товар
+          const currentProduct = await tx.products.findUnique({
+            where: { id: item.product_id },
+            select: { 
+              id: true,
+              code: true, 
+              name: true, 
+              current_stock: true,
+              unit: true 
+            }
+          });
+
+          if (currentProduct) {
+            const currentStock = parseFloat(currentProduct.current_stock || 0);
+            const newStock = currentStock - item.quantity; // ПРОДАЖА = УМЕНЬШЕНИЕ
+
+            // Обновляем остаток товара
+            await tx.products.update({
+              where: { id: item.product_id },
+              data: { 
+                current_stock: newStock,
+                updated_at: new Date()
+              }
+            });
+
+            logger.info(`📦 STOCK UPDATE: ${currentProduct.name} (${currentProduct.code})`);
+            logger.info(`   Current: ${currentStock} ${currentProduct.unit || 'pcs'}`);
+            logger.info(`   - Sale: ${item.quantity} ${currentProduct.unit || 'pcs'}`);
+            logger.info(`   = New Stock: ${newStock} ${currentProduct.unit || 'pcs'}`);
+          } else {
+            logger.warn(`⚠️ Product ${item.product_id} not found for stock update`);
+          }
+        }
+
+        logger.info(`🎉 All stock quantities decreased automatically!`);
       }
 
       return newSale;
     });
 
-    // Получение созданной продажи с связанными данными
+    // Получение созданной продажи с обновлёнными остатками
     const createdSale = await prisma.sales.findUnique({
       where: { id: sale.id },
       include: {
@@ -459,7 +538,16 @@ const createSale = async (req, res) => {
         sales_manager: true,
         items: {
           include: {
-            product: true
+            product: {
+              select: {
+                id: true,
+                code: true,
+                name: true,
+                current_stock: true, // 🔥 ОБНОВЛЕННЫЙ ОСТАТОК
+                unit: true,
+                min_stock: true
+              }
+            }
           }
         }
       }
@@ -467,17 +555,59 @@ const createSale = async (req, res) => {
 
     logger.info(`🎉 Sale created successfully: ${sale.id}`);
 
+    // 🔥 ДОПОЛНИТЕЛЬНАЯ ИНФОРМАЦИЯ О ДВИЖЕНИИ ТОВАРОВ
+    const stockUpdates = processedItems.map(item => {
+      const productItem = createdSale.items.find(i => i.product_id === item.product_id);
+      const currentStock = parseFloat(productItem?.product?.current_stock || '0');
+      const minStock = parseFloat(productItem?.product?.min_stock || '0');
+      
+      // Определяем статус остатка
+      let stockStatus = 'OK';
+      if (currentStock <= 0) stockStatus = 'OUT_OF_STOCK';
+      else if (currentStock <= minStock) stockStatus = 'LOW_STOCK';
+      
+      return {
+        product_id: item.product_id,
+        product_name: productItem?.product?.name || 'Unknown',
+        product_code: productItem?.product?.code || '',
+        quantity_sold: item.quantity,
+        new_stock: currentStock,
+        min_stock: minStock,
+        stock_status: stockStatus,
+        unit: productItem?.product?.unit || 'pcs',
+        operation: 'STOCK_DECREASE',
+        warehouse_id: warehouse_id || null
+      };
+    });
+
+    // Проверяем есть ли товары с низким остатком
+    const lowStockWarnings = stockUpdates.filter(update => 
+      update.stock_status === 'LOW_STOCK' || update.stock_status === 'OUT_OF_STOCK'
+    );
+
     res.status(201).json({
       success: true,
       sale: createdSale,
-      message: 'Sale created successfully',
+      message: 'Sale created successfully and stock updated automatically',
+      stock_updates: stockUpdates,
+      warnings: lowStockWarnings.length > 0 ? {
+        message: `${lowStockWarnings.length} products have low or zero stock`,
+        items: lowStockWarnings
+      } : null,
+      summary: {
+        total_items: processedItems.length,
+        total_amount: total_amount,
+        currency: currency,
+        warehouse: warehouse_id ? `Warehouse ID: ${warehouse_id}` : 'No specific warehouse',
+        stock_updated: true,
+        low_stock_warnings: lowStockWarnings.length
+      },
       companyId
     });
   } catch (error) {
     logger.error('❌ Error creating sale:', error);
     logger.error('Stack trace:', error.stack);
     
-    // Более детальная диагностика ошибок Prisma
     if (error.code) {
       logger.error('Prisma error code:', error.code);
       logger.error('Prisma error meta:', error.meta);

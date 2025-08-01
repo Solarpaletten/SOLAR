@@ -296,7 +296,7 @@ const getPurchaseById = async (req, res) => {
   }
 };
 
-// ➕ POST /api/company/purchases - Создать новую покупку
+// ➕ POST /api/company/purchases - Создать новую покупку С АВТООБНОВЛЕНИЕМ СКЛАДА
 const createPurchase = async (req, res) => {
   try {
     const companyId = req.companyContext?.companyId;
@@ -376,7 +376,7 @@ const createPurchase = async (req, res) => {
 
     const processedItems = items.map((item, index) => {
       const quantity = parseFloat(item.quantity);
-      const unit_price = parseFloat(item.unit_price); // От frontend приходит unit_price
+      const unit_price = parseFloat(item.unit_price);
       const vat_rate = parseFloat(item.vat_rate || 0);
       
       const line_subtotal = quantity * unit_price;
@@ -408,8 +408,9 @@ const createPurchase = async (req, res) => {
       items: processedItems.length
     });
 
-    // Создание покупки с элементами в транзакции
+    // 🔥 СОЗДАНИЕ ПОКУПКИ С АВТОМАТИЧЕСКИМ ОБНОВЛЕНИЕМ ОСТАТКОВ НА СКЛАДЕ
     const purchase = await prisma.$transaction(async (tx) => {
+      // 1. Создаём покупку
       const newPurchase = await tx.purchases.create({
         data: {
           company_id: companyId,
@@ -433,7 +434,7 @@ const createPurchase = async (req, res) => {
 
       logger.info(`✅ Created purchase: ${newPurchase.id}`);
 
-      // Создание элементов покупки
+      // 2. Создаём элементы покупки
       if (processedItems.length > 0) {
         await tx.purchase_items.createMany({
           data: processedItems.map(item => ({
@@ -451,12 +452,52 @@ const createPurchase = async (req, res) => {
         });
         
         logger.info(`✅ Created ${processedItems.length} purchase items`);
+
+        // 🔥 3. АВТОМАТИЧЕСКОЕ ОБНОВЛЕНИЕ ОСТАТКОВ НА СКЛАДЕ
+        logger.info(`📦 Starting automatic stock update for ${processedItems.length} items...`);
+        
+        for (const item of processedItems) {
+          // Получаем текущий товар
+          const currentProduct = await tx.products.findUnique({
+            where: { id: item.product_id },
+            select: { 
+              id: true,
+              code: true, 
+              name: true, 
+              current_stock: true,
+              unit: true 
+            }
+          });
+
+          if (currentProduct) {
+            const currentStock = parseFloat(currentProduct.current_stock || 0);
+            const newStock = currentStock + item.quantity; // ПРИХОД = УВЕЛИЧЕНИЕ
+
+            // Обновляем остаток товара
+            await tx.products.update({
+              where: { id: item.product_id },
+              data: { 
+                current_stock: newStock,
+                updated_at: new Date()
+              }
+            });
+
+            logger.info(`📦 STOCK UPDATE: ${currentProduct.name} (${currentProduct.code})`);
+            logger.info(`   Current: ${currentStock} ${currentProduct.unit || 'pcs'}`);
+            logger.info(`   + Purchase: ${item.quantity} ${currentProduct.unit || 'pcs'}`);
+            logger.info(`   = New Stock: ${newStock} ${currentProduct.unit || 'pcs'}`);
+          } else {
+            logger.warn(`⚠️ Product ${item.product_id} not found for stock update`);
+          }
+        }
+
+        logger.info(`🎉 All stock quantities updated automatically!`);
       }
 
       return newPurchase;
     });
 
-    // Получение созданной покупки с связанными данными
+    // Получение созданной покупки с обновлёнными остатками
     const createdPurchase = await prisma.purchases.findUnique({
       where: { id: purchase.id },
       include: {
@@ -465,7 +506,16 @@ const createPurchase = async (req, res) => {
         purchase_manager: true,
         items: {
           include: {
-            product: true
+            product: {
+              select: {
+                id: true,
+                code: true,
+                name: true,
+                current_stock: true, // 🔥 ОБНОВЛЕННЫЙ ОСТАТОК
+                unit: true,
+                min_stock: true
+              }
+            }
           }
         }
       }
@@ -473,17 +523,39 @@ const createPurchase = async (req, res) => {
 
     logger.info(`🎉 Purchase created successfully: ${purchase.id}`);
 
+    // 🔥 ДОПОЛНИТЕЛЬНАЯ ИНФОРМАЦИЯ О ДВИЖЕНИИ ТОВАРОВ
+    const stockUpdates = processedItems.map(item => {
+      const productItem = createdPurchase.items.find(i => i.product_id === item.product_id);
+      return {
+        product_id: item.product_id,
+        product_name: productItem?.product?.name || 'Unknown',
+        product_code: productItem?.product?.code || '',
+        quantity_added: item.quantity,
+        new_stock: parseFloat(productItem?.product?.current_stock || '0'),
+        unit: productItem?.product?.unit || 'pcs',
+        operation: 'STOCK_INCREASE',
+        warehouse_id: warehouse_id || null
+      };
+    });
+
     res.status(201).json({
       success: true,
       purchase: createdPurchase,
-      message: 'Purchase created successfully',
+      message: 'Purchase created successfully and stock updated automatically',
+      stock_updates: stockUpdates,
+      summary: {
+        total_items: processedItems.length,
+        total_amount: total_amount,
+        currency: currency,
+        warehouse: warehouse_id ? `Warehouse ID: ${warehouse_id}` : 'No specific warehouse',
+        stock_updated: true
+      },
       companyId
     });
   } catch (error) {
     logger.error('❌ Error creating purchase:', error);
     logger.error('Stack trace:', error.stack);
     
-    // Более детальная диагностика ошибок Prisma
     if (error.code) {
       logger.error('Prisma error code:', error.code);
       logger.error('Prisma error meta:', error.meta);
