@@ -503,14 +503,14 @@ model purchases {
 model purchase_items {
   id Int @id @default(autoincrement())
 
-  purchase_id Int
-  product_id  Int
-  line_number Int?
-  quantity    Decimal  @db.Decimal(10, 3)
-  unit_price  Decimal  @db.Decimal(10, 2)
-  vat_rate    Decimal? @db.Decimal(5, 2)
-  vat_amount  Decimal? @db.Decimal(15, 2)
-  line_total  Decimal  @db.Decimal(15, 2)
+  purchase_id     Int
+  product_id      Int
+  line_number     Int?
+  quantity        Decimal  @db.Decimal(10, 3)
+  unit_price_base Decimal @db.Decimal(10, 2)
+  vat_rate        Decimal? @db.Decimal(5, 2)
+  vat_amount      Decimal? @db.Decimal(15, 2)
+  line_total      Decimal  @db.Decimal(15, 2)
 
   employee_id Int?
   notes       String?  @db.Text
