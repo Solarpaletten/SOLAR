@@ -1,4 +1,6 @@
-// b/src/controllers/company/purchasesController.js
+// 🔧 ЗАВЕРШЁННЫЙ Purchases Controller - ПОЛНАЯ ВЕРСИЯ
+// Заменить весь файл b/src/controllers/company/purchasesController.js
+
 const { prisma } = require('../../utils/prismaManager');
 const { logger } = require('../../config/logger');
 
@@ -362,29 +364,29 @@ const createPurchase = async (req, res) => {
       let subtotal = 0;
       let vat_amount = 0;
 
-     // Обрабатываем позиции - ТЕПЕРЬ БЕЗ MAPPING!
-     const processedItems = items.map((item, index) => {
-      const quantity = parseFloat(item.quantity);
-      const unit_price_base = parseFloat(item.unit_price_base);  // ✅ ПРЯМО БЕЗ ПРЕОБРАЗОВАНИЯ!
-      const vat_rate = parseFloat(item.vat_rate || 0);
-      
-      const line_subtotal = quantity * unit_price_base;
-      const line_vat = line_subtotal * (vat_rate / 100);
-      const line_total = line_subtotal + line_vat;
-      
-      subtotal += line_subtotal;
-      vat_amount += line_vat;
+      // Обрабатываем позиции - БЕЗ MAPPING!
+      const processedItems = items.map((item, index) => {
+        const quantity = parseFloat(item.quantity);
+        const unit_price_base = parseFloat(item.unit_price_base);
+        const vat_rate = parseFloat(item.vat_rate || 0);
+        
+        const line_subtotal = quantity * unit_price_base;
+        const line_vat = line_subtotal * (vat_rate / 100);
+        const line_total = line_subtotal + line_vat;
+        
+        subtotal += line_subtotal;
+        vat_amount += line_vat;
 
-      return {
-        product_id: parseInt(item.product_id),
-        line_number: index + 1,
-        quantity: quantity,
-        unit_price_base: unit_price_base,  // ✅ ПРЯМОЕ СООТВЕТСТВИЕ!
-        vat_rate: vat_rate,
-        vat_amount: line_vat,
-        line_total: line_total,
-        notes: item.description || '',
-        employee_id: item.employee_id ? parseInt(item.employee_id) : null
+        return {
+          product_id: parseInt(item.product_id),
+          line_number: index + 1,
+          quantity: quantity,
+          unit_price_base: unit_price_base,
+          vat_rate: vat_rate,
+          vat_amount: line_vat,
+          line_total: line_total,
+          notes: item.description || '',
+          employee_id: item.employee_id ? parseInt(item.employee_id) : null
         };
       });
 
@@ -392,7 +394,7 @@ const createPurchase = async (req, res) => {
 
       logger.info(`💰 Calculated totals: subtotal=${subtotal}, vat=${vat_amount}, total=${total_amount}`);
 
-      // 1. Создаём основную покупку
+      // 1. Создаём покупку
       const purchase = await tx.purchases.create({
         data: {
           company_id: companyId,
@@ -423,15 +425,16 @@ const createPurchase = async (req, res) => {
             product_id: item.product_id,
             line_number: item.line_number,
             quantity: item.quantity,
-            unit_price_base: item.unit_price_base,  // ✅ ПРЯМОЕ СООТВЕТСТВИЕ!
+            unit_price_base: item.unit_price_base,
             vat_rate: item.vat_rate,
             vat_amount: item.vat_amount,
             line_total: item.line_total,
-            notes: item.notes
+            notes: item.notes,
+            employee_id: item.employee_id
           }))
         });
 
-        logger.info(`✅ Created ${purchaseItems.count} purchase items`);
+        logger.info(`✅ Created ${processedItems.length} purchase items`);
 
         // 3. АВТООБНОВЛЕНИЕ СКЛАДА - увеличиваем остатки товаров
         for (const item of processedItems) {
@@ -548,10 +551,10 @@ const updatePurchase = async (req, res) => {
 
           const processedItems = items.map((item, index) => {
             const quantity = parseFloat(item.quantity);
-            const unit_price = parseFloat(item.unit_price_base || item.unit_price || 0);
+            const unit_price_base = parseFloat(item.unit_price_base);
             const vat_rate = parseFloat(item.vat_rate || 0);
             
-            const line_subtotal = quantity * unit_price;
+            const line_subtotal = quantity * unit_price_base;
             const line_vat = line_subtotal * (vat_rate / 100);
             const line_total = line_subtotal + line_vat;
             
@@ -563,11 +566,11 @@ const updatePurchase = async (req, res) => {
               product_id: parseInt(item.product_id),
               line_number: index + 1,
               quantity: quantity,
-              unit_price: unit_price,
+              unit_price_base: unit_price_base,
               vat_rate: vat_rate,
               vat_amount: line_vat,
               line_total: line_total,
-              notes: item.description || item.notes || '',
+              notes: item.description || '',
               employee_id: item.employee_id ? parseInt(item.employee_id) : null
             };
           });
