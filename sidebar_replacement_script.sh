@@ -1,3 +1,13 @@
+# Quick Company Sidebar Replacement Script
+#!/bin/bash
+
+echo "🔄 Replacing Company Sidebar with iPhone Drag & Drop version..."
+
+# Backup current sidebar
+cp f/src/components/company/CompanySidebar.tsx f/src/components/company/CompanySidebar.tsx.backup
+
+# Create the enhanced sidebar
+cat > f/src/components/company/CompanySidebar.tsx << 'EOF'
 // f/src/components/company/CompanySidebar.tsx
 // Финальная версия: готова к интеграции в проект
 
@@ -445,3 +455,17 @@ const CompanySidebar: React.FC = () => {
 };
 
 export default CompanySidebar;
+EOF
+
+echo "✅ Enhanced Company Sidebar installed!"
+echo ""
+echo "🎯 Features added:"
+echo "   📱 iPhone-style drag & drop"
+echo "   🔢 Priority numbers #1, #2, #3..."
+echo "   📌 Smart pinning (Dashboard & Settings)"
+echo "   🎨 Visual feedback during drag"
+echo "   💾 Persistent settings in localStorage"
+echo "   📊 Badges for notifications"
+echo ""
+echo "🚀 Restart frontend to see changes:"
+echo "   cd f && npm run dev"

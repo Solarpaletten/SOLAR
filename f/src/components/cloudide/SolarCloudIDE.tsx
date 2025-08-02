@@ -1,375 +1,330 @@
-//f/src/components/cloudide/SolarCloudIDE.tsx
+// f/src/components/cloudide/SolarCloudIDE.tsx
+// 🌟 Solar Cloud IDE - Revolutionary GitHub Browser
+
 import React, { useState, useEffect } from 'react';
 import { 
   Github, 
-  GitBranch, 
-  FileText, 
   Folder, 
+  File, 
   Search, 
-  Play, 
+  GitBranch, 
+  Code, 
+  Zap, 
   Download,
-  GitCompare,
-  Zap,
-  Code,
   Eye,
-  CloudUpload
+  Copy,
+  Settings,
+  RefreshCw
 } from 'lucide-react';
 
+interface GitHubRepo {
+  owner: string;
+  repo: string;
+  description?: string;
+  stars?: number;
+  language?: string;
+}
+
+interface FileItem {
+  name: string;
+  path: string;
+  type: 'file' | 'dir';
+  size?: number;
+}
+
+interface AIAnalysis {
+  patterns: string[];
+  suggestions: string[];
+  complexity: 'low' | 'medium' | 'high';
+  quality: number;
+}
+
 const SolarCloudIDE: React.FC = () => {
-  const [repoUrl, setRepoUrl] = useState('');
-  const [selectedRepo, setSelectedRepo] = useState<any>(null);
-  const [files, setFiles] = useState<any[]>([]);
-  const [selectedFile, setSelectedFile] = useState<any>(null);
+  // State Management
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<GitHubRepo[]>([]);
+  const [selectedRepo, setSelectedRepo] = useState<GitHubRepo | null>(null);
+  const [files, setFiles] = useState<FileItem[]>([]);
+  const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
   const [fileContent, setFileContent] = useState('');
-  const [newCode, setNewCode] = useState('');
-  const [comparison, setComparison] = useState<any>(null);
-  const [branches, setBranches] = useState<any[]>([]);
+  const [branches, setBranches] = useState<string[]>(['main']);
   const [selectedBranch, setSelectedBranch] = useState('main');
-  const [loading, setLoading] = useState(false);
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // 🐙 Parse GitHub URL
-  const parseGitHubUrl = (url: string) => {
-    const match = url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
-    if (match) {
-      return {
-        owner: match[1],
-        repo: match[2].replace('.git', '')
-      };
+  // Mock data for demonstration
+  const mockRepos: GitHubRepo[] = [
+    {
+      owner: 'facebook',
+      repo: 'react',
+      description: 'The library for web and native user interfaces',
+      stars: 220000,
+      language: 'JavaScript'
+    },
+    {
+      owner: 'microsoft',
+      repo: 'vscode',
+      description: 'Visual Studio Code',
+      stars: 155000,
+      language: 'TypeScript'
+    },
+    {
+      owner: 'vercel',
+      repo: 'next.js',
+      description: 'The React Framework',
+      stars: 118000,
+      language: 'JavaScript'
     }
-    return null;
-  };
+  ];
 
-  // 📁 Load repository
-  const loadRepository = async () => {
-    const parsed = parseGitHubUrl(repoUrl);
-    if (!parsed) {
-      alert('Invalid GitHub URL');
-      return;
-    }
+  const mockFiles: FileItem[] = [
+    { name: 'src', path: 'src', type: 'dir' },
+    { name: 'package.json', path: 'package.json', type: 'file', size: 2048 },
+    { name: 'README.md', path: 'README.md', type: 'file', size: 4096 },
+    { name: 'tsconfig.json', path: 'tsconfig.json', type: 'file', size: 1024 },
+    { name: 'components', path: 'src/components', type: 'dir' },
+    { name: 'index.tsx', path: 'src/index.tsx', type: 'file', size: 512 }
+  ];
 
-    setLoading(true);
-    try {
-      const response = await fetch('/api/cloudide/repo/load', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        },
-        body: JSON.stringify({
-          owner: parsed.owner,
-          repo: parsed.repo,
-          branch: selectedBranch
-        })
-      });
-
-      const result = await response.json();
-      if (result.success) {
-        setSelectedRepo(parsed);
-        setFiles(result.data.files);
-        
-        // Load branches
-        loadBranches(parsed.owner, parsed.repo);
-      } else {
-        alert(`Error: ${result.message}`);
-      }
-    } catch (error) {
-      console.error('Error loading repository:', error);
-      alert('Failed to load repository');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 🌿 Load branches
-  const loadBranches = async (owner: string, repo: string) => {
-    try {
-      const response = await fetch(`/api/cloudide/repo/branches?owner=${owner}&repo=${repo}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        }
-      });
-
-      const result = await response.json();
-      if (result.success) {
-        setBranches(result.data);
-      }
-    } catch (error) {
-      console.error('Error loading branches:', error);
-    }
-  };
-
-  // 📄 Load file content
-  const loadFileContent = async (file: any) => {
-    if (!selectedRepo) return;
-
-    setLoading(true);
-    try {
-      const response = await fetch(
-        `/api/cloudide/repo/file?owner=${selectedRepo.owner}&repo=${selectedRepo.repo}&filePath=${file.path}&branch=${selectedBranch}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-          }
-        }
+  // Search repositories
+  const handleSearch = async () => {
+    setIsLoading(true);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    if (searchQuery.trim()) {
+      const filtered = mockRepos.filter(repo => 
+        repo.repo.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        repo.owner.toLowerCase().includes(searchQuery.toLowerCase())
       );
+      setSearchResults(filtered);
+    } else {
+      setSearchResults(mockRepos);
+    }
+    setIsLoading(false);
+  };
 
+  // Load repository
+  const handleLoadRepo = async (repo: GitHubRepo) => {
+    setIsLoading(true);
+    setSelectedRepo(repo);
+    
+    // Simulate loading files
+    await new Promise(resolve => setTimeout(resolve, 800));
+    setFiles(mockFiles);
+    setBranches(['main', 'develop', 'feature/new-ui']);
+    setIsLoading(false);
+  };
+
+  // Select file
+  const handleSelectFile = async (file: FileItem) => {
+    if (file.type === 'file') {
+      setIsLoading(true);
+      setSelectedFile(file);
+      
+      // Simulate loading file content
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      const mockContent = `// ${file.name}
+// Solar Cloud IDE Demo Content
+
+import React, { useState, useEffect } from 'react';
+import { SolarComponent } from './components';
+
+const ${file.name.replace('.tsx', '').replace('.js', '')}Component = () => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Fetch data from API
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const response = await fetch('/api/data');
       const result = await response.json();
-      if (result.success) {
-        setSelectedFile(file);
-        setFileContent(result.data.content);
-        setNewCode(result.data.content);
-      } else {
-        alert(`Error: ${result.message}`);
-      }
+      setData(result);
     } catch (error) {
-      console.error('Error loading file:', error);
-      alert('Failed to load file');
+      console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  // 🔍 Compare code
-  const compareCode = async () => {
-    if (!selectedRepo || !selectedFile) return;
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
-    setLoading(true);
-    try {
-      const response = await fetch('/api/cloudide/repo/compare', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        },
-        body: JSON.stringify({
-          owner: selectedRepo.owner,
-          repo: selectedRepo.repo,
-          filePath: selectedFile.path,
-          branch: selectedBranch,
-          newCode
-        })
-      });
+  return (
+    <div className="container">
+      <h1>Solar ERP Component</h1>
+      <SolarComponent data={data} />
+    </div>
+  );
+};
 
-      const result = await response.json();
-      if (result.success) {
-        setComparison(result.data);
-      } else {
-        alert(`Error: ${result.message}`);
-      }
-    } catch (error) {
-      console.error('Error comparing code:', error);
-      alert('Failed to compare code');
-    } finally {
-      setLoading(false);
+export default ${file.name.replace('.tsx', '').replace('.js', '')}Component;`;
+
+      setFileContent(mockContent);
+      setIsLoading(false);
     }
   };
 
-  // 🔍 Search repositories
-  const searchRepositories = async (query: string) => {
-    if (!query.trim()) return;
-
-    try {
-      const response = await fetch(`/api/cloudide/repo/search?query=${encodeURIComponent(query)}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        }
-      });
-
-      const result = await response.json();
-      if (result.success) {
-        setSearchResults(result.data);
-      }
-    } catch (error) {
-      console.error('Error searching repositories:', error);
-    }
+  // AI Analysis
+  const handleAnalyzeCode = () => {
+    setAiAnalysis({
+      patterns: ['React Hooks', 'TypeScript', 'Error Handling', 'Loading States'],
+      suggestions: [
+        'Consider adding PropTypes for better type safety',
+        'Implement error boundary for better error handling',
+        'Add memoization for performance optimization'
+      ],
+      complexity: 'medium',
+      quality: 85
+    });
   };
+
+  // Initialize with sample search
+  useEffect(() => {
+    setSearchResults(mockRepos);
+  }, []);
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b px-6 py-4">
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <CloudUpload className="w-8 h-8 text-blue-500" />
-              <h1 className="text-2xl font-bold text-gray-800">
-                Solar Cloud IDE
-              </h1>
+              <Github className="w-8 h-8 text-blue-600" />
+              <h1 className="text-2xl font-bold text-gray-900">Solar Cloud IDE</h1>
             </div>
-            <span className="text-sm text-gray-500 bg-blue-100 px-3 py-1 rounded-full">
-              GitHub Integration • Live Environment • AI Analysis
-            </span>
-          </div>
-
-          <div className="flex items-center space-x-4">
-            {selectedRepo && (
-              <div className="flex items-center space-x-2">
-                <Github className="w-4 h-4 text-gray-600" />
-                <span className="text-sm font-medium">{selectedRepo.owner}/{selectedRepo.repo}</span>
-                
-                <select
-                  value={selectedBranch}
-                  onChange={(e) => setSelectedBranch(e.target.value)}
-                  className="text-sm border rounded px-2 py-1"
-                >
-                  {branches.map(branch => (
-                    <option key={branch.name} value={branch.name}>
-                      {branch.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Repository Input */}
-        <div className="mt-4 flex space-x-2">
-          <div className="flex-1 relative">
-            <Github className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Enter GitHub repository URL (e.g., https://github.com/user/repo)"
-              value={repoUrl}
-              onChange={(e) => setRepoUrl(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+            <div className="text-sm text-gray-500">
+              Revolutionary GitHub Browser & AI Code Analysis
+            </div>
           </div>
           
-          <button
-            onClick={loadRepository}
-            disabled={!repoUrl.trim() || loading}
-            className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 flex items-center space-x-2"
-          >
-            <Download className="w-4 h-4" />
-            <span>{loading ? 'Loading...' : 'Load Repo'}</span>
-          </button>
-
-          {selectedFile && (
-            <button
-              onClick={compareCode}
-              disabled={loading}
-              className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 disabled:opacity-50 flex items-center space-x-2"
-            >
-              <GitCompare className="w-4 h-4" />
-              <span>Compare</span>
-            </button>
-          )}
+          <div className="flex items-center space-x-2">
+            <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+            <span className="text-sm text-gray-600">Connected</span>
+          </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex">
-        {/* Left Panel: Repository Files */}
-        <div className="w-1/4 border-r bg-white overflow-y-auto">
-          <div className="p-4 border-b bg-gray-50">
-            <h3 className="font-semibold text-gray-800">📁 Repository Files</h3>
-            {selectedRepo && (
-              <p className="text-xs text-gray-500 mt-1">
-                {files.length} files • {selectedBranch} branch
-              </p>
-            )}
-          </div>
-          
-          <div className="p-2">
-            {files.length > 0 ? (
-              <div className="space-y-1">
-                {files.map((file, index) => (
-                  <div
-                    key={index}
-                    onClick={() => loadFileContent(file)}
-                    className={`p-3 rounded cursor-pointer hover:bg-gray-50 transition-colors ${
-                      selectedFile?.path === file.path ? 'bg-blue-50 border border-blue-200' : 'border border-transparent'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-2">
-                      <FileText className="w-4 h-4 text-gray-500" />
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm text-gray-800 truncate">
-                          {file.name}
-                        </div>
-                        <div className="text-xs text-gray-500 truncate">
-                          {file.path}
-                        </div>
-                      </div>
-                      <div className={`px-2 py-1 rounded text-xs ${
-                        file.isComponent ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
-                      }`}>
-                        {file.type}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center text-gray-500 py-8">
-                <Github className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                <p>Load a repository to see files</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Middle Panel: Code Editor */}
-        <div className="w-1/2 border-r bg-white flex flex-col">
-          <div className="p-4 border-b bg-gray-50">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-gray-800">
-                {selectedFile ? `📝 ${selectedFile.name}` : '💡 Code Editor'}
-              </h3>
-              {selectedFile && (
-                <div className="flex items-center space-x-2 text-sm text-gray-500">
-                  <Code className="w-4 h-4" />
-                  <span>{newCode.split('\n').length} lines</span>
-                </div>
-              )}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left Panel - Repository Search & Files */}
+        <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+          {/* Search Section */}
+          <div className="p-4 border-b border-gray-200">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search GitHub repositories..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+              <button
+                onClick={handleSearch}
+                className="absolute right-2 top-1.5 p-1 text-blue-600 hover:bg-blue-50 rounded"
+              >
+                <RefreshCw className="w-4 h-4" />
+              </button>
             </div>
           </div>
-          
-          <div className="flex-1 flex flex-col">
-            {selectedFile ? (
-              <>
-                {/* Original Content */}
-                <div className="h-1/2 border-b">
-                  <div className="px-4 py-2 bg-gray-100 border-b text-sm font-medium text-gray-700">
-                    🐙 GitHub Original ({selectedBranch})
+
+          {/* Repository Results */}
+          <div className="flex-1 overflow-y-auto">
+            {!selectedRepo ? (
+              <div className="p-4">
+                <h3 className="font-semibold text-gray-900 mb-3">🔥 Popular Repositories</h3>
+                <div className="space-y-2">
+                  {searchResults.map((repo, index) => (
+                    <div
+                      key={index}
+                      onClick={() => handleLoadRepo(repo)}
+                      className="p-3 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 cursor-pointer transition-colors"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="font-medium text-gray-900">
+                            {repo.owner}/{repo.repo}
+                          </div>
+                          <div className="text-sm text-gray-600 mt-1">
+                            {repo.description}
+                          </div>
+                          <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+                            <span>⭐ {repo.stars?.toLocaleString()}</span>
+                            <span>📝 {repo.language}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="p-4">
+                {/* Repository Header */}
+                <div className="mb-4">
+                  <button
+                    onClick={() => setSelectedRepo(null)}
+                    className="text-blue-600 hover:text-blue-800 text-sm mb-2"
+                  >
+                    ← Back to search
+                  </button>
+                  <div className="font-semibold text-gray-900">
+                    {selectedRepo.owner}/{selectedRepo.repo}
                   </div>
-                  <textarea
-                    value={fileContent}
-                    readOnly
-                    className="w-full h-full p-4 font-mono text-sm resize-none border-none outline-none bg-gray-50"
-                  />
+                  <div className="text-sm text-gray-600">
+                    {selectedRepo.description}
+                  </div>
                 </div>
 
-                {/* Editable Version */}
-                <div className="h-1/2">
-                  <div className="px-4 py-2 bg-blue-100 border-b text-sm font-medium text-blue-700">
-                    ✏️ Your Version (Editable)
-                  </div>
-                  <textarea
-                    value={newCode}
-                    onChange={(e) => setNewCode(e.target.value)}
-                    placeholder="Edit the code here..."
-                    className="w-full h-full p-4 font-mono text-sm resize-none border-none outline-none focus:bg-white transition-colors"
-                  />
+                {/* Branch Selector */}
+                <div className="mb-4">
+                  <select
+                    value={selectedBranch}
+                    onChange={(e) => setSelectedBranch(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded text-sm"
+                  >
+                    {branches.map(branch => (
+                      <option key={branch} value={branch}>
+                        <GitBranch className="w-4 h-4 inline mr-1" />
+                        {branch}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-              </>
-            ) : (
-              <div className="flex-1 flex items-center justify-center text-gray-500">
-                <div className="text-center">
-                  <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                  <h3 className="text-lg font-medium mb-2">Welcome to Solar Cloud IDE</h3>
-                  <p className="text-sm mb-4">Load a GitHub repository and select a file to start</p>
-                  <div className="text-xs bg-gray-100 rounded-lg p-4 max-w-md">
-                    <div className="font-medium mb-2">🚀 Features:</div>
-                    <ul className="text-left space-y-1">
-                      <li>• Live GitHub integration</li>
-                      <li>• Real-time code comparison</li>
-                      <li>• AI-powered analysis</li>
-                      <li>• Branch switching</li>
-                      <li>• Instant diff visualization</li>
-                    </ul>
+
+                {/* File Tree */}
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">📁 Files</h4>
+                  <div className="space-y-1">
+                    {files.map((file, index) => (
+                      <div
+                        key={index}
+                        onClick={() => handleSelectFile(file)}
+                        className={`flex items-center space-x-2 p-2 rounded hover:bg-gray-100 cursor-pointer ${
+                          selectedFile?.path === file.path ? 'bg-blue-100 border border-blue-300' : ''
+                        }`}
+                      >
+                        {file.type === 'dir' ? (
+                          <Folder className="w-4 h-4 text-blue-500" />
+                        ) : (
+                          <File className="w-4 h-4 text-gray-500" />
+                        )}
+                        <span className="text-sm text-gray-700 flex-1">{file.name}</span>
+                        {file.size && (
+                          <span className="text-xs text-gray-400">
+                            {(file.size / 1024).toFixed(1)}KB
+                          </span>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -377,110 +332,128 @@ const SolarCloudIDE: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Panel: Analysis & Comparison */}
-        <div className="w-1/4 bg-white overflow-y-auto">
-          <div className="p-4 border-b bg-gray-50">
-            <h3 className="font-semibold text-gray-800">🔍 AI Analysis</h3>
+        {/* Center Panel - Code Editor */}
+        <div className="flex-1 flex flex-col">
+          {selectedFile ? (
+            <>
+              {/* File Header */}
+              <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <File className="w-4 h-4 text-gray-500" />
+                  <span className="font-medium text-gray-900">{selectedFile.name}</span>
+                  <span className="text-sm text-gray-500">{selectedFile.path}</span>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <button className="p-2 text-gray-600 hover:bg-gray-200 rounded">
+                    <Copy className="w-4 h-4" />
+                  </button>
+                  <button className="p-2 text-gray-600 hover:bg-gray-200 rounded">
+                    <Download className="w-4 h-4" />
+                  </button>
+                  <button 
+                    onClick={handleAnalyzeCode}
+                    className="px-3 py-1 bg-purple-600 text-white rounded text-sm hover:bg-purple-700"
+                  >
+                    <Zap className="w-4 h-4 inline mr-1" />
+                    AI Analyze
+                  </button>
+                </div>
+              </div>
+
+              {/* Code Content */}
+              <div className="flex-1 overflow-auto">
+                <pre className="p-4 text-sm font-mono text-gray-800 leading-relaxed">
+                  <code>{fileContent}</code>
+                </pre>
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center text-gray-500">
+                <Code className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Welcome to Solar Cloud IDE
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Search for repositories and select files to start coding
+                </p>
+                <div className="space-y-2 text-sm">
+                  <p>🐙 Browse any GitHub repository</p>
+                  <p>🤖 AI-powered code analysis</p>
+                  <p>⚡ Zero installation required</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right Panel - AI Analysis */}
+        <div className="w-80 bg-white border-l border-gray-200">
+          <div className="p-4 border-b border-gray-200">
+            <h3 className="font-semibold text-gray-900 flex items-center">
+              <Zap className="w-5 h-5 mr-2 text-purple-600" />
+              AI Code Analysis
+            </h3>
           </div>
           
           <div className="p-4">
-            {loading ? (
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-                <p className="text-gray-600 text-sm">Analyzing...</p>
-              </div>
-            ) : comparison ? (
+            {aiAnalysis ? (
               <div className="space-y-4">
-                {/* Status */}
-                <div className="flex items-center space-x-2">
-                  {comparison.analysis.status === 'identical' && (
-                    <>
-                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                      <span className="text-green-600 font-medium">Identical</span>
-                    </>
-                  )}
-                  {comparison.analysis.status === 'modified' && (
-                    <>
-                      <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                      <span className="text-orange-600 font-medium">Modified</span>
-                    </>
-                  )}
-                  {comparison.analysis.status === 'new' && (
-                    <>
-                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                      <span className="text-blue-600 font-medium">New Version</span>
-                    </>
-                  )}
-                </div>
-
-                {/* Code Statistics */}
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <h4 className="font-medium text-gray-800 mb-2">📊 Statistics</h4>
-                  <div className="text-sm space-y-1">
-                    <div className="flex justify-between">
-                      <span>GitHub Lines:</span>
-                      <span className="font-medium">{comparison.analysis.lines.repo}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Your Lines:</span>
-                      <span className="font-medium">{comparison.analysis.lines.compare}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Differences:</span>
-                      <span className="font-medium text-orange-600">{comparison.analysis.lines.diff}</span>
-                    </div>
+                {/* Quality Score */}
+                <div className="bg-gradient-to-r from-green-50 to-blue-50 p-3 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-700">Code Quality</span>
+                    <span className="text-lg font-bold text-green-600">{aiAnalysis.quality}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-green-500 h-2 rounded-full" 
+                      style={{ width: `${aiAnalysis.quality}%` }}
+                    ></div>
                   </div>
                 </div>
 
                 {/* Detected Patterns */}
-                {comparison.analysis.patterns.length > 0 && (
-                  <div>
-                    <h4 className="font-medium text-gray-800 mb-2">🤖 Detected Patterns</h4>
-                    <div className="space-y-1">
-                      {comparison.analysis.patterns.map((pattern: string, index: number) => (
-                        <div key={index} className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-sm">
-                          {pattern}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Diff Preview */}
                 <div>
-                  <h4 className="font-medium text-gray-800 mb-2">📋 Changes</h4>
-                  <div className="bg-gray-50 rounded-lg p-3 max-h-64 overflow-y-auto">
-                    {comparison.diff.slice(0, 10).map((part: any, index: number) => (
-                      <div
+                  <h4 className="font-medium text-gray-900 mb-2">🎯 Detected Patterns</h4>
+                  <div className="space-y-1">
+                    {aiAnalysis.patterns.map((pattern, index) => (
+                      <span 
                         key={index}
-                        className={`text-xs font-mono whitespace-pre-wrap ${
-                          part.added ? 'bg-green-100 text-green-700' :
-                          part.removed ? 'bg-red-100 text-red-700' :
-                          'text-gray-600'
-                        }`}
+                        className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mr-1 mb-1"
                       >
-                        {part.value}
+                        {pattern}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Complexity */}
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">⚡ Complexity</h4>
+                  <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                    aiAnalysis.complexity === 'low' ? 'bg-green-100 text-green-800' :
+                    aiAnalysis.complexity === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-red-100 text-red-800'
+                  }`}>
+                    {aiAnalysis.complexity.toUpperCase()}
+                  </span>
+                </div>
+
+                {/* Suggestions */}
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">💡 Suggestions</h4>
+                  <div className="space-y-2">
+                    {aiAnalysis.suggestions.map((suggestion, index) => (
+                      <div key={index} className="text-sm text-gray-600 bg-yellow-50 p-2 rounded">
+                        {suggestion}
                       </div>
                     ))}
-                    {comparison.diff.length > 10 && (
-                      <div className="text-xs text-gray-500 mt-2">
-                        ... and {comparison.diff.length - 10} more changes
-                      </div>
-                    )}
                   </div>
                 </div>
 
-                {/* Repository Info */}
-                <div className="bg-blue-50 rounded-lg p-3">
-                  <h4 className="font-medium text-blue-800 mb-1">🐙 Repository</h4>
-                  <div className="text-sm text-blue-700">
-                    <div>{comparison.repo}</div>
-                    <div className="text-xs opacity-75">Branch: {comparison.branch}</div>
-                    <div className="text-xs opacity-75">File: {comparison.file.path}</div>
-                  </div>
-                </div>
-
-                {/* Actions */}
+                {/* Action Buttons */}
                 <div className="space-y-2">
                   <button className="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors text-sm">
                     💾 Apply to Local Project
@@ -499,7 +472,7 @@ const SolarCloudIDE: React.FC = () => {
               <div className="text-center text-gray-500">
                 <Zap className="w-12 h-12 mx-auto mb-2 text-gray-300" />
                 <p className="mb-2">Ready for Analysis</p>
-                <p className="text-sm">Select a file and click "Compare" to see AI insights</p>
+                <p className="text-sm">Select a file and click "Analyze" to see AI insights</p>
               </div>
             )}
           </div>
@@ -532,6 +505,16 @@ const SolarCloudIDE: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg flex items-center space-x-3">
+            <RefreshCw className="w-5 h-5 animate-spin text-blue-600" />
+            <span>Loading...</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
