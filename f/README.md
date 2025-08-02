@@ -1,3 +1,5 @@
+SOLAR CLOUD IDE - LAUNCH SEQUENCE
+
 # React + TypeScript + Vite
 Конечно! Вот готовый файл `README.md` для твоего проекта с SOLAR Assistant, красиво оформленный и готовый для загрузки на GitHub:
 
