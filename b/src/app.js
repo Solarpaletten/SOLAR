@@ -32,7 +32,7 @@ const purchasesRoutes = require('./routes/company/purchasesRoutes');
 const chartOfAccountsRoutes = require('./routes/company/chartOfAccountsRoutes');
 const warehouseRoutes = require('./routes/company/warehouseRoutes');
 
-const batchRoutes = require('./routes/batches');
+const batchRoutes = require('./routes/company/batchesRoutes');
 
 const app = express();
 
@@ -229,24 +229,6 @@ app.get('/api/company/test', auth, companyContext, (req, res) => {
 });
 
 // ГОТОВЫЕ API ENDPOINTS ПОСЛЕ РЕГИСТРАЦИИ
-
-
-
-ОСНОВНЫЕ BATCH OPERATIONS:
-GET    /api/company/batches/product/1/warehouse/2
-POST   /api/company/batches/allocate
-GET    /api/company/batches/123/movements
-POST   /api/company/batches/movements
-GET    /api/company/batches/warehouses/2/report
-
-ENTERPRISE ANALYTICS:
-GET    /api/company/batches/expiring?days=30
-GET    /api/company/batches/supplier/5
-GET    /api/company/batches/analytics/costs?productId=1
-
-ПОЛНАЯ ИНТЕГРАЦИЯ С СУЩЕСТВУЮЩЕЙ СИСТЕМОЙ!
-
-
 // ===============================================
 // 🚫 ERROR HANDLERS
 // ===============================================
