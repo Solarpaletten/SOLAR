@@ -1,15 +1,15 @@
 // f/src/pages/company/sales/components/AddSaleModal.tsx
 import React, { useState, useEffect } from 'react';
-import { 
-  SaleFormData, 
-  SaleItemFormData, 
-  SalesDocumentType, 
-  PaymentStatus, 
-  DeliveryStatus, 
-  DocumentStatus, 
+import {
+  SaleFormData,
+  SaleItemFormData,
+  SalesDocumentType,
+  PaymentStatus,
+  DeliveryStatus,
+  DocumentStatus,
   Currency,
   Client,
-  Product
+  Product,
 } from '../types/salesTypes';
 
 interface AddSaleModalProps {
@@ -29,27 +29,26 @@ useEffect(() => {
   const loadData = async () => {
     try {
       setLoading(true);
-      
+
       // Загружаем клиентов
       const clientsResponse = await fetch('/api/company/clients', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
           'x-company-id': localStorage.getItem('currentCompanyId') || '',
-        }
+        },
       });
       const clientsData = await clientsResponse.json();
       setClients(clientsData.clients || []);
 
-      // Загружаем товары  
+      // Загружаем товары
       const productsResponse = await fetch('/api/company/products', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
           'x-company-id': localStorage.getItem('currentCompanyId') || '',
-        }
+        },
       });
       const productsData = await productsResponse.json();
       setProducts(productsData.products || []);
-      
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -63,24 +62,28 @@ useEffect(() => {
 }, [isOpen]);
 
 // В селекте клиентов заменить mockClients на clients:
-{clients.map(client => (
-  <option key={client.id} value={client.id}>
-    {client.name} ({client.code})
-  </option>
-))}
+{
+  clients.map((client) => (
+    <option key={client.id} value={client.id}>
+      {client.name} ({client.code})
+    </option>
+  ));
+}
 
 // В селекте товаров заменить mockProducts на products:
-{products.map(product => (
-  <option key={product.id} value={product.id}>
-    {product.name} ({product.code})
-  </option>
-))}
+{
+  products.map((product) => (
+    <option key={product.id} value={product.id}>
+      {product.name} ({product.code})
+    </option>
+  ));
+}
 
 const AddSaleModal: React.FC<AddSaleModalProps> = ({
   isOpen,
   onClose,
   onSubmit,
-  loading = false
+  loading = false,
 }) => {
   const [formData, setFormData] = useState<SaleFormData>({
     document_number: '',
@@ -95,7 +98,7 @@ const AddSaleModal: React.FC<AddSaleModalProps> = ({
     payment_status: 'PENDING',
     delivery_status: 'PENDING',
     document_status: 'DRAFT',
-    items: []
+    items: [],
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -107,11 +110,13 @@ const AddSaleModal: React.FC<AddSaleModalProps> = ({
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
-      const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-      
-      setFormData(prev => ({
+      const random = Math.floor(Math.random() * 1000)
+        .toString()
+        .padStart(3, '0');
+
+      setFormData((prev) => ({
         ...prev,
-        document_number: `INV-${year}${month}${day}-${random}`
+        document_number: `INV-${year}${month}${day}-${random}`,
       }));
     }
   }, [isOpen]);
@@ -124,44 +129,94 @@ const AddSaleModal: React.FC<AddSaleModalProps> = ({
       discount_percent: 0,
       total_discount: 0,
       vat_rate: 20,
-      description: ''
+      description: '',
     };
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      items: [...prev.items, newItem]
+      items: [...prev.items, newItem],
     }));
   };
 
   const removeItem = (index: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      items: prev.items.filter((_, i) => i !== index)
+      items: prev.items.filter((_, i) => i !== index),
     }));
   };
 
-  const updateItem = (index: number, field: keyof SaleItemFormData, value: any) => {
-    setFormData(prev => ({
+  // При выборе товара проверяем остаток
+  const updateItem = (
+    index: number,
+    field: keyof SaleItemFormData,
+    value: any
+  ) => {
+    setFormData((prev) => ({
       ...prev,
       items: prev.items.map((item, i) => {
         if (i === index) {
           const updatedItem = { ...item, [field]: value };
-          
+
           // Auto-update price when product changes
           if (field === 'product_id') {
-            const product = mockProducts.find(p => p.id === parseInt(value));
+            const product = products.find((p) => p.id === parseInt(value));
             if (product) {
               updatedItem.unit_price_base = product.price;
               updatedItem.vat_rate = product.vat_rate || 20;
+
+              // ✅ ДОБАВИТЬ ПРОВЕРКУ ОСТАТКОВ:
+              // Показываем доступное количество
+              const availableStock = parseFloat(product.current_stock || 0);
+              if (availableStock <= 0) {
+                alert(`⚠️ Товар "${product.name}" отсутствует на складе!`);
+              } else if (product.is_service) {
+                // Для услуг не проверяем остатки
+                console.log('Service selected - no stock check needed');
+              } else {
+                // Показываем доступное количество
+                console.log(
+                  `Available stock: ${availableStock} ${product.unit}`
+                );
+              }
             }
           }
-          
+
+          // ✅ ПРОВЕРКА КОЛИЧЕСТВА ПРИ ИЗМЕНЕНИИ:
+          if (field === 'quantity') {
+            const product = products.find((p) => p.id === item.product_id);
+            if (product && !product.is_service) {
+              const requestedQty = parseFloat(value);
+              const availableStock = parseFloat(product.current_stock || 0);
+
+              if (requestedQty > availableStock) {
+                alert(
+                  `⚠️ Недостаточно товара на складе!\nЗапрошено: ${requestedQty}\nДоступно: ${availableStock}`
+                );
+                updatedItem.quantity = availableStock; // Ограничиваем количеством на складе
+              }
+            }
+          }
+
           return updatedItem;
         }
         return item;
-      })
+      }),
     }));
   };
+
+  // ✅ ДОБАВИТЬ ИНДИКАТОР ОСТАТКОВ в UI:
+  // В форме товара показать остаток
+  <div className="text-xs text-gray-500 mt-1">
+    {selectedProduct && !selectedProduct.is_service && (
+      <span>
+        📦 На складе: {selectedProduct.current_stock || 0}{' '}
+        {selectedProduct.unit}
+      </span>
+    )}
+    {selectedProduct && selectedProduct.is_service && (
+      <span>🔧 Услуга (без остатков)</span>
+    )}
+  </div>;
 
   const calculateItemTotal = (item: SaleItemFormData) => {
     const subtotal = item.quantity * item.unit_price_base;
@@ -176,7 +231,7 @@ const AddSaleModal: React.FC<AddSaleModalProps> = ({
     let totalDiscount = 0;
     let totalVat = 0;
 
-    formData.items.forEach(item => {
+    formData.items.forEach((item) => {
       const itemSubtotal = item.quantity * item.unit_price_base;
       const itemDiscount = item.total_discount || 0;
       const itemAfterDiscount = itemSubtotal - itemDiscount;
@@ -191,7 +246,7 @@ const AddSaleModal: React.FC<AddSaleModalProps> = ({
       subtotal,
       totalDiscount,
       totalVat,
-      total: subtotal - totalDiscount + totalVat
+      total: subtotal - totalDiscount + totalVat,
     };
   };
 
@@ -229,7 +284,7 @@ const AddSaleModal: React.FC<AddSaleModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -256,7 +311,7 @@ const AddSaleModal: React.FC<AddSaleModalProps> = ({
       payment_status: 'PENDING',
       delivery_status: 'PENDING',
       document_status: 'DRAFT',
-      items: []
+      items: [],
     });
     setErrors({});
     onClose();
@@ -271,7 +326,9 @@ const AddSaleModal: React.FC<AddSaleModalProps> = ({
       <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">➕ Create New Sale</h2>
+          <h2 className="text-xl font-semibold text-gray-900">
+            ➕ Create New Sale
+          </h2>
           <button
             onClick={handleClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -291,14 +348,21 @@ const AddSaleModal: React.FC<AddSaleModalProps> = ({
               <input
                 type="text"
                 value={formData.document_number}
-                onChange={(e) => setFormData(prev => ({ ...prev, document_number: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    document_number: e.target.value,
+                  }))
+                }
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   errors.document_number ? 'border-red-300' : 'border-gray-300'
                 }`}
                 disabled={loading}
               />
               {errors.document_number && (
-                <p className="text-red-600 text-sm mt-1">{errors.document_number}</p>
+                <p className="text-red-600 text-sm mt-1">
+                  {errors.document_number}
+                </p>
               )}
             </div>
 
@@ -308,10 +372,12 @@ const AddSaleModal: React.FC<AddSaleModalProps> = ({
               </label>
               <select
                 value={formData.document_type}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  document_type: e.target.value as SalesDocumentType 
-                }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    document_type: e.target.value as SalesDocumentType,
+                  }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 disabled={loading}
               >
@@ -329,14 +395,21 @@ const AddSaleModal: React.FC<AddSaleModalProps> = ({
               <input
                 type="date"
                 value={formData.document_date}
-                onChange={(e) => setFormData(prev => ({ ...prev, document_date: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    document_date: e.target.value,
+                  }))
+                }
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   errors.document_date ? 'border-red-300' : 'border-gray-300'
                 }`}
                 disabled={loading}
               />
               {errors.document_date && (
-                <p className="text-red-600 text-sm mt-1">{errors.document_date}</p>
+                <p className="text-red-600 text-sm mt-1">
+                  {errors.document_date}
+                </p>
               )}
             </div>
 
@@ -347,7 +420,9 @@ const AddSaleModal: React.FC<AddSaleModalProps> = ({
               <input
                 type="date"
                 value={formData.due_date}
-                onChange={(e) => setFormData(prev => ({ ...prev, due_date: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, due_date: e.target.value }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 disabled={loading}
               />
@@ -359,14 +434,19 @@ const AddSaleModal: React.FC<AddSaleModalProps> = ({
               </label>
               <select
                 value={formData.client_id}
-                onChange={(e) => setFormData(prev => ({ ...prev, client_id: parseInt(e.target.value) }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    client_id: parseInt(e.target.value),
+                  }))
+                }
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   errors.client_id ? 'border-red-300' : 'border-gray-300'
                 }`}
                 disabled={loading}
               >
                 <option value={0}>Select a client...</option>
-                {mockClients.map(client => (
+                {mockClients.map((client) => (
                   <option key={client.id} value={client.id}>
                     {client.name} ({client.code})
                   </option>
@@ -383,7 +463,12 @@ const AddSaleModal: React.FC<AddSaleModalProps> = ({
               </label>
               <select
                 value={formData.currency}
-                onChange={(e) => setFormData(prev => ({ ...prev, currency: e.target.value as Currency }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    currency: e.target.value as Currency,
+                  }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 disabled={loading}
               >
@@ -404,10 +489,12 @@ const AddSaleModal: React.FC<AddSaleModalProps> = ({
               </label>
               <select
                 value={formData.payment_status}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  payment_status: e.target.value as PaymentStatus 
-                }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    payment_status: e.target.value as PaymentStatus,
+                  }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 disabled={loading}
               >
@@ -425,10 +512,12 @@ const AddSaleModal: React.FC<AddSaleModalProps> = ({
               </label>
               <select
                 value={formData.delivery_status}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  delivery_status: e.target.value as DeliveryStatus 
-                }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    delivery_status: e.target.value as DeliveryStatus,
+                  }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 disabled={loading}
               >
@@ -446,10 +535,12 @@ const AddSaleModal: React.FC<AddSaleModalProps> = ({
               </label>
               <select
                 value={formData.document_status}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  document_status: e.target.value as DocumentStatus 
-                }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    document_status: e.target.value as DocumentStatus,
+                  }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 disabled={loading}
               >
@@ -481,7 +572,10 @@ const AddSaleModal: React.FC<AddSaleModalProps> = ({
 
             <div className="space-y-3">
               {formData.items.map((item, index) => (
-                <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                <div
+                  key={index}
+                  className="border border-gray-200 rounded-lg p-4 bg-gray-50"
+                >
                   <div className="grid grid-cols-1 md:grid-cols-6 gap-3 items-start">
                     {/* Product */}
                     <div className="md:col-span-2">
@@ -490,21 +584,31 @@ const AddSaleModal: React.FC<AddSaleModalProps> = ({
                       </label>
                       <select
                         value={item.product_id}
-                        onChange={(e) => updateItem(index, 'product_id', parseInt(e.target.value))}
+                        onChange={(e) =>
+                          updateItem(
+                            index,
+                            'product_id',
+                            parseInt(e.target.value)
+                          )
+                        }
                         className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                          errors[`item_${index}_product`] ? 'border-red-300' : 'border-gray-300'
+                          errors[`item_${index}_product`]
+                            ? 'border-red-300'
+                            : 'border-gray-300'
                         }`}
                         disabled={loading}
                       >
                         <option value={0}>Select product...</option>
-                        {mockProducts.map(product => (
+                        {mockProducts.map((product) => (
                           <option key={product.id} value={product.id}>
                             {product.name} ({product.code})
                           </option>
                         ))}
                       </select>
                       {errors[`item_${index}_product`] && (
-                        <p className="text-red-600 text-sm mt-1">{errors[`item_${index}_product`]}</p>
+                        <p className="text-red-600 text-sm mt-1">
+                          {errors[`item_${index}_product`]}
+                        </p>
                       )}
                     </div>
 
@@ -518,14 +622,24 @@ const AddSaleModal: React.FC<AddSaleModalProps> = ({
                         min="0.01"
                         step="0.01"
                         value={item.quantity}
-                        onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value))}
+                        onChange={(e) =>
+                          updateItem(
+                            index,
+                            'quantity',
+                            parseFloat(e.target.value)
+                          )
+                        }
                         className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                          errors[`item_${index}_quantity`] ? 'border-red-300' : 'border-gray-300'
+                          errors[`item_${index}_quantity`]
+                            ? 'border-red-300'
+                            : 'border-gray-300'
                         }`}
                         disabled={loading}
                       />
                       {errors[`item_${index}_quantity`] && (
-                        <p className="text-red-600 text-sm mt-1">{errors[`item_${index}_quantity`]}</p>
+                        <p className="text-red-600 text-sm mt-1">
+                          {errors[`item_${index}_quantity`]}
+                        </p>
                       )}
                     </div>
 
@@ -539,14 +653,24 @@ const AddSaleModal: React.FC<AddSaleModalProps> = ({
                         min="0.01"
                         step="0.01"
                         value={item.unit_price_base}
-                        onChange={(e) => updateItem(index, 'unit_price_base', parseFloat(e.target.value))}
+                        onChange={(e) =>
+                          updateItem(
+                            index,
+                            'unit_price_base',
+                            parseFloat(e.target.value)
+                          )
+                        }
                         className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                          errors[`item_${index}_price`] ? 'border-red-300' : 'border-gray-300'
+                          errors[`item_${index}_price`]
+                            ? 'border-red-300'
+                            : 'border-gray-300'
                         }`}
                         disabled={loading}
                       />
                       {errors[`item_${index}_price`] && (
-                        <p className="text-red-600 text-sm mt-1">{errors[`item_${index}_price`]}</p>
+                        <p className="text-red-600 text-sm mt-1">
+                          {errors[`item_${index}_price`]}
+                        </p>
                       )}
                     </div>
 
@@ -561,7 +685,13 @@ const AddSaleModal: React.FC<AddSaleModalProps> = ({
                         max="100"
                         step="0.01"
                         value={item.vat_rate || 0}
-                        onChange={(e) => updateItem(index, 'vat_rate', parseFloat(e.target.value))}
+                        onChange={(e) =>
+                          updateItem(
+                            index,
+                            'vat_rate',
+                            parseFloat(e.target.value)
+                          )
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         disabled={loading}
                       />
