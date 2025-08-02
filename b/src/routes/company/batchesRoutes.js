@@ -9,17 +9,19 @@ const {
   deleteBatches,
   getBatchesStats,
   testHealth
-} = require('../../controllers/company/batchesController');
+} = require('../../controllers/company/batchController');
 
-    // 🧪 Test routes
+// ✅ ЗАМЕНИТЬ НА:
+const {
+  allocateBatchesForSale,
+  getBatchMovements,
+  createBatchMovement,
+  getWarehouseBatchesReport
+} = require('../../controllers/company/batchController');
 
-router.get('/test/health', testHealth);
+router.post('/allocate', allocateBatchesForSale);
+router.get('/:batchId/movements', getBatchMovements);
+router.post('/movements', createBatchMovement);
+router.get('/warehouses/:warehouseId/report', getWarehouseBatchesReport);
 
-// 📊 Main CRUD routes
-router.get('/', getBatches);
-router.post('/', createBatches);
-router.put('/:id', updateBatches);
-router.delete('/:id', deleteBatches);
-router.get('/stats', getBatchesStats);
-
-module.exports = 
+module.exports = router;

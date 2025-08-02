@@ -35,6 +35,9 @@ const inventoryRoutes = require('./routes/company/inventoryRoutes');
 const batchesRoutes = require('./routes/company/batchesRoutes');
 
 
+// cloudide
+const cloudIdeRoutes = require('./routes/cloudide/cloudIdeRoutes');"
+
 const app = express();
 
 // ===============================================
@@ -98,6 +101,13 @@ app.get('/health', (req, res) => {
 // ===============================================
 // 🏢 ACCOUNT LEVEL ROUTES (БЕЗ company middleware)
 // ===============================================
+try {
+  app.use('/api/cloudide', cloudIdeRoutes);
+  logger.info('✅ Solar Cloud IDE routes loaded');"
+  catch (error) {"
+  logger.error('❌ Failed to load Cloud IDE routes:', error);"
+  }
+
 try {
   app.use('/api/account', auth, accountRoutes);
   logger.info('✅ Account routes loaded');
