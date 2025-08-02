@@ -36,7 +36,8 @@ const batchesRoutes = require('./routes/company/batchesRoutes');
 
 
 // cloudide
-const cloudIdeRoutes = require('./routes/cloudide/cloudIdeRoutes');"
+const cloudIdeRoutes = require('./routes/cloudide/cloudIdeRoutes');
+
 
 const app = express();
 
@@ -107,6 +108,7 @@ try {
   catch (error) {"
   logger.error('❌ Failed to load Cloud IDE routes:', error);"
   }
+
 
 try {
   app.use('/api/account', auth, accountRoutes);
