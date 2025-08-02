@@ -151,6 +151,11 @@ model users {
   @@index([role])
   @@index([is_active])
   @@index([current_company_id])
+
+  // Добавить к модели users:
+   batches_created product_batches[] @relation("BatchCreator") 
+   movements_created batch_movements[] @relation("MovementCreator")
+   entries_created accounting_entries[] @relation("EntryCreator")
 }
 
 model companies {
@@ -205,6 +210,11 @@ model companies {
   @@index([name])
   @@index([is_active])
   @@index([tax_country])
+
+  // Добавить к модели companies:
+   product_batches product_batches[]
+   batch_movements batch_movements[]
+   accounting_entries accounting_entries[]
 }
 
 model company_users {
@@ -301,6 +311,10 @@ model clients {
   @@index([is_active])
   @@index([country])
   @@index([created_by])
+
+  // Добавить к модели clients:
+   batches_supplied product_batches[] @relation("BatchSupplier")
+   accounting_entries accounting_entries[]
 }
 
 model client_addresses {
@@ -388,6 +402,10 @@ model products {
   @@unique([company_id, code])
   @@index([company_id])
   @@index([is_active])
+
+  // Добавить к модели products:
+   batch_tracking Boolean @default(true) // Включён ли партийный учёт для товара
+   product_batches product_batches[]
 }
 
 model sales {
@@ -552,6 +570,10 @@ model warehouses {
   @@unique([company_id, code])
   @@index([company_id])
   @@index([status])
+
+  // Добавить к модели warehouses:
+   product_batches product_batches[]
+   accounting_entries accounting_entries[]
 }
 
 model bank_operations {
@@ -642,3 +664,163 @@ model intrastat_codes {
   @@unique([code_type, code])
   @@index([code_type])
 }
+
+// ===============================================
+// 📦 ПАРТИЙНАЯ СИСТЕМА ТОВАРОВ
+// ===============================================
+
+model product_batches {
+  id         Int @id @default(autoincrement())
+  company_id Int
+
+  // Основная информация партии
+  batch_number String  @db.VarChar(50)
+  product_id   Int
+  warehouse_id Int
+  supplier_id  Int?
+
+  // Количество и стоимость
+  original_quantity Decimal @db.Decimal(15, 3)
+  current_quantity  Decimal @db.Decimal(15, 3)
+  unit_cost        Decimal @db.Decimal(15, 2)
+  total_cost       Decimal @db.Decimal(15, 2)
+  currency         Currency @default(EUR)
+
+  // Даты
+  purchase_date   DateTime @db.Date
+  expiry_date     DateTime? @db.Date
+  production_date DateTime? @db.Date
+
+  // Статус партии
+  status     String  @default("ACTIVE") @db.VarChar(20) // ACTIVE, EXPIRED, SOLD_OUT
+  is_active  Boolean @default(true)
+
+  // Связанные документы
+  purchase_id Int?
+  
+  // Метаданные
+  created_by Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Связи
+  company   companies  @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  product   products   @relation(fields: [product_id], references: [id])
+  warehouse warehouses @relation(fields: [warehouse_id], references: [id])
+  supplier  clients?   @relation("BatchSupplier", fields: [supplier_id], references: [id])
+  purchase  purchases? @relation(fields: [purchase_id], references: [id])
+  creator   users      @relation("BatchCreator", fields: [created_by], references: [id])
+
+  // Движения партии
+  batch_movements batch_movements[]
+
+  @@unique([company_id, batch_number])
+  @@index([company_id])
+  @@index([product_id])
+  @@index([warehouse_id])
+  @@index([supplier_id])
+  @@index([status])
+  @@index([purchase_date])
+
+  // Добавить к модели purchases:
+  product_batches product_batches[]
+}
+
+model batch_movements {
+  id         Int @id @default(autoincrement())
+  company_id Int
+
+  // Информация о движении
+  batch_id    Int
+  movement_type String @db.VarChar(20) // IN, OUT, TRANSFER, CORRECTION
+  quantity    Decimal @db.Decimal(15, 3)
+  unit_price  Decimal? @db.Decimal(15, 2)
+  
+  // Связанные документы
+  reference_type String? @db.VarChar(20) // PURCHASE, SALE, TRANSFER
+  reference_id   Int?
+  
+  // Описание движения
+  description String? @db.Text
+  notes       String? @db.Text
+
+  // Метаданные
+  movement_date DateTime @db.Date
+  created_by    Int
+  created_at    DateTime @default(now())
+
+  // Связи
+  company companies      @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  batch   product_batches @relation(fields: [batch_id], references: [id], onDelete: Cascade)
+  creator users          @relation("MovementCreator", fields: [created_by], references: [id])
+
+  @@index([company_id])
+  @@index([batch_id])
+  @@index([movement_type])
+  @@index([movement_date])
+  @@index([reference_type, reference_id])
+}
+
+// ===============================================
+// 📊 АВТОМАТИЧЕСКИЕ БУХГАЛТЕРСКИЕ ПРОВОДКИ
+// ===============================================
+
+model accounting_entries {
+  id         Int @id @default(autoincrement())
+  company_id Int
+
+  // Основная информация проводки
+  entry_number String   @db.VarChar(50)
+  entry_date   DateTime @db.Date
+  amount       Decimal  @db.Decimal(15, 2)
+  currency     Currency @default(EUR)
+
+  // Дебет и кредит
+  account_debit  String @db.VarChar(10)  // 2040, 2410, etc.
+  account_credit String @db.VarChar(10)  // 4430, 7001, etc.
+
+  // Описание и примечания
+  description String  @db.VarChar(255)
+  notes       String? @db.Text
+
+  // Связанные объекты
+  reference_type String? @db.VarChar(20) // PURCHASE, SALE, BANKING
+  reference_id   Int?
+  product_id     Int?
+  warehouse_id   Int?
+  client_id      Int?
+
+  // Партийная информация
+  batch_id Int?
+
+  // Метаданные
+  is_automatic Boolean @default(true)
+  created_by   Int
+  created_at   DateTime @default(now())
+
+  // Связи
+  company   companies       @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  product   products?       @relation(fields: [product_id], references: [id])
+  warehouse warehouses?     @relation(fields: [warehouse_id], references: [id])
+  client    clients?        @relation(fields: [client_id], references: [id])
+  batch     product_batches? @relation(fields: [batch_id], references: [id])
+  creator   users           @relation("EntryCreator", fields: [created_by], references: [id])
+
+  @@unique([company_id, entry_number])
+  @@index([company_id])
+  @@index([entry_date])
+  @@index([account_debit])
+  @@index([account_credit])
+  @@index([reference_type, reference_id])
+  @@index([batch_id])
+}
+
+
+
+
+
+
+
+
+
+
