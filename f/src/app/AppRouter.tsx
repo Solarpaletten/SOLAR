@@ -18,10 +18,10 @@ import BankingPage from '../pages/company/banking/BankingPage';
 import SalesPage from '../pages/company/sales/SalesPage';
 import PurchasesPage from '../pages/company/purchases/PurchasesPage';
 import WarehousePage from '../pages/company/warehouse/WarehousePage';
-import ChartOfAccountsPage from '../pages/company/chart-of-accounts/ChartOfAccountsPage'; 
+import ChartOfAccountsPage from '../pages/company/chart-of-accounts/ChartOfAccountsPage';
 import SettingsPage from '../pages/company/settings/SettingsPage';
-import SolarCloudIDE from '../components/cloudide';
-
+import SolarCloudIDE from '../components/cloudide/SolarCloudIDE';
+// Solar ERP - Multi-tenant architecture
 
 function App() {
   console.log('🚀 Solar ERP App loaded - Multi-tenant architecture');
@@ -39,9 +39,8 @@ function App() {
         {/* 🏢 ACCOUNT LEVEL - System management        */}
         {/* ============================================= */}
 
-        
         <Route
-          path="/cloudide"
+          path="/account/ide"
           element={
             <AuthGuard>
               <SolarCloudIDE />
@@ -58,10 +57,19 @@ function App() {
           }
         />
 
+        <Route
+          path="/cloudide"
+          element={
+            <AuthGuard>
+              <SolarCloudIDE />
+            </AuthGuard>
+          }
+        />
+
         {/* ============================================= */}
         {/* 🏭 COMPANY LEVEL - Business Operations      */}
         {/* ============================================= */}
-        
+
         <Route
           path="/dashboard"
           element={
@@ -129,7 +137,7 @@ function App() {
           path="/warehouse"
           element={
             <AuthGuard>
-          <WarehousePage />
+              <WarehousePage />
             </AuthGuard>
           }
         />
