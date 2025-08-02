@@ -7,55 +7,180 @@ echo "🌟 Final Launch Sequence for Solar Cloud IDE..."
 # 1️⃣ BACKEND INTEGRATION
 # ===============================================
 
-echo "const cloudIdeRoutes = require('./routes/cloudide/cloudIdeRoutes');"
+echo "🔧 Integrating Cloud IDE into backend..."
 
+# Add routes to app.js
+echo ""
+echo "📝 MANUAL STEP 1 - Add to b/src/app.js:"
+echo ""
+echo "// After other route imports (around line 35):"
+echo "const cloudIdeRoutes = require('./routes/cloudide/cloudIdeRoutes');"
+echo ""
+echo "// After other route registrations (around line 180):"
 echo "try {"
 echo "  app.use('/api/cloudide', cloudIdeRoutes);"
 echo "  logger.info('✅ Solar Cloud IDE routes loaded');"
 echo "} catch (error) {"
 echo "  logger.error('❌ Failed to load Cloud IDE routes:', error);"
 echo "}"
+echo ""
 
 # ===============================================
 # 2️⃣ FRONTEND INTEGRATION
 # ===============================================
 
+echo "🎨 Setting up frontend Cloud IDE..."
 
-cat > f/src/components/cloudide/SolarCloudIDE.tsx 
+# Create the main Cloud IDE component file
+cat > f/src/components/cloudide/SolarCloudIDE.tsx << 'EOF'
+// Copy the React component code from the artifact above
+// This is the main Solar Cloud IDE interface
+export { default } from './SolarCloudIDE';
+EOF
 
-cat > f/src/components/cloudide/index.ts 
+# Create index file for exports
+cat > f/src/components/cloudide/index.ts << 'EOF'
+// 🌟 Solar Cloud IDE - Exports
+export { default as SolarCloudIDE } from './SolarCloudIDE';
+EOF
 
+# Create API service
+mkdir -p f/src/services/cloudide
 cat > f/src/services/cloudide/cloudIdeApi.ts << 'EOF'
+// 🌟 Solar Cloud IDE - API Service
+import { api } from '../axios';
 
+export interface GitHubRepo {
+  owner: string;
+  repo: string;
+  branch?: string;
+}
+
+export interface RepoFile {
+  path: string;
+  name: string;
+  type: string;
+  size: number;
+  isComponent: boolean;
+}
+
+export interface ComparisonResult {
+  repo: string;
+  branch: string;
+  file: {
+    path: string;
+    repoContent: string;
+    compareContent: string;
+    localExists: boolean;
+  };
+  diff: any[];
+  analysis: {
+    lines: {
+      repo: number;
+      compare: number;
+      diff: number;
+    };
+    patterns: string[];
+    status: 'identical' | 'modified' | 'new';
+  };
+  timestamp: string;
+}
+
+export const cloudIdeApi = {
+  // 🐙 Load GitHub repository
+  loadRepo: async (owner: string, repo: string, branch = 'main'): Promise<any> => {
+    const response = await api.post('/api/cloudide/repo/load', {
+      owner,
+      repo,
+      branch
+    });
+    return response.data;
+  },
+
+  // 📄 Get file content
+  getFile: async (owner: string, repo: string, filePath: string, branch = 'main'): Promise<any> => {
+    const response = await api.get('/api/cloudide/repo/file', {
+      params: { owner, repo, filePath, branch }
+    });
+    return response.data;
+  },
+
+  // 🔍 Compare file
+  compareFile: async (owner: string, repo: string, filePath: string, newCode: string, branch = 'main'): Promise<ComparisonResult> => {
+    const response = await api.post('/api/cloudide/repo/compare', {
+      owner,
+      repo,
+      filePath,
+      newCode,
+      branch
+    });
+    return response.data.data;
+  },
+
+  // 🌿 Get branches
+  getBranches: async (owner: string, repo: string): Promise<any> => {
+    const response = await api.get('/api/cloudide/repo/branches', {
+      params: { owner, repo }
+    });
+    return response.data;
+  },
+
+  // 🔍 Search repositories
+  searchRepos: async (query: string, user?: string): Promise<any> => {
+    const response = await api.get('/api/cloudide/repo/search', {
+      params: { query, user }
+    });
+    return response.data;
+  },
+
+  // 🧪 Health check
+  healthCheck: async (): Promise<any> => {
+    const response = await api.get('/api/cloudide/health');
+    return response.data;
+  }
+};
+EOF
 
 echo "✅ Frontend structure created!"
 
 # ===============================================
 # 3️⃣ ROUTING SETUP
 # ===============================================
+
+echo "🛣️ Setting up routing..."
+
+echo ""
 echo "📝 MANUAL STEP 2 - Add to f/src/app/AppRouter.tsx:"
-// Import Cloud IDE"echo ""
-import { SolarCloudIDE } from '../components/cloudide';
-
-<Route path=\"/cloudide\" element={<SolarCloudIDE />} />
-
+echo ""
+echo "// Import Cloud IDE"
+echo "import { SolarCloudIDE } from '../components/cloudide';"
+echo ""
+echo "// Add route (in the routes section):"
+echo "<Route path=\"/cloudide\" element={<SolarCloudIDE />} />"
+echo ""
 
 # ===============================================
 # 4️⃣ ENVIRONMENT SETUP
 # ===============================================
 
-echo "📝 MANUAL STEP 3 - Optional GitHub Token:"
+echo "🌍 Environment setup..."
 
+echo ""
+echo "📝 MANUAL STEP 3 - Optional GitHub Token:"
+echo ""
 echo "Add to b/.env (for higher rate limits):"
 echo "GITHUB_TOKEN=your_github_personal_access_token"
-
+echo ""
 echo "Note: Works without token for public repositories"
+echo ""
 
 # ===============================================
 # 5️⃣ TESTING SCRIPT
 # ===============================================
 
-//test_cloud_ide.sh
+echo "🧪 Creating test script..."
+
+cat > test_cloud_ide.sh << 'EOF'
 #!/bin/bash
 # 🧪 Solar Cloud IDE - Test Script
 
@@ -75,7 +200,9 @@ curl -s -X POST http://localhost:4000/api/cloudide/repo/load \
 
 echo ""
 echo "✅ Tests complete!"
+EOF
 
+chmod +x test_cloud_ide.sh
 
 # ===============================================
 # 6️⃣ LAUNCH CHECKLIST

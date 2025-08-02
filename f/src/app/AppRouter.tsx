@@ -20,6 +20,7 @@ import PurchasesPage from '../pages/company/purchases/PurchasesPage';
 import WarehousePage from '../pages/company/warehouse/WarehousePage';
 import ChartOfAccountsPage from '../pages/company/chart-of-accounts/ChartOfAccountsPage'; 
 import SettingsPage from '../pages/company/settings/SettingsPage';
+import SolarCloudIDE from '../components/cloudide';
 
 
 function App() {
@@ -37,6 +38,17 @@ function App() {
         {/* ============================================= */}
         {/* 🏢 ACCOUNT LEVEL - System management        */}
         {/* ============================================= */}
+
+        
+        <Route
+          path="/cloudide"
+          element={
+            <AuthGuard>
+              <SolarCloudIDE />
+            </AuthGuard>
+          }
+        />
+
         <Route
           path="/account/dashboard"
           element={
