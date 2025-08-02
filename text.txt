@@ -1,3 +1,0 @@
-// 🔧 ДОБАВИТЬ В b/src/controllers/company/batchController.js
-// Недостающие методы для Enterprise endpoints
-

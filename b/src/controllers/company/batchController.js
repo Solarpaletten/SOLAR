@@ -2,7 +2,7 @@
 // b/src/controllers/batchController.js
 
 const { PrismaClient } = require('@prisma/client');
-const logger = require('../utils/logger');
+const logger = require('../../config/logger'); 
 
 const prisma = new PrismaClient();
 
@@ -336,6 +336,10 @@ const getWarehouseBatchesReport = async (req, res) => {
 // 📅 ПАРТИИ С ИСТЕКАЮЩИМ СРОКОМ
 // ===============================================
 
+// ===============================================
+// 📅 ПАРТИИ С ИСТЕКАЮЩИМ СРОКОМ
+// ===============================================
+
 const getExpiringBatches = async (req, res) => {
   try {
     const { days = 30 } = req.query;
@@ -512,10 +516,6 @@ const getCostAnalytics = async (req, res) => {
   }
 };
 
-// ===============================================
-// 📤 ОБНОВИТЬ EXPORTS
-// ===============================================
-
 module.exports = {
   getBatchesByProduct,
   allocateBatchesForSale,
@@ -523,6 +523,6 @@ module.exports = {
   createBatchMovement,
   getWarehouseBatchesReport,
   getExpiringBatches,
-  getBatchesBySupplier,
+  getBatchesBySupplier,  
   getCostAnalytics
 };

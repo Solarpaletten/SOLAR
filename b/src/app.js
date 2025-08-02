@@ -31,11 +31,11 @@ const purchasesRoutes = require('./routes/company/purchasesRoutes');
 // Chart of Accounts routes
 const chartOfAccountsRoutes = require('./routes/company/chartOfAccountsRoutes');
 const warehouseRoutes = require('./routes/company/warehouseRoutes');
+const inventoryRoutes = require('./routes/company/inventoryRoutes');
+const batchesRoutes = require('./routes/company/batchesRoutes');
 
-const batchRoutes = require('./routes/company/batchesRoutes');
 
 const app = express();
-
 
 // ===============================================
 // 🛡️ SECURITY & MIDDLEWARE SETUP
@@ -105,14 +105,6 @@ try {
   logger.error('❌ Failed to load account routes:', error);
 }
 
-
-// ПОЛНЫЙ ПРИМЕР РЕГИСТРАЦИИ ROUTES В APP.JS
-// Account Level Routes
-app.use('/api/account', accountRoutes);
-app.use('/api/account/companies', companyRoutes);
-
-
-
 try {
   app.use('/api/auth', authRoutes);
   logger.info('✅ Auth routes loaded');
@@ -120,23 +112,9 @@ try {
   logger.error('❌ Failed to load auth routes:', error);
 }
 
-
-// COMPANY LEVEL ROUTES (С auth + company middleware)
-
-// // Company Level Routes  
-// app.use('/api/company/clients', clientRoutes);
-// app.use('/api/company/products', productRoutes);
-// app.use('/api/company/sales', salesRoutes);
-// app.use('/api/company/purchases', purchaseRoutes);
-// app.use('/api/company/warehouses', warehouseRoutes);
-// app.use('/api/company/banking', bankingRoutes);
-
-// // НОВОЕ: Партийная система
-// app.use('/api/company/batches', batchRoutes);
-
-// Authentication Routes
-app.use('/api/auth', authRoutes);
-
+// ===============================================
+// 🏭 COMPANY LEVEL ROUTES (С auth + company middleware)
+// ===============================================
 try {
   app.use('/api/company/clients', auth, companyContext, clientsRoutes);
   logger.info('✅ Company clients routes loaded');
@@ -188,13 +166,17 @@ try {
 }
 
 try {
-  app.use('/api/company/batches', auth, companyContext, batchRoutes);
-  logger.info('✅ Company batch routes loaded');
+  app.use('/api/company/inventory', auth, companyContext, inventoryRoutes);
+  logger.info('✅ Company inventory routes loaded');
 } catch (error) {
-  logger.error('❌ Failed to load company batch routes:', error);
+  logger.error('❌ Failed to load company inventory routes:', error);
 }
-
-
+try {
+  app.use('/api/company/batches', auth, companyContext, batchesRoutes);
+  logger.info('✅ Company batches routes loaded');
+} catch (error) {
+  logger.error('❌ Failed to load company batches routes:', error);
+}
 
 // ===============================================
 // 🧪 TEST ENDPOINTS
@@ -228,7 +210,6 @@ app.get('/api/company/test', auth, companyContext, (req, res) => {
   });
 });
 
-// ГОТОВЫЕ API ENDPOINTS ПОСЛЕ РЕГИСТРАЦИИ
 // ===============================================
 // 🚫 ERROR HANDLERS
 // ===============================================
@@ -249,7 +230,6 @@ app.use('*', (req, res) => {
     ]
   });
 });
-
 
 // Global error handler
 app.use((error, req, res, next) => {
