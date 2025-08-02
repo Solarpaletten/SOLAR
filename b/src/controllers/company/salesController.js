@@ -621,6 +621,305 @@ const createSale = async (req, res) => {
   }
 };
 
+// 🎯 SALES CONTROLLER - ВЫБОР ПАРТИЙ ДЛЯ ОТГРУЗКИ
+
+// ===============================================
+// 📦 ПОЛУЧЕНИЕ ДОСТУПНЫХ ПАРТИЙ ДЛЯ ТОВАРА
+// ===============================================
+
+const getAvailableBatches = async (req, res) => {
+  try {
+    const { productId, warehouseId } = req.params;
+    const companyId = req.companyContext?.companyId;
+
+    logger.info(`📦 Getting available batches for product ${productId} at warehouse ${warehouseId}`);
+
+    // Получаем все доступные партии товара на складе
+    const batches = await prisma.$queryRaw`
+      SELECT 
+        pb.id as batch_id,
+        pb.batch_number,
+        pb.supplier_id,
+        c.name as supplier_name,
+        pb.purchase_date,
+        pb.expiry_date,
+        pb.current_quantity,
+        pb.unit_cost,
+        pb.current_quantity * pb.unit_cost as total_value,
+        p.unit,
+        w.name as warehouse_name
+      FROM product_batches pb
+      JOIN clients c ON pb.supplier_id = c.id
+      JOIN products p ON pb.product_id = p.id
+      JOIN warehouses w ON pb.warehouse_id = w.id
+      WHERE pb.company_id = ${companyId}
+        AND pb.product_id = ${parseInt(productId)}
+        AND pb.warehouse_id = ${parseInt(warehouseId)}
+        AND pb.current_quantity > 0
+        AND pb.status = 'ACTIVE'
+      ORDER BY pb.purchase_date ASC, pb.id ASC
+    `;
+
+    // Дополнительная информация по товару
+    const product = await prisma.products.findFirst({
+      where: { 
+        id: parseInt(productId), 
+        company_id: companyId 
+      },
+      select: {
+        id: true,
+        code: true,
+        name: true,
+        unit: true,
+        current_stock: true
+      }
+    });
+
+    res.json({
+      success: true,
+      product,
+      batches: batches.map(batch => ({
+        ...batch,
+        // Форматируем даты
+        purchase_date: new Date(batch.purchase_date).toLocaleDateString(),
+        expiry_date: batch.expiry_date ? new Date(batch.expiry_date).toLocaleDateString() : null,
+        // Форматируем числа
+        current_quantity: parseFloat(batch.current_quantity),
+        unit_cost: parseFloat(batch.unit_cost),
+        total_value: parseFloat(batch.total_value)
+      })),
+      totalAvailable: batches.reduce((sum, batch) => sum + parseFloat(batch.current_quantity), 0),
+      companyId
+    });
+
+  } catch (error) {
+    logger.error('Error fetching available batches:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error fetching available batches'
+    });
+  }
+};
+
+// ===============================================
+// 🔥 СОЗДАНИЕ ПРОДАЖИ С АВТОМАТИЧЕСКИМ FIFO СПИСАНИЕМ
+// ===============================================
+
+const createSaleWithBatchTracking = async (req, res) => {
+  try {
+    const companyId = req.companyContext?.companyId;
+    const userId = req.user?.id;
+
+    const {
+      document_number,
+      document_date,
+      document_type = 'INVOICE',
+      delivery_date,
+      due_date,
+      client_id,
+      warehouse_id,
+      sales_manager_id,
+      currency = 'EUR',
+      payment_status = 'PENDING',
+      delivery_status = 'PENDING',
+      document_status = 'DRAFT',
+      items = []
+    } = req.body;
+
+    logger.info(`🛒 Creating sale with batch tracking for company: ${companyId}`);
+
+    // Создаём продажу с FIFO списанием партий
+    const sale = await prisma.$transaction(async (tx) => {
+      
+      // 1. Создаём продажу
+      const newSale = await tx.sales.create({
+        data: {
+          company_id: companyId,
+          document_number,
+          document_date: new Date(document_date),
+          document_type,
+          delivery_date: delivery_date ? new Date(delivery_date) : null,
+          due_date: due_date ? new Date(due_date) : null,
+          client_id: parseInt(client_id),
+          warehouse_id: warehouse_id ? parseInt(warehouse_id) : null,
+          sales_manager_id: sales_manager_id ? parseInt(sales_manager_id) : null,
+          subtotal: 0, // Пересчитаем после обработки партий
+          vat_amount: 0,
+          discount_amount: 0,
+          total_amount: 0,
+          currency,
+          payment_status,
+          delivery_status,
+          document_status,
+          created_by: userId
+        }
+      });
+
+      let totalSubtotal = 0;
+      let totalVatAmount = 0;
+      let totalDiscountAmount = 0;
+
+      // 2. Обрабатываем каждую позицию продажи
+      for (const [index, item] of items.entries()) {
+        const requestedQuantity = parseFloat(item.quantity);
+        const salePrice = parseFloat(item.unit_price_base);
+        
+        logger.info(`📦 Processing sale item: Product ${item.product_id}, Qty: ${requestedQuantity}`);
+
+        // 🔥 АВТОМАТИЧЕСКОЕ FIFO СПИСАНИЕ ПАРТИЙ
+        const batchAllocations = await tx.$queryRaw`
+          SELECT 
+            pb.id as batch_id,
+            pb.batch_number,
+            pb.supplier_id,
+            pb.unit_cost,
+            pb.current_quantity,
+            LEAST(${requestedQuantity}, pb.current_quantity) as allocated_quantity
+          FROM product_batches pb
+          WHERE pb.company_id = ${companyId}
+            AND pb.product_id = ${parseInt(item.product_id)}
+            AND pb.warehouse_id = ${warehouse_id}
+            AND pb.current_quantity > 0
+            AND pb.status = 'ACTIVE'
+          ORDER BY pb.purchase_date ASC, pb.id ASC
+        `;
+
+        let remainingQuantity = requestedQuantity;
+        let weightedAverageCost = 0;
+        let totalAllocatedValue = 0;
+
+        // Списываем товар с партий по FIFO
+        for (const allocation of batchAllocations) {
+          if (remainingQuantity <= 0) break;
+
+          const allocatedQty = Math.min(remainingQuantity, parseFloat(allocation.current_quantity));
+          const allocationValue = allocatedQty * parseFloat(allocation.unit_cost);
+          
+          // Обновляем остаток в партии
+          await tx.product_batches.update({
+            where: { id: allocation.batch_id },
+            data: {
+              current_quantity: parseFloat(allocation.current_quantity) - allocatedQty,
+              updated_at: new Date(),
+              status: (parseFloat(allocation.current_quantity) - allocatedQty) === 0 ? 'SOLD_OUT' : 'ACTIVE'
+            }
+          });
+
+          // Записываем движение партии
+          await tx.batch_movements.create({
+            data: {
+              company_id: companyId,
+              batch_id: allocation.batch_id,
+              product_id: parseInt(item.product_id),
+              warehouse_id: warehouse_id,
+              sale_id: newSale.id,
+              movement_type: 'OUT',
+              quantity: -allocatedQty, // Отрицательное значение = расход
+              unit_cost: parseFloat(allocation.unit_cost),
+              description: `Sale ${document_number} - FIFO allocation`,
+              reference_document: document_number,
+              movement_date: new Date(document_date),
+              created_by: userId
+            }
+          });
+
+          totalAllocatedValue += allocationValue;
+          remainingQuantity -= allocatedQty;
+
+          logger.info(`📦 FIFO: Allocated ${allocatedQty} from batch ${allocation.batch_number} at cost €${allocation.unit_cost}`);
+        }
+
+        // Проверяем что весь товар размещён
+        if (remainingQuantity > 0) {
+          throw new Error(`Insufficient stock: Product ${item.product_id}, requested ${requestedQuantity}, available ${requestedQuantity - remainingQuantity}`);
+        }
+
+        // Средневзвешенная себестоимость
+        weightedAverageCost = totalAllocatedValue / requestedQuantity;
+
+        // Расчёты по позиции продажи
+        const lineSubtotal = requestedQuantity * salePrice;
+        const lineDiscount = parseFloat(item.total_discount || 0);
+        const lineAfterDiscount = lineSubtotal - lineDiscount;
+        const lineVat = lineAfterDiscount * (parseFloat(item.vat_rate || 0) / 100);
+        const lineTotal = lineAfterDiscount + lineVat;
+
+        // Создаём позицию продажи
+        await tx.sale_items.create({
+          data: {
+            sale_id: newSale.id,
+            product_id: parseInt(item.product_id),
+            line_number: index + 1,
+            quantity: requestedQuantity,
+            unit_price_base: salePrice,
+            discount_percent: parseFloat(item.discount_percent || 0),
+            total_discount: lineDiscount,
+            vat_rate: parseFloat(item.vat_rate || 0),
+            vat_amount: lineVat,
+            line_total: lineTotal,
+            description: item.description || null,
+            // ДОБАВЛЯЕМ ИНФОРМАЦИЮ О СЕБЕСТОИМОСТИ
+            cost_price: weightedAverageCost, // Средневзвешенная себестоимость
+            margin_amount: lineTotal - (requestedQuantity * weightedAverageCost) // Маржа
+          }
+        });
+
+        totalSubtotal += lineSubtotal;
+        totalVatAmount += lineVat;
+        totalDiscountAmount += lineDiscount;
+
+        // Обновляем общий остаток товара
+        await tx.products.update({
+          where: { id: parseInt(item.product_id) },
+          data: {
+            current_stock: {
+              decrement: requestedQuantity
+            },
+            updated_at: new Date()
+          }
+        });
+
+        logger.info(`✅ Sale item processed: Qty ${requestedQuantity}, Cost €${weightedAverageCost.toFixed(2)}, Price €${salePrice}`);
+      }
+
+      // 3. Обновляем итоги продажи
+      const totalAmount = totalSubtotal - totalDiscountAmount + totalVatAmount;
+      
+      await tx.sales.update({
+        where: { id: newSale.id },
+        data: {
+          subtotal: totalSubtotal,
+          vat_amount: totalVatAmount,
+          discount_amount: totalDiscountAmount,
+          total_amount: totalAmount
+        }
+      });
+
+      return newSale;
+    });
+
+    logger.info(`🎉 Sale created successfully with batch tracking: ${sale.id}`);
+
+    res.status(201).json({
+      success: true,
+      sale,
+      message: 'Sale created successfully with batch tracking',
+      inventory_info: {
+        items_processed: items.length,
+        warehouse_id: warehouse_id,
+        fifo_applied: true
+      }
+    });
+
+  } catch (error) {
+    logger.error('Error creating sale with batch tracking:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Error creating sale'
+    });
+  }
+};
+
 // ✏️ PUT /api/company/sales/:id - Обновить продажу
 const updateSale = async (req, res) => {
   try {
@@ -802,6 +1101,8 @@ module.exports = {
   getAllSales,
   getSaleById,
   createSale,
+  getAvailableBatches,
+  createSaleWithBatchTracking,
   updateSale,
   deleteSale
 };
