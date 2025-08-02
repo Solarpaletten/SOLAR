@@ -19,34 +19,62 @@ interface AddSaleModalProps {
   loading?: boolean;
 }
 
-// Mock data - в реальной версии это будет из API
-const mockClients: Client[] = [
-  { id: 1, name: 'ACME Corporation', email: 'contact@acme.com', code: 'ACM001' },
-  { id: 2, name: 'TechStart Ltd', email: 'info@techstart.com', code: 'TSL002' },
-];
+// ✅ ЗАМЕНИТЬ НА:
+const [clients, setClients] = useState<Client[]>([]);
+const [products, setProducts] = useState<Product[]>([]);
+const [loading, setLoading] = useState(false);
 
-const mockProducts: Product[] = [
-  { 
-    id: 1, 
-    code: 'PRD001', 
-    name: 'Residius Oil technical', 
-    unit: 'liter', 
-    price: 100, 
-    currency: 'EUR', 
-    vat_rate: 20,
-    is_active: true 
-  },
-  { 
-    id: 2, 
-    code: 'PRD002', 
-    name: 'Premium Service', 
-    unit: 'hour', 
-    price: 150, 
-    currency: 'EUR', 
-    vat_rate: 20,
-    is_active: true 
-  },
-];
+// Загрузка клиентов и товаров
+useEffect(() => {
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      
+      // Загружаем клиентов
+      const clientsResponse = await fetch('/api/company/clients', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'x-company-id': localStorage.getItem('currentCompanyId') || '',
+        }
+      });
+      const clientsData = await clientsResponse.json();
+      setClients(clientsData.clients || []);
+
+      // Загружаем товары  
+      const productsResponse = await fetch('/api/company/products', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'x-company-id': localStorage.getItem('currentCompanyId') || '',
+        }
+      });
+      const productsData = await productsResponse.json();
+      setProducts(productsData.products || []);
+      
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (isOpen) {
+    loadData();
+  }
+}, [isOpen]);
+
+// В селекте клиентов заменить mockClients на clients:
+{clients.map(client => (
+  <option key={client.id} value={client.id}>
+    {client.name} ({client.code})
+  </option>
+))}
+
+// В селекте товаров заменить mockProducts на products:
+{products.map(product => (
+  <option key={product.id} value={product.id}>
+    {product.name} ({product.code})
+  </option>
+))}
 
 const AddSaleModal: React.FC<AddSaleModalProps> = ({
   isOpen,
