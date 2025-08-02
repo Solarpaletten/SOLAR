@@ -104,10 +104,10 @@ app.get('/health', (req, res) => {
 // ===============================================
 try {
   app.use('/api/cloudide', cloudIdeRoutes);
-  logger.info('✅ Solar Cloud IDE routes loaded');"
-  catch (error) {"
-  logger.error('❌ Failed to load Cloud IDE routes:', error);"
-  }
+  logger.info('✅ Cloud IDE routes loaded');
+} catch (error) {
+  logger.error('❌ Failed to load Cloud IDE routes:', error);
+} 
 
 
 try {
