@@ -2,7 +2,7 @@
 import React from 'react';
 
 const Text = () => {
-  return <div>Compare</div>;
+  return <div></div>;
 };
 
 export default Text;
