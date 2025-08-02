@@ -332,10 +332,197 @@ const getWarehouseBatchesReport = async (req, res) => {
   }
 };
 
+// ===============================================
+// 📅 ПАРТИИ С ИСТЕКАЮЩИМ СРОКОМ
+// ===============================================
+
+const getExpiringBatches = async (req, res) => {
+  try {
+    const { days = 30 } = req.query;
+    const companyId = req.user.current_company_id;
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + parseInt(days));
+
+    const expiringBatches = await prisma.product_batches.findMany({
+      where: {
+        company_id: companyId,
+        status: 'ACTIVE',
+        current_quantity: { gt: 0 },
+        expiry_date: {
+          lte: expiryDate,
+          gte: new Date()
+        }
+      },
+      include: {
+        product: { select: { name: true, code: true } },
+        warehouse: { select: { name: true, code: true } },
+        supplier: { select: { name: true, code: true } }
+      },
+      orderBy: { expiry_date: 'asc' }
+    });
+
+    logger.info(`Found ${expiringBatches.length} expiring batches`);
+
+    res.json({
+      success: true,
+      data: expiringBatches,
+      message: `Найдено ${expiringBatches.length} партий с истекающим сроком`
+    });
+
+  } catch (error) {
+    logger.error('Error getting expiring batches:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Ошибка получения списка истекающих партий'
+    });
+  }
+};
+
+// ===============================================
+// 🏭 ПАРТИИ ОТ ПОСТАВЩИКА
+// ===============================================
+
+const getBatchesBySupplier = async (req, res) => {
+  try {
+    const { supplierId } = req.params;
+    const companyId = req.user.current_company_id;
+
+    const supplierBatches = await prisma.product_batches.findMany({
+      where: {
+        company_id: companyId,
+        supplier_id: parseInt(supplierId),
+        current_quantity: { gt: 0 }
+      },
+      include: {
+        product: { select: { name: true, code: true, unit: true } },
+        warehouse: { select: { name: true, code: true } }
+      },
+      orderBy: { purchase_date: 'desc' }
+    });
+
+    // Статистика
+    const stats = {
+      totalBatches: supplierBatches.length,
+      totalValue: supplierBatches.reduce((sum, batch) => 
+        sum + (parseFloat(batch.current_quantity) * parseFloat(batch.unit_cost)), 0
+      ),
+      totalQuantity: supplierBatches.reduce((sum, batch) => 
+        sum + parseFloat(batch.current_quantity), 0
+      )
+    };
+
+    logger.info(`Found ${supplierBatches.length} batches for supplier ${supplierId}`);
+
+    res.json({
+      success: true,
+      data: {
+        batches: supplierBatches,
+        statistics: stats
+      },
+      message: `Партии от поставщика`
+    });
+
+  } catch (error) {
+    logger.error('Error getting supplier batches:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Ошибка получения партий поставщика'
+    });
+  }
+};
+
+// ===============================================
+// 📊 АНАЛИЗ СЕБЕСТОИМОСТИ
+// ===============================================
+
+const getCostAnalytics = async (req, res) => {
+  try {
+    const { productId } = req.query;
+    const companyId = req.user.current_company_id;
+
+    const whereCondition = {
+      company_id: companyId,
+      current_quantity: { gt: 0 }
+    };
+
+    if (productId) {
+      whereCondition.product_id = parseInt(productId);
+    }
+
+    const batches = await prisma.product_batches.findMany({
+      where: whereCondition,
+      include: {
+        product: { select: { name: true, code: true } },
+        supplier: { select: { name: true, code: true } }
+      },
+      orderBy: { purchase_date: 'desc' }
+    });
+
+    // Анализ по товарам
+    const costAnalysis = batches.reduce((acc, batch) => {
+      const productId = batch.product_id;
+      const unitCost = parseFloat(batch.unit_cost);
+
+      if (!acc[productId]) {
+        acc[productId] = {
+          product: batch.product,
+          minCost: unitCost,
+          maxCost: unitCost,
+          avgCost: 0,
+          totalQuantity: 0,
+          totalValue: 0,
+          batchCount: 0,
+          suppliers: new Set()
+        };
+      }
+
+      const item = acc[productId];
+      item.minCost = Math.min(item.minCost, unitCost);
+      item.maxCost = Math.max(item.maxCost, unitCost);
+      item.totalQuantity += parseFloat(batch.current_quantity);
+      item.totalValue += parseFloat(batch.current_quantity) * unitCost;
+      item.batchCount++;
+      item.suppliers.add(batch.supplier?.name || 'Unknown');
+
+      return acc;
+    }, {});
+
+    // Рассчитываем средние цены
+    Object.keys(costAnalysis).forEach(productId => {
+      const item = costAnalysis[productId];
+      item.avgCost = item.totalValue / item.totalQuantity;
+      item.suppliers = Array.from(item.suppliers);
+      item.costVariance = ((item.maxCost - item.minCost) / item.avgCost * 100).toFixed(2);
+    });
+
+    logger.info(`Cost analysis completed for ${Object.keys(costAnalysis).length} products`);
+
+    res.json({
+      success: true,
+      data: costAnalysis,
+      message: 'Анализ себестоимости выполнен'
+    });
+
+  } catch (error) {
+    logger.error('Error in cost analytics:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Ошибка анализа себестоимости'
+    });
+  }
+};
+
+// ===============================================
+// 📤 ОБНОВИТЬ EXPORTS
+// ===============================================
+
 module.exports = {
   getBatchesByProduct,
   allocateBatchesForSale,
   getBatchMovements,
   createBatchMovement,
-  getWarehouseBatchesReport
+  getWarehouseBatchesReport,
+  getExpiringBatches,
+  getBatchesBySupplier,
+  getCostAnalytics
 };
