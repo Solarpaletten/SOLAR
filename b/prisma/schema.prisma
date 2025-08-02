@@ -145,6 +145,12 @@ model users {
   chart_of_accounts              chart_of_accounts[]
   address_responsibilities       client_addresses[]  @relation("AddressEmployee")
   purchase_item_responsibilities purchase_items[]    @relation("PurchaseItemEmployee")
+  product_batches    product_batches[]
+  batch_movements    batch_movements[]
+  accounting_entries accounting_entries[]
+  batches_created   product_batches[]   @relation("BatchCreator")
+  movements_created batch_movements[]   @relation("MovementCreator")
+  entries_created   accounting_entries[] @relation("EntryCreator") 
 
   @@index([email])
   @@index([username])
@@ -303,6 +309,8 @@ model clients {
   purchases       purchases[]
   warehouses      warehouses[]
   bank_operations bank_operations[]
+  batches_supplied   product_batches[]   @relation("BatchSupplier")
+  accounting_entries accounting_entries[]
 
   @@unique([company_id, code])
   @@unique([company_id, vat_code])
@@ -389,6 +397,7 @@ model products {
   current_stock Decimal? @db.Decimal(10, 2)
   is_active     Boolean  @default(true)
   is_service    Boolean  @default(false)
+  batch_tracking Boolean @default(true)
 
   created_by Int
   created_at DateTime @default(now())
@@ -398,6 +407,8 @@ model products {
   creator        users            @relation("ProductCreator", fields: [created_by], references: [id])
   sale_items     sale_items[]
   purchase_items purchase_items[]
+  product_batches product_batches[]
+  accounting_entries accounting_entries[]
 
   @@unique([company_id, code])
   @@index([company_id])
@@ -511,6 +522,7 @@ model purchases {
   warehouse        warehouses?      @relation(fields: [warehouse_id], references: [id])
   purchase_manager users?           @relation("PurchaseManager", fields: [purchase_manager_id], references: [id])
   items            purchase_items[]
+  product_batches  product_batches[]
 
   @@unique([company_id, document_number])
   @@index([company_id])
@@ -564,8 +576,8 @@ model warehouses {
   manager   users?      @relation("WarehouseResponsible", fields: [manager_id], references: [id])
   sales     sales[]
   purchases purchases[]
-  clients   clients?    @relation(fields: [clientsId], references: [id])
-  clientsId Int?
+  product_batches    product_batches[]
+  accounting_entries accounting_entries[]
 
   @@unique([company_id, code])
   @@index([company_id])
@@ -713,6 +725,7 @@ model product_batches {
 
   // Движения партии
   batch_movements batch_movements[]
+  accounting_entries accounting_entries[]
 
   @@unique([company_id, batch_number])
   @@index([company_id])
@@ -721,9 +734,6 @@ model product_batches {
   @@index([supplier_id])
   @@index([status])
   @@index([purchase_date])
-
-  // Добавить к модели purchases:
-  product_batches product_batches[]
 }
 
 model batch_movements {
