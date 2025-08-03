@@ -21,9 +21,8 @@ import WarehousePage from '../pages/company/warehouse/WarehousePage';
 import ChartOfAccountsPage from '../pages/company/chart-of-accounts/ChartOfAccountsPage';
 import SettingsPage from '../pages/company/settings/SettingsPage';
 import SolarCloudIDE from '../components/cloudide/SolarCloudIDE';
-import CompanyLayout from '../components/company/CompanyLayout';
-import TabBookDemo from '../components/tabbook/TabBookDemo';
 
+import TabBookDemo from '../components/tabbook/TabBookDemo';
 function App() {
   console.log('🚀 Solar ERP App loaded - Multi-tenant architecture');
 
@@ -62,9 +61,7 @@ function App() {
           path="/cloudide"
           element={
             <AuthGuard>
-              <CompanyLayout>
-                <SolarCloudIDE />
-              </CompanyLayout>
+              <SolarCloudIDE />
             </AuthGuard>
           }
         />
@@ -77,9 +74,7 @@ function App() {
           path="/dashboard"
           element={
             <AuthGuard>
-              <CompanyLayout>
-                <DashboardPage />
-              </CompanyLayout>
+              <DashboardPage />
             </AuthGuard>
           }
         />
@@ -88,9 +83,7 @@ function App() {
           path="/clients"
           element={
             <AuthGuard>
-              <CompanyLayout>
-                <ClientsPage />
-              </CompanyLayout>
+              <ClientsPage />
             </AuthGuard>
           }
         />
@@ -99,9 +92,7 @@ function App() {
           path="/clients/:id"
           element={
             <AuthGuard>
-              <CompanyLayout>
-                <ClientDetailPage />
-              </CompanyLayout>
+              <ClientDetailPage />
             </AuthGuard>
           }
         />
@@ -110,9 +101,7 @@ function App() {
           path="/products"
           element={
             <AuthGuard>
-              <CompanyLayout>
-                <ProductsPage />
-              </CompanyLayout>
+              <ProductsPage />
             </AuthGuard>
           }
         />
@@ -121,9 +110,7 @@ function App() {
           path="/banking"
           element={
             <AuthGuard>
-              <CompanyLayout>
-                <BankingPage />
-              </CompanyLayout>
+              <BankingPage />
             </AuthGuard>
           }
         />
@@ -132,9 +119,7 @@ function App() {
           path="/sales"
           element={
             <AuthGuard>
-              <CompanyLayout>
-                <SalesPage />
-              </CompanyLayout>
+              <SalesPage />
             </AuthGuard>
           }
         />
@@ -143,9 +128,7 @@ function App() {
           path="/purchases"
           element={
             <AuthGuard>
-              <CompanyLayout>
-                <PurchasesPage />
-              </CompanyLayout>
+              <PurchasesPage />
             </AuthGuard>
           }
         />
@@ -154,9 +137,7 @@ function App() {
           path="/warehouse"
           element={
             <AuthGuard>
-              <CompanyLayout>
-                <WarehousePage />
-              </CompanyLayout>
+              <WarehousePage />
             </AuthGuard>
           }
         />
@@ -165,9 +146,7 @@ function App() {
           path="/chart-of-accounts"
           element={
             <AuthGuard>
-              <CompanyLayout>
-                <ChartOfAccountsPage />
-              </CompanyLayout>
+              <ChartOfAccountsPage />
             </AuthGuard>
           }
         />
@@ -176,20 +155,7 @@ function App() {
           path="/settings"
           element={
             <AuthGuard>
-              <CompanyLayout>
-                <SettingsPage />
-              </CompanyLayout>
-            </AuthGuard>
-          }
-        />
-
-        <Route
-          path="/tabbook"
-          element={
-            <AuthGuard>
-              <CompanyLayout>
-                <TabBookDemo />
-              </CompanyLayout>
+              <SettingsPage />
             </AuthGuard>
           }
         />
@@ -201,6 +167,16 @@ function App() {
 
         {/* Catch all - redirect to login */}
         <Route path="*" element={<Navigate to="/login" />} />
+          <Route 
+            path="/tabbook" 
+            element={ 
+              <AuthGuard> 
+                <CompanyLayout> 
+                  <TabBookDemo /> 
+                </CompanyLayout> 
+              </AuthGuard> 
+            } 
+          />
       </Routes>
     </Router>
   );

@@ -1,3 +1,4 @@
+cat > f/src/components/company/CompanySidebar.tsx << 'EOF'
 // f/src/components/company/CompanySidebar.tsx
 // Рабочая версия без mock данных + наши улучшения
 
