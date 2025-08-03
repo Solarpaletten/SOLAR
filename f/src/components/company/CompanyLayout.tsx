@@ -16,7 +16,7 @@ const CompanyLayout: React.FC<CompanyLayoutProps> = ({ children }) => {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        < Companyheader className="bg-orange-500 text-white p-4 flex justify-between items-center">
+        < CompanyHeader className="bg-orange-500 text-white p-4 flex justify-between items-center">
           <div className="flex items-center space-x-4">
             <span>Invite users</span>
             <span>Minimal</span>
