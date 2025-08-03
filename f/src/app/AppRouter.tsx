@@ -21,8 +21,8 @@ import WarehousePage from '../pages/company/warehouse/WarehousePage';
 import ChartOfAccountsPage from '../pages/company/chart-of-accounts/ChartOfAccountsPage';
 import SettingsPage from '../pages/company/settings/SettingsPage';
 import SolarCloudIDE from '../components/cloudide/SolarCloudIDE';
-// Solar ERP - Multi-tenant architecture
-
+import CompanyLayout from '../components/company/CompanyLayout';
+import TabBookDemo from '../components/tabbook/TabBookDemo';
 function App() {
   console.log('🚀 Solar ERP App loaded - Multi-tenant architecture');
 
@@ -167,6 +167,16 @@ function App() {
 
         {/* Catch all - redirect to login */}
         <Route path="*" element={<Navigate to="/login" />} />
+          <Route 
+            path="/tabbook" 
+            element={ 
+              <AuthGuard> 
+                <CompanyLayout> 
+                  <TabBookDemo /> 
+                </CompanyLayout> 
+              </AuthGuard> 
+            } 
+          />
       </Routes>
     </Router>
   );

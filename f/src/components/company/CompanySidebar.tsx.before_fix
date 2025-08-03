@@ -126,7 +126,9 @@ const CompanySidebar: React.FC = () => {
       badge: 'NEW',
       priority: 11,
       pinned: false,
-      expandable: false,
+      expandable: false
+      isPinned: true, // Всегда последний
+      badge: null
     }
   ]);
 
