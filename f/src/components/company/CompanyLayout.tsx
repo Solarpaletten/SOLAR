@@ -1,67 +1,22 @@
 // f/src/components/company/CompanyLayout.tsx
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import CompanySidebar from './CompanySidebar';
+import CompanyHeader from './CompanyHeader';
 
 interface CompanyLayoutProps {
   children: React.ReactNode;
 }
 
 const CompanyLayout: React.FC<CompanyLayoutProps> = ({ children }) => {
-  const location = useLocation();
-
-  const menuItems = [
-    { path: '/dashboard', icon: '📊', label: 'Dashboard' },
-    { path: '/clients', icon: '👥', label: 'Clients' },
-    { path: '/products', icon: '📦', label: 'Products' },
-    { path: '/sales', icon: '💰', label: 'Sales' },
-    { path: '/purchases', icon: '🛍️', label: 'Purchases' },
-    { path: '/warehouse', icon: '🏭', label: 'Warehouse' },
-    { path: '/chart-of-accounts', icon: '📋', label: 'Chart of Accounts' },
-    { path: '/banking', icon: '🏦', label: 'Banking' },
-    { path: '/settings', icon: '⚙️', label: 'Settings' },
-  ];
-
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <div className="w-64 bg-slate-800 text-white flex-shrink-0">
-        <div className="p-4">
-          <h2 className="text-lg font-bold">Solar</h2>
-        </div>
-
-        <nav className="mt-8">
-          {menuItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) =>
-                `block px-4 py-3 text-sm hover:bg-slate-700 transition-colors ${
-                  isActive
-                    ? 'bg-slate-700 border-r-2 border-orange-500'
-                    : ''
-                }`
-              }
-            >
-              <span className="mr-3">{item.icon}</span>
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
-
-        <div className="absolute bottom-4 left-4">
-          <NavLink
-            to="/account/dashboard"
-            className="text-sm text-slate-400 hover:text-white transition-colors"
-          >
-            🔙 Back to Companies
-          </NavLink>
-        </div>
-      </div>
-
+      {/* НОВЫЙ iPhone Sidebar */}
+      <CompanySidebar />
+      
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <header className="bg-orange-500 text-white p-4 flex justify-between items-center">
+        < Companyheader className="bg-orange-500 text-white p-4 flex justify-between items-center">
           <div className="flex items-center space-x-4">
             <span>Invite users</span>
             <span>Minimal</span>
@@ -77,8 +32,8 @@ const CompanyLayout: React.FC<CompanyLayoutProps> = ({ children }) => {
               Company ID: {localStorage.getItem('currentCompanyId') || '0'}
             </span>
           </div>
-        </header>
-
+        </ CompanyHeader >
+        
         {/* Main Content */}
         <main className="flex-1 overflow-auto">{children}</main>
       </div>
