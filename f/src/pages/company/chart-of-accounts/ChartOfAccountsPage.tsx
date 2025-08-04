@@ -1,6 +1,6 @@
 // f/src/pages/company/chart-of-accounts/ChartOfAccountsPage.tsx
 import React, { useState, useEffect } from 'react';
-import CompanyLayout from '../../../components/company/CompanyLayout';
+import CompanyLayout from '../../../components/company/CompanyLayout.tsx';
 import AccountsStats from './components/AccountsStats';
 import AccountsToolbar from './components/AccountsToolbar';
 import AccountsTable from './components/AccountsTable';

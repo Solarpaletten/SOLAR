@@ -1,6 +1,6 @@
 // f/src/pages/company/purchases/PurchasesPage.tsx - ИСПРАВЛЕН
 import React, { useState, useEffect } from 'react';
-import CompanyLayout from '../../../components/company/CompanyLayout';
+import CompanyLayout from '../../../components/company/CompanyLayout.tsx';
 import { 
   Purchase, 
   PurchasesStats, 

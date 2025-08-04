@@ -1,6 +1,6 @@
 // f/src/pages/company/warehouse/WarehousePage.tsx
 import React, { useState, useEffect } from 'react';
-import CompanyLayout from '../../../components/company/CompanyLayout';
+import CompanyLayout from '../../../components/company/CompanyLayout.tsx';
 import { 
   Warehouse, 
   WarehouseStats, 

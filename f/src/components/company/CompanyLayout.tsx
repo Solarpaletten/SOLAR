@@ -1,27 +1,26 @@
-// f/src/components/company/CompanyLayout.tsx
-// Чистая версия - использует отдельный CompanySidebar
-
 import React from 'react';
-import CompanySidebar from './CompanySidebar';
+import CompanySidebar from './CompanySidebarN';
 import CompanyHeader from './CompanyHeader';
 
 interface CompanyLayoutProps {
   children: React.ReactNode;
-}
+} 
 
 const CompanyLayout: React.FC<CompanyLayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar - отдельный компонент */}
+      {/* Company Sidebar */}
       <CompanySidebar />
       
-      {/* Main Content Area */}
+      {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
         <CompanyHeader />
         
-        {/* Main Content */}
-        <main className="flex-1 overflow-auto">{children}</main>
+        {/* Page Content */}
+        <main className="flex-1 overflow-auto p-4">
+          {children}
+        </main>
       </div>
     </div>
   );

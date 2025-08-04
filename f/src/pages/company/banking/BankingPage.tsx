@@ -1,7 +1,7 @@
 // f/src/pages/company/banking/BankingPage.tsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import CompanyLayout from '../../../components/company/CompanyLayout';
+import CompanyLayout from '../../../components/company/CompanyLayout.tsx';
 import { api } from '../../../api/axios';
 
 interface BankAccount {
