@@ -111,9 +111,7 @@ function App() {
           path="/banking"
           element={
             <AuthGuard>
-              <CompanyLayout>
                 <BankingPage />
-              </CompanyLayout>
             </AuthGuard>
           }
         />
