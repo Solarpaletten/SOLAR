@@ -1,3 +1,26 @@
+#!/bin/bash
+
+echo "🎊⚡🔧 РАЗДЕЛЯЕМ HEADER НА ОТДЕЛЬНЫЕ DRAGGABLE ЭЛЕМЕНТЫ! 🔧⚡🎊"
+echo ""
+echo "🎯 ЗАДАЧА: 4 отдельных элемента с drag handles каждый"
+echo "📦 ЭЛЕМЕНТЫ: Invite users | Minimal | Balance | Partnership points"
+echo ""
+
+cd f
+
+echo "1️⃣ BACKUP ТЕКУЩЕГО HEADER:"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+cp src/components/company/CompanyHeader.tsx src/components/company/CompanyHeader.tsx.before_separate
+
+echo "✅ Backup создан"
+
+echo ""
+echo "2️⃣ СОЗДАЁМ HEADER С ОТДЕЛЬНЫМИ DRAGGABLE ЭЛЕМЕНТАМИ:"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Создаём header с 4 отдельными draggable элементами
+cat > src/components/company/CompanyHeader.tsx << 'EOF'
 import React, { useState, useEffect } from 'react';
 import { GripVertical } from 'lucide-react';
 
@@ -240,3 +263,36 @@ const CompanyHeader: React.FC = () => {
 };
 
 export default CompanyHeader;
+EOF
+
+echo "✅ Header с отдельными draggable элементами создан!"
+
+echo ""
+echo "3️⃣ ПРОВЕРЯЕМ РЕЗУЛЬТАТ:"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+echo "📊 Новый CompanyHeader статистика:"
+echo "   📄 Строк кода: $(wc -l src/components/company/CompanyHeader.tsx | cut -d' ' -f1)"
+echo "   🖱️ Drag функции: $(grep -c 'handleDrag\|Drag' src/components/company/CompanyHeader.tsx)"
+echo "   📦 Header элементы: $(grep -c 'headerElements\|HeaderElement' src/components/company/CompanyHeader.tsx)"
+echo "   🎯 GripVertical: $(grep -c 'GripVertical' src/components/company/CompanyHeader.tsx)"
+
+echo ""
+echo "🎊⚡🚀 ОТДЕЛЬНЫЕ DRAGGABLE ЭЛЕМЕНТЫ ГОТОВЫ! 🚀⚡🎊"
+echo ""
+echo "✅ РЕЗУЛЬТАТ:"
+echo "   📦 4 отдельных элемента + аватар:"
+echo "      🔘 Invite users (с drag handle)"
+echo "      📝 Minimal (с drag handle)"
+echo "      💰 Balance 0.00 € (с drag handle)"
+echo "      🤝 Partnership points 0.00 € (с drag handle)"
+echo "      👤 Аватар SWAPOIL GMBH (с drag handle)"
+echo ""
+echo "🎯 ФУНКЦИОНАЛЬНОСТЬ:"
+echo "   🖱️ Каждый элемент имеет свой GripVertical handle"
+echo "   📍 Можно перетаскивать в любую из 3 зон"
+echo "   💾 Позиции сохраняются индивидуально"
+echo "   🎨 Visual feedback для каждого элемента"
+echo ""
+echo "🚀 ГОТОВО К ТЕСТИРОВАНИЮ!"
+echo "💫 ТЕПЕРЬ КАЖДЫЙ ЭЛЕМЕНТ DRAGGABLE ОТДЕЛЬНО!"

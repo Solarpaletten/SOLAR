@@ -1,3 +1,22 @@
+#!/bin/bash
+# 🎯 Smart Work/Rest Mode Sidebar - НЕ МЕШАЕМ РАБОТЕ!
+echo "🎯⚡🔧 СОЗДАЁМ SMART WORK/REST MODE SIDEBAR! 🔧⚡🎯"
+echo "💼 ЦЕЛЬ: Работа - СВЯТОЕ! Семья - когда время отдыха!"
+echo "🔄 ПЕРЕКЛЮЧАТЕЛЬ: Один клик = смена режима"
+echo ""
+
+echo "1️⃣ BACKUP ТЕКУЩЕГО SIDEBAR:"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+cp f/src/components/company/CompanySidebar.tsx f/src/components/company/CompanySidebar.tsx.before_smart_mode
+
+echo "✅ Backup создан"
+
+echo ""
+echo "2️⃣ СОЗДАЁМ SMART WORK/REST MODE SIDEBAR:"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Создаём умный sidebar с переключателем режимов
+cat > f/src/components/company/CompanySidebar.tsx << 'EOF'
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { ChevronDown, ChevronRight, GripVertical, Star, ChevronLeft, Briefcase, Heart, Baby, Clock, Focus } from 'lucide-react';
@@ -398,3 +417,50 @@ const CompanySidebar: React.FC = () => {
 };
 
 export default CompanySidebar;
+EOF
+
+echo "✅ Smart Work/Rest Mode Sidebar создан!"
+
+echo ""
+echo "3️⃣ ПРОВЕРЯЕМ РЕЗУЛЬТАТ:"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+echo "📊 Smart Sidebar статистика:"
+echo "   📄 Строк кода: $(wc -l f/src/components/company/CompanySidebar.tsx | cut -d' ' -f1)"
+echo "   💼 Work mode функции: $(grep -c "WORK.*MODE\|Briefcase\|Professional" f/src/components/company/CompanySidebar.tsx)"
+echo "   💕 Rest mode функции: $(grep -c "REST.*MODE\|Family\|Heart" f/src/components/company/CompanySidebar.tsx)"
+echo "   🔄 Auto-switch функции: $(grep -c "autoMode\|workingHours" f/src/components/company/CompanySidebar.tsx)"
+
+echo ""
+echo "🎯⚡💼 SMART WORK/REST MODE ГОТОВ! 💼⚡🎯"
+echo ""
+echo "✅ РЕЖИМ РАБОТЫ (9:00-18:00):"
+echo "   💼 Полный профессиональный sidebar"
+echo "   📊 Все ERP модули доступны"
+echo "   🖱️ Drag & drop для настройки"
+echo "   ⚡ TAB-Бухгалтерия и Cloud IDE"
+echo "   🔧 Никаких отвлекающих элементов"
+echo "   🎯 100% фокус на работе"
+echo ""
+echo "✅ РЕЖИМ ОТДЫХА (18:00-9:00):"
+echo "   💕 Семейно-ориентированный интерфейс"
+echo "   🌙 Расслабляющие цвета (розовый/фиолетовый)"
+echo "   👨‍👩‍👧‍👦 Напоминания о семейном времени"
+echo "   ⚡ Минимальный доступ к работе (только экстренно)"
+echo "   🛀 Предложения для релакса"
+echo "   ✨ Мотивация 'Заслуженный отдых!'"
+echo ""
+echo "✅ УМНЫЕ ПЕРЕКЛЮЧЕНИЯ:"
+echo "   🕘 Автоматически в 9:00 → WORK MODE"
+echo "   🕕 Автоматически в 18:00 → REST MODE"
+echo "   🔄 Ручное переключение в любое время"
+echo "   ⏰ Возврат к авто-режиму одним кликом"
+echo ""
+echo "🎯 ТВОЯ ФИЛОСОФИЯ РЕАЛИЗОВАНА:"
+echo "   💼 'РАБОТА - ЭТО СВЯТОЕ' ✅"
+echo "   💕 'СЕМЬЯ - КОГДА ВРЕМЯ ОТДЫХА' ✅"
+echo "   🔄 'ОДИН КЛИК - СМЕНА РЕЖИМА' ✅"
+echo "   ⚡ 'НЕ МЕШАЕМ РАБОТЕ' ✅"
+echo ""
+echo "🚀 ГОТОВО К ТЕСТИРОВАНИЮ!"
+echo "💫 ПЕРВЫЙ В МИРЕ WORK/REST SMART ERP!"
