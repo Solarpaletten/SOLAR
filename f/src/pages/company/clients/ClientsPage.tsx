@@ -1,7 +1,7 @@
 // f/src/pages/company/clients/ClientsPage.tsx - С ПРАВИЛЬНОЙ АВТОРИЗАЦИЕЙ
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import CompanyLayout from '../../../components/company/CompanyLayout';
+import CompanyLayout from '../../../components/company/CompanyLayout.tsx';
 import { api } from '../../../api/axios';
 
 // Types

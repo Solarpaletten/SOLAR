@@ -1,7 +1,3 @@
-cat > f/src/components/company/CompanySidebar.tsx << 'EOF'
-// f/src/components/company/CompanySidebar.tsx
-// Рабочая версия без mock данных + наши улучшения
-
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { ChevronDown, ChevronRight } from 'lucide-react';
@@ -15,15 +11,15 @@ interface SidebarItem {
 
 interface SubmenuState {
   warehouse: boolean;
-  cashier: boolean;
+  banking: boolean;
   purchases: boolean;
   sales: boolean;
-  reports: boolean;
 }
 
 const CompanySidebar: React.FC = () => {
   const location = useLocation();
   
+  // 🎯 ТОЛЬКО РЕАЛЬНЫЕ МАРШРУТЫ - НЕТ MOCK ДАННЫХ
   const sidebarItems: SidebarItem[] = [
     { icon: "📊", title: "Dashboard", route: "/dashboard" },
     { icon: "👥", title: "Clients", route: "/clients" },
@@ -40,10 +36,9 @@ const CompanySidebar: React.FC = () => {
 
   const [expandedMenus, setExpandedMenus] = useState<SubmenuState>({
     warehouse: location.pathname.includes('/warehouse'),
-    cashier: location.pathname.includes('/banking'),
+    banking: location.pathname.includes('/banking'),
     purchases: location.pathname.includes('/purchases'),
-    sales: location.pathname.includes('/sales'),
-    reports: location.pathname.includes('/reports')
+    sales: location.pathname.includes('/sales')
   });
 
   const toggleMenu = (itemId: string) => {
@@ -60,7 +55,7 @@ const CompanySidebar: React.FC = () => {
 
   return (
     <div className="w-64 bg-slate-800 text-white flex-shrink-0 h-full flex flex-col">
-      {/* Header */}
+      {/* Header - ссылка на выбор компаний */}
       <div className="p-4">
         <NavLink
           to="/account/dashboard"
@@ -71,47 +66,41 @@ const CompanySidebar: React.FC = () => {
         </NavLink>
       </div>
 
-      {/* Navigation */}
+      {/* Navigation - чистые routes без mock данных */}
       <nav className="flex-1 overflow-y-auto">
         {sidebarItems.map((item) => (
           <div key={item.route}>
-            {/* Main menu item */}
-            <div
-              className={`${linkClass({ isActive: location.pathname === item.route })} cursor-pointer`}
-              onClick={() => {
+            {/* Основной пункт меню */}
+            <NavLink
+              to={item.route}
+              className={linkClass}
+              onClick={(e) => {
                 if (item.expandable) {
+                  e.preventDefault();
                   toggleMenu(item.title.toLowerCase());
                 }
               }}
             >
-              <NavLink
-                to={item.route}
-                className="flex items-center flex-1 text-white no-underline"
-                onClick={(e) => {
-                  if (item.expandable) {
-                    e.preventDefault();
-                  }
-                }}
-              >
-                <span className="mr-3">{item.icon}</span>
-                <span className="flex-1">{item.title}</span>
-                {item.expandable && (
-                  <span className="ml-2">
-                    {expandedMenus[item.title.toLowerCase() as keyof SubmenuState] ? (
-                      <ChevronDown className="w-4 h-4" />
-                    ) : (
-                      <ChevronRight className="w-4 h-4" />
-                    )}
-                  </span>
-                )}
-              </NavLink>
-            </div>
+              <span className="mr-3">{item.icon}</span>
+              <span className="flex-1">{item.title}</span>
+              {item.expandable && (
+                <span className="ml-2">
+                  {expandedMenus[item.title.toLowerCase() as keyof SubmenuState] ? (
+                    <ChevronDown className="w-4 h-4" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4" />
+                  )}
+                </span>
+              )}
+            </NavLink>
 
-            {/* Submenu (заглушка) */}
+            {/* Submenu для expandable пунктов */}
             {item.expandable && expandedMenus[item.title.toLowerCase() as keyof SubmenuState] && (
-              <div className="bg-slate-900 pl-8">
-                <div className="text-slate-400 text-sm p-2">
-                  Submenu coming soon...
+              <div className="bg-slate-900 border-l-2 border-slate-600">
+                <div className="pl-8 py-2">
+                  <div className="text-slate-400 text-sm">
+                    {item.title} модуль готов к работе
+                  </div>
                 </div>
               </div>
             )}
@@ -119,18 +108,19 @@ const CompanySidebar: React.FC = () => {
         ))}
       </nav>
 
-      {/* Footer */}
+      {/* Footer - возврат к компаниям */}
       <div className="border-t border-slate-700 p-4">
-        <NavLink
-          to="/account/dashboard"
-          className="text-sm text-slate-400 hover:text-white transition-colors no-underline"
+        <button
           onClick={() => {
             localStorage.removeItem('currentCompanyId');
             localStorage.removeItem('currentCompanyName');
+            window.location.href = '/account/dashboard';
           }}
+          className="text-sm text-slate-400 hover:text-white transition-colors w-full text-left flex items-center"
         >
-          🔙 Back to Companies
-        </NavLink>
+          <span className="mr-2">🔙</span>
+          <span>Back to Companies</span>
+        </button>
       </div>
     </div>
   );

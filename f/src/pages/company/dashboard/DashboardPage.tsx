@@ -1,7 +1,7 @@
 // f/src/pages/company/dashboard/DashboardPage.tsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import CompanyLayout from '../../../components/company/CompanyLayout';
+import CompanyLayout from '../../../components/company/CompanyLayout.tsx';
 
 const DashboardPage: React.FC = () => {
   const [companyName, setCompanyName] = useState<string>('');

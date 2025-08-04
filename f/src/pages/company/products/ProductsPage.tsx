@@ -1,6 +1,6 @@
 // f/src/pages/company/products/ProductsPage.tsx
 import React, { useState, useEffect } from 'react';
-import CompanyLayout from '../../../components/company/CompanyLayout';
+import CompanyLayout from '../../../components/company/CompanyLayout.tsx';
 import ProductsTable from './components/ProductsTable';
 import ProductsToolbar from './components/ProductsToolbar';
 import ProductsStats from './components/ProductsStats';

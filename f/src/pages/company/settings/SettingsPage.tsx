@@ -1,6 +1,6 @@
 // f/src/pages/company/settings/SettingsPage.tsx
 import React from 'react';
-import CompanyLayout from '../../../components/company/CompanyLayout';
+import CompanyLayout from '../../../components/company/CompanyLayout.tsx';
 
 const SettingsPage: React.FC = () => {
   return (
