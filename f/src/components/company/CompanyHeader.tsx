@@ -121,7 +121,7 @@ const CompanyHeader: React.FC = () => {
     setDraggedOver(null);
   };
 
-  // 🎨 RENDER DRAGGABLE ELEMENT
+  // 🎨 RENDER DRAGGABLE ELEMENT N
   const renderDraggableElement = (element: HeaderElement) => {
     if (element.type === 'avatar') {
       return (
