@@ -211,7 +211,7 @@ const ChartOfAccountsPage: React.FC = () => {
   }, [searchTerm, typeFilter, activeFilter]);
 
   return (
-    <CompanyLayout>
+   
       <div className="flex flex-col h-full bg-gray-50">
         {/* Header */}
         <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6">
@@ -293,7 +293,7 @@ const ChartOfAccountsPage: React.FC = () => {
           />
         )}
       </div>
-    </CompanyLayout>
+    
   );
 };
 

@@ -59,7 +59,7 @@ const PurchasesPage: React.FC = () => {
   };
 
   return (
-    <CompanyLayout>
+    
       <div className="p-6">
         {/* Header */}
         <div className="mb-6">
@@ -311,7 +311,7 @@ const PurchasesPage: React.FC = () => {
           </div>
         </div>
       </div>
-    </CompanyLayout>
+   
   );
 };
 

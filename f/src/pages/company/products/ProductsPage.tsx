@@ -148,7 +148,7 @@ const ProductsPage: React.FC = () => {
   // ===============================================
 
   return (
-    <CompanyLayout>
+    
       <div className="flex flex-col h-full">
         {/* Header */}
         <div className="bg-blue-500 text-white p-4 flex justify-between items-center">
@@ -217,7 +217,7 @@ const ProductsPage: React.FC = () => {
           />
         )}
       </div>
-    </CompanyLayout>
+
   );
 };
 

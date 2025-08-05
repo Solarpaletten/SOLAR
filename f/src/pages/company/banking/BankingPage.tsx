@@ -99,7 +99,7 @@ const BankingPage: React.FC = () => {
   }
 
   return (
-    <CompanyLayout>
+    
       <div className="p-6">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
@@ -299,7 +299,7 @@ const BankingPage: React.FC = () => {
           </div>
         )}
       </div>
-    </CompanyLayout>
+    
   );
 };
 

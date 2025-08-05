@@ -47,7 +47,9 @@ function App() {
           path="/dashboard"
           element={
             <AuthGuard>
+              <CompanyLayout>
                 <DashboardPage />
+              </CompanyLayout>
             </AuthGuard>
           }
         />
@@ -56,7 +58,9 @@ function App() {
           path="/clients"
           element={
             <AuthGuard>
+              <CompanyLayout>
                 <ClientsPage />
+              </CompanyLayout>
             </AuthGuard>
           }
         />
@@ -65,7 +69,9 @@ function App() {
           path="/products"
           element={
             <AuthGuard>
+              <CompanyLayout>
                 <ProductsPage />
+              </CompanyLayout>
             </AuthGuard>
           }
         />
@@ -74,7 +80,9 @@ function App() {
           path="/purchases"
           element={
             <AuthGuard>
+              <CompanyLayout>
                 <PurchasesPage />
+              </CompanyLayout>
             </AuthGuard>
           }
         />
@@ -83,7 +91,9 @@ function App() {
           path="/sales"
           element={
             <AuthGuard>
+              <CompanyLayout>
                 <SalesPage />
+              </CompanyLayout>
             </AuthGuard>
           }
         />
@@ -92,7 +102,9 @@ function App() {
           path="/warehouse"
           element={
             <AuthGuard>
+              <CompanyLayout>
                 <WarehousePage />
+              </CompanyLayout>
             </AuthGuard>
           }
         />
@@ -101,7 +113,9 @@ function App() {
           path="/chart-of-accounts"
           element={
             <AuthGuard>
+              <CompanyLayout>
                 <ChartOfAccountsPage />
+              </CompanyLayout>
             </AuthGuard>
           }
         />
@@ -110,7 +124,9 @@ function App() {
           path="/banking"
           element={
             <AuthGuard>
+              <CompanyLayout>
                 <BankingPage />
+              </CompanyLayout>
             </AuthGuard>
           }
         />
@@ -119,7 +135,9 @@ function App() {
           path="/tabbook"
           element={
             <AuthGuard>
+              <CompanyLayout>
                 <TabBookDemo />
+              </CompanyLayout>
             </AuthGuard>
           }
         />
@@ -128,7 +146,9 @@ function App() {
           path="/cloudide"
           element={
             <AuthGuard>
+              <CompanyLayout>
                 <SolarCloudIDE />
+              </CompanyLayout>
             </AuthGuard>
           }
         />
@@ -137,7 +157,9 @@ function App() {
           path="/settings"
           element={
             <AuthGuard>
+              <CompanyLayout>
                 <SettingsPage />
+              </CompanyLayout>
             </AuthGuard>
           }
         />
