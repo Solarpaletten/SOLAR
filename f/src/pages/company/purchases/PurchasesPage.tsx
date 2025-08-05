@@ -1,350 +1,315 @@
-// f/src/pages/company/purchases/PurchasesPage.tsx - ИСПРАВЛЕН
 import React, { useState, useEffect } from 'react';
-import CompanyLayout from '../../../components/company/CompanyLayout.tsx';
-import { 
-  Purchase, 
-  PurchasesStats, 
-  PurchasesFilter, 
-  PurchasesResponse, 
-  PurchasesStatsResponse,
-  PurchaseFormData
-} from './types/purchasesTypes';
+import CompanyLayout from '../../../components/company/CompanyLayout';
 
-// Import components
-import PurchasesTable from './components/PurchasesTable';
-import PurchasesToolbar from './components/PurchasesToolbar';
-import AddPurchaseModal from './components/AddPurchaseModal';
+interface SimplePurchase {
+  id: number;
+  date: string;
+  supplier: string;
+  product: string;
+  quantity: number;
+  price: number;
+  total: number;
+}
 
-// API service
-const purchasesService = {
-  async getStats(): Promise<PurchasesStats> {
-    const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token') || localStorage.getItem('token');
-    const companyId = localStorage.getItem('currentCompanyId');
-    
-    const response = await fetch('/api/company/purchases/stats', {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'x-company-id': companyId || '',
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (!response.ok) throw new Error('Failed to fetch purchases stats');
-    const data: PurchasesStatsResponse = await response.json();
-    return data.stats;
-  },
-
-  async getPurchases(filters: PurchasesFilter = {}): Promise<PurchasesResponse> {
-    const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token') || localStorage.getItem('token');
-    const companyId = localStorage.getItem('currentCompanyId');
-    
-    const params = new URLSearchParams();
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== '') {
-        params.append(key, value.toString());
-      }
-    });
-    
-    const response = await fetch(`/api/company/purchases?${params.toString()}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'x-company-id': companyId || '',
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (!response.ok) throw new Error('Failed to fetch purchases');
-    return response.json();
-  },
-
-  async createPurchase(data: PurchaseFormData): Promise<Purchase> {
-    const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token') || localStorage.getItem('token');
-    const companyId = localStorage.getItem('currentCompanyId');
-    
-    const response = await fetch('/api/company/purchases', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'x-company-id': companyId || '',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
-    });
-    
-    if (!response.ok) throw new Error('Failed to create purchase');
-    const result = await response.json();
-    return result.purchase;
-  }
-};
-
-// Stats Component - ИСПРАВЛЕН С БЕЗОПАСНОЙ ТИПИЗАЦИЕЙ
-const StatsCards: React.FC<{ stats: PurchasesStats }> = ({ stats }) => (
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-lg p-6 text-white">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-indigo-100 text-sm font-medium">Total Purchases</p>
-          <p className="text-3xl font-bold">{stats?.total_purchases || 0}</p>
-        </div>
-        <div className="bg-indigo-400 rounded-full p-3">
-          🛍️
-        </div>
-      </div>
-    </div>
-
-    <div className="bg-gradient-to-r from-red-500 to-red-600 rounded-lg p-6 text-white">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-red-100 text-sm font-medium">Total Amount</p>
-          <p className="text-2xl font-bold">€{(stats?.total_amount || 0).toLocaleString()}</p>
-        </div>
-        <div className="bg-red-400 rounded-full p-3">
-          💸
-        </div>
-      </div>
-    </div>
-
-    <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-lg p-6 text-white">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-yellow-100 text-sm font-medium">Pending Payment</p>
-          <p className="text-3xl font-bold">{stats?.pending_purchases || 0}</p>
-        </div>
-        <div className="bg-yellow-400 rounded-full p-3">
-          ⏳
-        </div>
-      </div>
-    </div>
-
-    <div className="bg-gradient-to-r from-teal-500 to-teal-600 rounded-lg p-6 text-white">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-teal-100 text-sm font-medium">This Month</p>
-          <p className="text-2xl font-bold">€{(stats?.this_month_amount || 0).toLocaleString()}</p>
-        </div>
-        <div className="bg-teal-400 rounded-full p-3">
-          📊
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-// Main Purchases Page Component
 const PurchasesPage: React.FC = () => {
-  const [stats, setStats] = useState<PurchasesStats | null>(null);
-  const [purchases, setPurchases] = useState<Purchase[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [createLoading, setCreateLoading] = useState(false);
-  const [filters, setFilters] = useState<PurchasesFilter>({
-    page: 1,
-    limit: 50,
-    sort_by: 'document_date',
-    sort_order: 'desc'
+  const [purchases, setPurchases] = useState<SimplePurchase[]>([]);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newPurchase, setNewPurchase] = useState({
+    supplier: '',
+    product: 'RESIDUES TECHNICAL OIL',
+    quantity: 0,
+    price: 0
   });
 
-  const fetchStats = async () => {
-    try {
-      const statsData = await purchasesService.getStats();
-      setStats(statsData);
-    } catch (err) {
-      console.error('Failed to fetch purchases stats:', err);
-      // Don't set error for stats, just log it
-      setStats({
-        total_purchases: 0,
-        total_amount: 0,
-        pending_purchases: 0,
-        this_month_purchases: 0,
-        this_month_amount: 0,
-        average_purchase: 0
-      });
-    }
-  };
-
-  const fetchPurchases = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await purchasesService.getPurchases(filters);
-      setPurchases(response.purchases || []);
-    } catch (err) {
-      console.error('Failed to fetch purchases:', err);
-      setError('Failed to fetch purchases. Please check your connection and try again.');
-      setPurchases([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCreatePurchase = async (data: PurchaseFormData) => {
-    setCreateLoading(true);
-    try {
-      await purchasesService.createPurchase(data);
-      setShowAddModal(false);
-      fetchPurchases(); // Refresh the list
-      fetchStats(); // Refresh stats
-    } catch (error) {
-      console.error('Error creating purchase:', error);
-      throw error; // Re-throw to let modal handle it
-    } finally {
-      setCreateLoading(false);
-    }
-  };
-
-  const handleSort = (field: string) => {
-    const newOrder = filters.sort_by === field && filters.sort_order === 'asc' ? 'desc' : 'asc';
-    setFilters(prev => ({
-      ...prev,
-      sort_by: field,
-      sort_order: newOrder
-    }));
-  };
-
-  const handleView = (purchase: Purchase) => {
-    // TODO: Implement view functionality
-    console.log('View purchase:', purchase);
-  };
-
-  const handleEdit = (purchase: Purchase) => {
-    // TODO: Implement edit functionality
-    console.log('Edit purchase:', purchase);
-  };
-
-  const handleDelete = (purchase: Purchase) => {
-    // TODO: Implement delete functionality
-    console.log('Delete purchase:', purchase);
-  };
-
-  const handleExport = () => {
-    // TODO: Implement export functionality
-    console.log('Export purchases');
-  };
-
+  // Простые mock данные для начала
   useEffect(() => {
-    fetchStats();
-    fetchPurchases();
+    setPurchases([
+      {
+        id: 1,
+        date: '2025-08-05',
+        supplier: 'ASSET LOGISTICS GMBH',
+        product: 'RESIDUES TECHNICAL OIL',
+        quantity: 33,
+        price: 700,
+        total: 23100
+      }
+    ]);
   }, []);
 
-  useEffect(() => {
-    fetchPurchases();
-  }, [filters]);
-
-  const handleFiltersChange = (newFilters: PurchasesFilter) => {
-    setFilters(prev => ({ ...prev, ...newFilters, page: 1 }));
+  const handleAddPurchase = () => {
+    if (newPurchase.supplier && newPurchase.quantity > 0 && newPurchase.price > 0) {
+      const purchase: SimplePurchase = {
+        id: purchases.length + 1,
+        date: new Date().toISOString().split('T')[0],
+        supplier: newPurchase.supplier,
+        product: newPurchase.product,
+        quantity: newPurchase.quantity,
+        price: newPurchase.price,
+        total: newPurchase.quantity * newPurchase.price
+      };
+      
+      setPurchases([...purchases, purchase]);
+      setNewPurchase({ supplier: '', product: 'RESIDUES TECHNICAL OIL', quantity: 0, price: 0 });
+      setShowAddForm(false);
+      
+      // TODO: Здесь будет интеграция с Warehouse
+      console.log('🛒 Purchase created:', purchase);
+      console.log('📦 TODO: Add to warehouse inventory');
+    }
   };
 
-  // Error State with Retry
-  if (error && !loading && purchases.length === 0) {
-    return (
-      <CompanyLayout>
-        <div className="p-6">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <div className="flex">
-              <div className="text-red-400 text-xl mr-3">⚠️</div>
+  return (
+    <CompanyLayout>
+      <div className="p-6">
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            🛒 Purchases Management
+          </h1>
+          <p className="text-gray-600">
+            Simple purchases tracking - testing Purchases → Warehouse → Sales flow
+          </p>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-red-800 font-medium">Connection Error</h3>
-                <p className="text-red-700 mt-1">{error}</p>
-                <div className="mt-3 flex gap-2">
-                  <button
-                    onClick={() => {
-                      setError(null);
-                      fetchStats();
-                      fetchPurchases();
-                    }}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                  >
-                    🔄 Retry Connection
-                  </button>
-                  <button
-                    onClick={() => window.location.reload()}
-                    className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-                  >
-                    🔄 Reload Page
-                  </button>
-                </div>
+                <p className="text-sm font-medium text-gray-600">Total Purchases</p>
+                <p className="text-2xl font-bold text-gray-900">{purchases.length}</p>
+              </div>
+              <div className="bg-blue-500 rounded-full p-3">
+                <span className="text-white text-xl">🛒</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Amount</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  €{purchases.reduce((sum, p) => sum + p.total, 0).toLocaleString()}
+                </p>
+              </div>
+              <div className="bg-green-500 rounded-full p-3">
+                <span className="text-white text-xl">💰</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Quantity</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {purchases.reduce((sum, p) => sum + p.quantity, 0)} T
+                </p>
+              </div>
+              <div className="bg-purple-500 rounded-full p-3">
+                <span className="text-white text-xl">📦</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Avg Price</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  €{purchases.length ? Math.round(purchases.reduce((sum, p) => sum + p.price, 0) / purchases.length) : 0}
+                </p>
+              </div>
+              <div className="bg-orange-500 rounded-full p-3">
+                <span className="text-white text-xl">📊</span>
               </div>
             </div>
           </div>
         </div>
-      </CompanyLayout>
-    );
-  }
 
-  return (
-    <CompanyLayout>
-      <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-              🛍️ Purchases Management
-            </h1>
-            <p className="text-gray-600 mt-1">
-              Manage your purchase orders, supplier invoices and procurement
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-medium">
-              🛍️ Purchases Module
-            </span>
-          </div>
+        {/* Add Purchase Button */}
+        <div className="mb-6">
+          <button
+            onClick={() => setShowAddForm(!showAddForm)}
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+          >
+            <span>➕</span>
+            {showAddForm ? 'Cancel' : 'Add New Purchase'}
+          </button>
         </div>
 
-        {/* Stats - Only show if available */}
-        {stats && <StatsCards stats={stats} />}
-
-        {/* Error banner for API issues */}
-        {error && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <div className="flex items-center">
-              <div className="text-yellow-400 text-lg mr-3">⚠️</div>
-              <div className="flex-1">
-                <p className="text-yellow-800 text-sm">{error}</p>
+        {/* Add Purchase Form */}
+        {showAddForm && (
+          <div className="bg-white rounded-lg shadow p-6 mb-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Add New Purchase</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Supplier
+                </label>
+                <select
+                  value={newPurchase.supplier}
+                  onChange={(e) => setNewPurchase({...newPurchase, supplier: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select Supplier</option>
+                  <option value="ASSET LOGISTICS GMBH">ASSET LOGISTICS GMBH</option>
+                  <option value="SWAPOIL GMBH">SWAPOIL GMBH</option>
+                  <option value="Test Supplier">Test Supplier</option>
+                </select>
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Product
+                </label>
+                <select
+                  value={newPurchase.product}
+                  onChange={(e) => setNewPurchase({...newPurchase, product: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="RESIDUES TECHNICAL OIL">RESIDUES TECHNICAL OIL</option>
+                  <option value="Test Product">Test Product</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Quantity (Tons)
+                </label>
+                <input
+                  type="number"
+                  value={newPurchase.quantity}
+                  onChange={(e) => setNewPurchase({...newPurchase, quantity: parseFloat(e.target.value) || 0})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="0"
+                  min="0"
+                  step="0.1"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Price per Ton (€)
+                </label>
+                <input
+                  type="number"
+                  value={newPurchase.price}
+                  onChange={(e) => setNewPurchase({...newPurchase, price: parseFloat(e.target.value) || 0})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="0"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+            </div>
+
+            <div className="mt-4 flex gap-4">
               <button
-                onClick={() => {
-                  setError(null);
-                  fetchPurchases();
-                }}
-                className="text-yellow-600 hover:text-yellow-800 ml-3"
+                onClick={handleAddPurchase}
+                className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700"
+                disabled={!newPurchase.supplier || newPurchase.quantity <= 0 || newPurchase.price <= 0}
               >
-                🔄 Retry
+                ✅ Add Purchase
               </button>
+              
+              <div className="text-sm text-gray-600 flex items-center">
+                Total: €{(newPurchase.quantity * newPurchase.price).toFixed(2)}
+              </div>
             </div>
           </div>
         )}
 
-        {/* Toolbar */}
-        <PurchasesToolbar 
-          filters={filters} 
-          onFiltersChange={handleFiltersChange}
-          onAddPurchase={() => setShowAddModal(true)}
-          onExport={handleExport}
-          totalCount={purchases.length}
-          loading={loading}
-        />
-
         {/* Purchases Table */}
-        <PurchasesTable 
-          purchases={purchases}
-          loading={loading}
-          onView={handleView}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          sortBy={filters.sort_by}
-          sortOrder={filters.sort_order}
-          onSort={handleSort}
-        />
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h3 className="text-lg font-medium text-gray-900">Recent Purchases</h3>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Supplier
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Product
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Quantity
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Price/T
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Total
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {purchases.map((purchase) => (
+                  <tr key={purchase.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {purchase.date}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {purchase.supplier}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {purchase.product}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {purchase.quantity} T
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      €{purchase.price}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      €{purchase.total.toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                        Added to Warehouse
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
-        {/* Add Purchase Modal */}
-        <AddPurchaseModal
-          isOpen={showAddModal}
-          onClose={() => setShowAddModal(false)}
-          onSubmit={handleCreatePurchase}
-          loading={createLoading}
-        />
+            {purchases.length === 0 && (
+              <div className="text-center py-12">
+                <div className="text-gray-400 text-4xl mb-4">🛒</div>
+                <p className="text-gray-500">No purchases yet. Add your first purchase above!</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Next Steps */}
+        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-start">
+            <div className="text-blue-400 text-lg mr-3">💡</div>
+            <div className="flex-1">
+              <h4 className="text-blue-800 font-medium mb-2">Next Steps for Full Integration:</h4>
+              <ul className="text-blue-700 text-sm space-y-1">
+                <li>• Create purchase → Auto-update warehouse inventory</li>
+                <li>• Connect with Products database</li>
+                <li>• Link to Sales for inventory deduction</li>
+                <li>• Add real supplier management</li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
     </CompanyLayout>
   );
