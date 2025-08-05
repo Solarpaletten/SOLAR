@@ -4,7 +4,7 @@ import CompanyLayout from '../../../components/company/CompanyLayout.tsx';
 
 const SettingsPage: React.FC = () => {
   return (
-    <CompanyLayout>
+    
       <div className="p-6">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
@@ -98,7 +98,7 @@ const SettingsPage: React.FC = () => {
           </div>
         </div>
       </div>
-    </CompanyLayout>
+
   );
 };
 

@@ -39,7 +39,7 @@ const WarehousePage: React.FC = () => {
   const totalValue = inventory.reduce((sum, item) => sum + (item.quantity * 700), 0); // Assuming €700/T
 
   return (
-    <CompanyLayout>
+  
       <div className="p-6">
         {/* Header */}
         <div className="mb-6">
@@ -189,7 +189,7 @@ const WarehousePage: React.FC = () => {
           </div>
         </div>
       </div>
-    </CompanyLayout>
+    
   );
 };
 

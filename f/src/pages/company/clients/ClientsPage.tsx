@@ -278,7 +278,7 @@ const ClientsPage: React.FC = () => {
 
 
   return (
-    <CompanyLayout>
+
       <div className="p-6">
         {/* Company Context Display */}
         <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -677,7 +677,7 @@ const ClientsPage: React.FC = () => {
           </div>
         )}
       </div>
-    </CompanyLayout>
+
   );
 };
 

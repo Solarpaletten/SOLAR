@@ -15,7 +15,7 @@ const DashboardPage: React.FC = () => {
   }, []);
 
   return (
-    <CompanyLayout>
+    
       <div className="p-6">
         {/* Header */}
         <div className="mb-6">
@@ -275,7 +275,7 @@ const DashboardPage: React.FC = () => {
           </div>
         </div>
       </div>
-    </CompanyLayout>
+    
   );
 };
 
