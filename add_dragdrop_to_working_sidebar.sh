@@ -202,7 +202,7 @@ const CompanySidebar: React.FC = () => {
     }));
   };
 
-  // 📱 DRAG & DROP HANDLERS
+  // 📱 DRAG & DROP HANDLERS N
   const handleDragStart = (e: React.DragEvent, item: SidebarItem) => {
     if (item.isPinned) {
       e.preventDefault();
