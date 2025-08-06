@@ -94,21 +94,6 @@ const PurchasesToolbar: React.FC<PurchasesToolbarProps> = ({
                 <option value="CANCELLED">Cancelled</option>
               </select>
 
-              {/* Operation Type Filter */}
-              <select
-                value={filters.operation_type || ''}
-                onChange={(e) => onFiltersChange({ 
-                  ...filters, 
-                  operation_type: e.target.value as any 
-                })}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
-              >
-                <option value="">All Types</option>
-                <option value="PURCHASE">Purchase</option>
-                <option value="RETURN">Return</option>
-                <option value="ADJUSTMENT">Adjustment</option>
-              </select>
-
               {/* Advanced Filters Toggle */}
               <button
                 onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
@@ -265,7 +250,6 @@ const PurchasesToolbar: React.FC<PurchasesToolbarProps> = ({
                 <option value="total_amount">Amount</option>
                 <option value="supplier_id">Supplier</option>
                 <option value="payment_status">Payment Status</option>
-                <option value="operation_type">Operation Type</option>
               </select>
             </div>
 
