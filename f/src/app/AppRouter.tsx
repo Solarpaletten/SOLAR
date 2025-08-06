@@ -6,6 +6,9 @@ import {
   Navigate,
 } from 'react-router-dom';
 
+// 🏢 ДОБАВЛЯЕМ COMPANY CONTEXT IMPORT
+import { CompanyProvider } from '../contexts/CompanyContext';
+
 import LoginPage from '../pages/auth/LoginPage';
 import AuthGuard from '../components/account/AuthGuard';
 import AccountDashboardPage from '../pages/account/dashboard/AccountDashboardPage';
@@ -29,193 +32,196 @@ import InventoryAccountsIntegration from '../components/integration/InventoryAcc
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/auth/login" element={<LoginPage />} />
+    <CompanyProvider defaultCompanyId={1} fallbackToFirst={true}>
+      <Router>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/auth/login" element={<LoginPage />} />
 
-        {/* Account Level */}
-        <Route
-          path="/account/dashboard"
-          element={
-            <AuthGuard>
-              <AccountDashboardPage />
-            </AuthGuard>
-          }
-        />
+          {/* Account Level */}
+          <Route
+            path="/account/dashboard"
+            element={
+              <AuthGuard>
+                <AccountDashboardPage />
+              </AuthGuard>
+            }
+          />
 
-        {/* Company Level - All wrapped in CompanyLayout */}
-        <Route
-          path="/dashboard"
-          element={
-            <AuthGuard>
-              <CompanyLayout>
-                <DashboardPage />
-              </CompanyLayout>
-            </AuthGuard>
-          }
-        />
+          {/* Company Level - All wrapped in CompanyLayout */}
+          <Route
+            path="/dashboard"
+            element={
+              <AuthGuard>
+                <CompanyLayout>
+                  <DashboardPage />
+                </CompanyLayout>
+              </AuthGuard>
+            }
+          />
 
-        <Route
-          path="/clients"
-          element={
-            <AuthGuard>
-              <CompanyLayout>
-                <ClientsPage />
-              </CompanyLayout>
-            </AuthGuard>
-          }
-        />
+          <Route
+            path="/clients"
+            element={
+              <AuthGuard>
+                <CompanyLayout>
+                  <ClientsPage />
+                </CompanyLayout>
+              </AuthGuard>
+            }
+          />
 
-        <Route
-          path="/products"
-          element={
-            <AuthGuard>
-              <CompanyLayout>
-                <ProductsPage />
-              </CompanyLayout>
-            </AuthGuard>
-          }
-        />
+          <Route
+            path="/products"
+            element={
+              <AuthGuard>
+                <CompanyLayout>
+                  <ProductsPage />
+                </CompanyLayout>
+              </AuthGuard>
+            }
+          />
 
-        <Route
-          path="/purchases"
-          element={
-            <AuthGuard>
-              <CompanyLayout>
-                <PurchasesPage />
-              </CompanyLayout>
-            </AuthGuard>
-          }
-        />
+          {/* 🛒 PURCHASES PAGE С COMPANYCONTEXT */}
+          <Route
+            path="/purchases"
+            element={
+              <AuthGuard>
+                <CompanyLayout>
+                  <PurchasesPage />
+                </CompanyLayout>
+              </AuthGuard>
+            }
+          />
 
-        <Route
-          path="/sales"
-          element={
-            <AuthGuard>
-              <CompanyLayout>
-                <SalesPage />
-              </CompanyLayout>
-            </AuthGuard>
-          }
-        />
+          <Route
+            path="/sales"
+            element={
+              <AuthGuard>
+                <CompanyLayout>
+                  <SalesPage />
+                </CompanyLayout>
+              </AuthGuard>
+            }
+          />
 
-        <Route
-          path="/warehouse"
-          element={
-            <AuthGuard>
-              <CompanyLayout>
-                <WarehousePage />
-              </CompanyLayout>
-            </AuthGuard>
-          }
-        />
+          <Route
+            path="/warehouse"
+            element={
+              <AuthGuard>
+                <CompanyLayout>
+                  <WarehousePage />
+                </CompanyLayout>
+              </AuthGuard>
+            }
+          />
 
-        <Route
-          path="/chart-of-accounts"
-          element={
-            <AuthGuard>
-              <CompanyLayout>
-                <ChartOfAccountsPage />
-              </CompanyLayout>
-            </AuthGuard>
-          }
-        />
+          <Route
+            path="/chart-of-accounts"
+            element={
+              <AuthGuard>
+                <CompanyLayout>
+                  <ChartOfAccountsPage />
+                </CompanyLayout>
+              </AuthGuard>
+            }
+          />
 
-        <Route
-          path="/company/chart-of-accounts"
-          element={
-            <AuthGuard>
-              <CompanyLayout>
-                <ChartOfAccountsPage />
-              </CompanyLayout>
-            </AuthGuard>
-          }
-        />
+          <Route
+            path="/company/chart-of-accounts"
+            element={
+              <AuthGuard>
+                <CompanyLayout>
+                  <ChartOfAccountsPage />
+                </CompanyLayout>
+              </AuthGuard>
+            }
+          />
 
-        <Route
-          path="/company/inventory-integration"
-          element={
-            <AuthGuard>
-              <CompanyLayout>
-                <InventoryAccountsIntegration />
-              </CompanyLayout>
-            </AuthGuard>
-          }
-        />
+          <Route
+            path="/company/inventory-integration"
+            element={
+              <AuthGuard>
+                <CompanyLayout>
+                  <InventoryAccountsIntegration />
+                </CompanyLayout>
+              </AuthGuard>
+            }
+          />
 
-        <Route
-          path="/banking"
-          element={
-            <AuthGuard>
-              <CompanyLayout>
-                <BankingPage />
-              </CompanyLayout>
-            </AuthGuard>
-          }
-        />
+          <Route
+            path="/banking"
+            element={
+              <AuthGuard>
+                <CompanyLayout>
+                  <BankingPage />
+                </CompanyLayout>
+              </AuthGuard>
+            }
+          />
 
-        <Route
-          path="/tabbook"
-          element={
-            <AuthGuard>
-              <CompanyLayout>
-                <TabBookDemo />
-              </CompanyLayout>
-            </AuthGuard>
-          }
-        />
+          <Route
+            path="/tabbook"
+            element={
+              <AuthGuard>
+                <CompanyLayout>
+                  <TabBookDemo />
+                </CompanyLayout>
+              </AuthGuard>
+            }
+          />
 
-        <Route
-          path="/cloudide"
-          element={
-            <AuthGuard>
-              <CompanyLayout>
-                <SolarCloudIDE />
-              </CompanyLayout>
-            </AuthGuard>
-          }
-        />
+          <Route
+            path="/cloudide"
+            element={
+              <AuthGuard>
+                <CompanyLayout>
+                  <SolarCloudIDE />
+                </CompanyLayout>
+              </AuthGuard>
+            }
+          />
 
-        <Route
-          path="/inventory-flow"
-          element={
-            <AuthGuard>
-              <CompanyLayout>
-                <InventoryFlowPage />
-              </CompanyLayout>
-            </AuthGuard>
-          }
-        />
+          <Route
+            path="/inventory-flow"
+            element={
+              <AuthGuard>
+                <CompanyLayout>
+                  <InventoryFlowPage />
+                </CompanyLayout>
+              </AuthGuard>
+            }
+          />
 
-        <Route
-          path="/settings"
-          element={
-            <AuthGuard>
-              <CompanyLayout>
-                <SettingsPage />
-              </CompanyLayout>
-            </AuthGuard>
-          }
-        />
+          <Route
+            path="/settings"
+            element={
+              <AuthGuard>
+                <CompanyLayout>
+                  <SettingsPage />
+                </CompanyLayout>
+              </AuthGuard>
+            }
+          />
 
-        <Route
-          path="/dashka"
-          element={
-            <AuthGuard>
-              <CompanyLayout>
-                <DashkaPage />
-              </CompanyLayout>
-            </AuthGuard>
-          }
-        />
+          <Route
+            path="/dashka"
+            element={
+              <AuthGuard>
+                <CompanyLayout>
+                  <DashkaPage />
+                </CompanyLayout>
+              </AuthGuard>
+            }
+          />
 
-        {/* Redirects */}
-        <Route path="/" element={<Navigate to="/account/dashboard" />} />
-        <Route path="*" element={<Navigate to="/login" />} />
-      </Routes>
-    </Router>
+          {/* Redirects */}
+          <Route path="/" element={<Navigate to="/account/dashboard" />} />
+          <Route path="*" element={<Navigate to="/login" />} />
+        </Routes>
+      </Router>
+    </CompanyProvider>
   );
 }
 
