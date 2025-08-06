@@ -91,6 +91,7 @@ const CompanySidebar: React.FC = () => {
       isPinned: false,
       badge: null,
     },
+
     {
       id: 'accounts',
       icon: '📋',
@@ -128,6 +129,17 @@ const CompanySidebar: React.FC = () => {
       isPinned: false,
       badge: 'BETA',
     },
+
+    {
+      id: 'inventory-flow',
+      icon: '🎯',
+      title: 'Товарооборот',
+      route: '/inventory-flow',
+      priority: 12,
+      isPinned: false,
+      badge: 'NEW',
+    },
+    
     {
       id: 'settings',
       icon: '⚙️',

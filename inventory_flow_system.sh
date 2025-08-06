@@ -1,3 +1,19 @@
+#!/bin/bash
+# 🎯 СИСТЕМА ПОЛНОГО ТОВАРООБОРОТА
+# Создаём интеграцию: Purchase → Warehouse → Sales → Chart of Accounts
+
+echo "🎊🔥🎯 СОЗДАНИЕ СИСТЕМЫ ПОЛНОГО ТОВАРООБОРОТА! 🎯🔥🎊"
+echo ""
+echo "📋 BUSINESS FLOW:"
+echo "   1️⃣ ПОКУПКА 10т → Приходная накладная + Склад +10т"
+echo "   2️⃣ ПРОДАЖА 5т → Расходная накладная + Склад -5т = 5т остаток"
+echo "   3️⃣ ПРОВОДКИ → План счетов (Дт/Кт)"
+echo ""
+
+# 1. Создаём центральный инвентарь store
+echo "1️⃣ СОЗДАЁМ ЦЕНТРАЛЬНЫЙ INVENTORY STORE:"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
 mkdir -p f/src/store
 cat > f/src/store/inventoryStore.ts << 'EOF'
 // 🎯 ЦЕНТРАЛЬНЫЙ INVENTORY STORE
@@ -241,7 +257,14 @@ export const inventoryStore = new InventoryStore();
 inventoryStore.loadFromStorage();
 
 export type { InventoryItem, InventoryMovement, InventoryBatch };
+EOF
 
+echo "✅ Центральный InventoryStore создан"
+
+# 2. Создаём компонент интеграции для Purchases
+echo ""
+echo "2️⃣ СОЗДАЁМ ИНТЕГРАЦИЮ ДЛЯ PURCHASES:"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 mkdir -p f/src/components/integration
 cat > f/src/components/integration/PurchaseWarehouseIntegration.tsx << 'EOF'
@@ -442,6 +465,12 @@ const PurchaseWarehouseIntegration: React.FC = () => {
 export default PurchaseWarehouseIntegration;
 EOF
 
+echo "✅ PurchaseWarehouseIntegration создан"
+
+# 3. Создаём компонент интеграции для Sales
+echo ""
+echo "3️⃣ СОЗДАЁМ ИНТЕГРАЦИЮ ДЛЯ SALES:"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 cat > f/src/components/integration/SalesWarehouseIntegration.tsx << 'EOF'
 import React, { useState, useEffect } from 'react';
@@ -650,8 +679,14 @@ const SalesWarehouseIntegration: React.FC = () => {
 };
 
 export default SalesWarehouseIntegration;
+EOF
 
+echo "✅ SalesWarehouseIntegration создан"
 
+# 4. Создаём компонент просмотра склада
+echo ""
+echo "4️⃣ СОЗДАЁМ КОМПОНЕНТ ПРОСМОТРА СКЛАДА:"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 cat > f/src/components/integration/WarehouseInventoryView.tsx << 'EOF'
 import React, { useState, useEffect } from 'react';
@@ -902,7 +937,14 @@ const WarehouseInventoryView: React.FC = () => {
 };
 
 export default WarehouseInventoryView;
+EOF
 
+echo "✅ WarehouseInventoryView создан"
+
+# 5. Создаём главную страницу интеграции
+echo ""
+echo "5️⃣ СОЗДАЁМ ГЛАВНУЮ СТРАНИЦУ ИНТЕГРАЦИИ:"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 mkdir -p f/src/pages/company/integration
 cat > f/src/pages/company/integration/InventoryFlowPage.tsx << 'EOF'
@@ -1076,7 +1118,14 @@ const InventoryFlowPage: React.FC = () => {
 };
 
 export default InventoryFlowPage;
+EOF
 
+echo "✅ InventoryFlowPage создан"
+
+# 6. Добавляем в AppRouter
+echo ""
+echo "6️⃣ ДОБАВЛЯЕМ ROUTE В APPROUTER:"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # Backup
 cp f/src/app/AppRouter.tsx f/src/app/AppRouter.tsx.before_inventory
