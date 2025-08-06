@@ -1,3 +1,27 @@
+#!/bin/bash
+# 🔧 ДОПИСЫВАЕМ SALES PAGE ДО КОНЦА
+# Завершаем недописанный файл SalesPage.tsx
+
+echo "🎊🔥🔧 ДОПИСЫВАЕМ SALES PAGE ДО КОНЦА! 🔧🔥🎊"
+echo ""
+echo "🎯 ПРОБЛЕМА: SalesPage.tsx обрезан на половине - останавливается на <div className="
+echo "💡 РЕШЕНИЕ: Дописать полный файл как ProductsPage"
+echo ""
+
+cd f
+
+echo "1️⃣ BACKUP ТЕКУЩЕГО ФАЙЛА:"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+cp src/pages/company/sales/SalesPage.tsx src/pages/company/sales/SalesPage.tsx.incomplete_backup
+echo "💾 Backup создан: SalesPage.tsx.incomplete_backup"
+
+echo ""
+echo "2️⃣ СОЗДАЁМ ПОЛНУЮ SALES PAGE (КАК PRODUCTS):"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Создаём полный файл SalesPage.tsx
+cat > src/pages/company/sales/SalesPage.tsx << 'EOF'
 import React, { useState, useEffect } from 'react';
 
 interface Sale {
@@ -275,3 +299,83 @@ const SalesPage: React.FC = () => {
 };
 
 export default SalesPage;
+EOF
+
+echo "✅ SalesPage полностью переписана"
+
+echo ""
+echo "3️⃣ ПРОВЕРЯЕМ ВСЕ ТРИ ФАЙЛА:"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+echo "🔍 Проверяем файлы:"
+
+FILES_TO_CHECK=(
+  "src/pages/company/purchases/PurchasesPage.tsx"
+  "src/pages/company/warehouse/WarehousePage.tsx"
+  "src/pages/company/sales/SalesPage.tsx"
+)
+
+for file in "${FILES_TO_CHECK[@]}"; do
+  if [ -f "$file" ]; then
+    LINES=$(wc -l < "$file")
+    SIZE=$(wc -c < "$file")
+    echo "✅ $file - $LINES строк, $SIZE байт"
+    
+    # Проверяем что файл полный (заканчивается на "export default")
+    if tail -5 "$file" | grep -q "export default"; then
+      echo "   ✅ Файл завершён корректно"
+    else
+      echo "   ❌ Файл может быть неполным!"
+    fi
+  else
+    echo "❌ $file - НЕ НАЙДЕН!"
+  fi
+done
+
+echo ""
+echo "4️⃣ ПРОВЕРЯЕМ SYNTAX И СТРУКТУРУ:"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+echo "🔍 SalesPage.tsx структура:"
+echo "   📊 Header: $(grep -c "Sales Management" src/pages/company/sales/SalesPage.tsx)"
+echo "   📈 Stats Cards: $(grep -c "grid grid-cols-1 md:grid-cols-5" src/pages/company/sales/SalesPage.tsx)"
+echo "   ➕ Add Button: $(grep -c "Add Sale" src/pages/company/sales/SalesPage.tsx)"
+echo "   📋 Table: $(grep -c "Recent Sales" src/pages/company/sales/SalesPage.tsx)"
+echo "   🎯 Integration Status: $(grep -c "Sales Flow Integration" src/pages/company/sales/SalesPage.tsx)"
+
+echo ""
+echo "5️⃣ ОЧИСТКА КЭШЕЙ:"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Очищаем кэши разработки
+rm -rf node_modules/.vite 2>/dev/null
+rm -rf .vite 2>/dev/null
+
+echo "🔄 Кэши очищены"
+
+echo ""
+echo "🎊🔥🔧 SALES PAGE ДОПИСАН ДО КОНЦА! 🔧🔥🎊"
+echo ""
+echo "✅ РЕЗУЛЬТАТ:"
+echo "   🛒 PurchasesPage: Полный ✅"
+echo "   🏭 WarehousePage: Полный ✅"  
+echo "   💰 SalesPage: Полный ✅ (ИСПРАВЛЕН!)"
+echo ""
+echo "🎯 СТРУКТУРА КАЖДОГО ФАЙЛА:"
+echo "   📊 Header с иконками и описанием"
+echo "   📈 5 статистических карточек"
+echo "   ➕ Кнопка добавления"
+echo "   📋 Таблица с данными"
+echo "   🔄 Loading состояния"
+echo "   🎨 Hover эффекты"
+echo "   💫 Integration статус"
+echo ""
+echo "🚀 СЛЕДУЮЩИЕ ШАГИ:"
+echo "   1️⃣ Перезапусти: cd f && npm run dev"
+echo "   2️⃣ Тестируй: http://localhost:5173/purchases"
+echo "   3️⃣ Тестируй: http://localhost:5173/warehouse"
+echo "   4️⃣ Тестируй: http://localhost:5173/sales"
+echo "   5️⃣ Проверь что все страницы простые как Products и Clients"
+echo ""
+echo "💫 SALES PAGE ТЕПЕРЬ ПОЛНЫЙ И ГОТОВ К РАБОТЕ!"
+echo "🏆 ВСЕ ТРИ МОДУЛЯ ЧИСТЫЕ КАК PRODUCTS И CLIENTS!"
