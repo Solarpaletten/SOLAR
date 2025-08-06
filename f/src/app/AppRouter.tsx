@@ -13,6 +13,7 @@ import CompanyLayout from '../components/company/CompanyLayout';
 
 // Company Pages
 import DashboardPage from '../pages/company/dashboard/DashboardPage';
+import DashkaPage from '../pages/company/dashka/DashkaPage';
 import ClientsPage from '../pages/company/clients/ClientsPage';
 import ProductsPage from '../pages/company/products/ProductsPage';
 import PurchasesPage from '../pages/company/purchases/PurchasesPage';
@@ -163,6 +164,18 @@ function App() {
             </AuthGuard>
           }
         />
+
+        <Route
+          path="/dashka"
+          element={
+            <AuthGuard>
+              <CompanyLayout>
+                <DashkaPage />
+              </CompanyLayout>
+            </AuthGuard>
+          }
+        />
+        
 
         {/* Redirects */}
         <Route path="/" element={<Navigate to="/account/dashboard" />} />

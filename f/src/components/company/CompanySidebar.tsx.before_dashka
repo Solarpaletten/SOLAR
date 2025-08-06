@@ -35,15 +35,6 @@ const CompanySidebar: React.FC = () => {
       badge: null,
     },
     {
-      id: 'dashka',
-      icon: '🎯',
-      title: 'Dashka',
-      route: '/dashka',
-      priority: 12,
-      isPinned: false,
-      badge: 'HOT',
-    },
-    {
       id: 'clients',
       icon: '👥',
       title: 'Clients',
