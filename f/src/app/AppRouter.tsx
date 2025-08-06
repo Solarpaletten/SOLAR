@@ -25,6 +25,7 @@ import SettingsPage from '../pages/company/settings/SettingsPage';
 import TabBookDemo from '../components/tabbook/TabBookDemo';
 import SolarCloudIDE from '../components/cloudide/SolarCloudIDE';
 import InventoryFlowPage from '../pages/company/integration/InventoryFlowPage';
+import InventoryAccountsIntegration from '../components/integration/InventoryAccountsIntegration';
 
 function App() {
   return (
@@ -117,6 +118,28 @@ function App() {
             <AuthGuard>
               <CompanyLayout>
                 <ChartOfAccountsPage />
+              </CompanyLayout>
+            </AuthGuard>
+          }
+        />
+
+        <Route
+          path="/company/chart-of-accounts"
+          element={
+            <AuthGuard>
+              <CompanyLayout>
+                <ChartOfAccountsPage />
+              </CompanyLayout>
+            </AuthGuard>
+          }
+        />
+
+        <Route
+          path="/company/inventory-integration"
+          element={
+            <AuthGuard>
+              <CompanyLayout>
+                <InventoryAccountsIntegration />
               </CompanyLayout>
             </AuthGuard>
           }
