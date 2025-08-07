@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useCompanyContext } from '../../../contexts/CompanyContext';
-import CompactPurchasesTable from './components/CompactPurchasesTable';
+import PurchasesTable from './components/PurchasesTable';
 import PurchasesToolbar from './components/PurchasesToolbar';
 import PurchasesStats from './components/PurchasesStats';
 import AddPurchaseModal from './components/AddPurchaseModal';
@@ -338,7 +338,7 @@ const PurchasesPage: React.FC = () => {
 
       {/* Table */}
       <div className="flex-1 px-6 pb-6">
-        <CompactPurchasesTable
+        <PurchasesTable
           purchases={purchases}
           onBulkDelete={handleBulkDelete} // ← Подключаем РЕАЛЬНУЮ функцию
           onBulkCopy={handleBulkCopy} // ← Подключаем РЕАЛЬНУЮ функцию

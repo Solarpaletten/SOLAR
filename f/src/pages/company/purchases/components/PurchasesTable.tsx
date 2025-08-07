@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Purchase, PAYMENT_STATUSES, DELIVERY_STATUSES } from '../types/purchasesTypes';
 
-interface CompactPurchasesTableProps {
+interface PurchasesTableProps {
   purchases: Purchase[];
   loading: boolean;
   bulkLoading?: boolean;
@@ -19,7 +19,7 @@ interface ColumnFilter {
   type: 'text' | 'date' | 'select';
 }
 // Компонент для компактного отображения списка покупок
-const CompactPurchasesTable: React.FC<CompactPurchasesTableProps> = ({
+const PurchasesTable: React.FC<PurchasesTableProps> = ({
   purchases,
   loading,
   bulkLoading = false,
@@ -409,4 +409,4 @@ const CompactPurchasesTable: React.FC<CompactPurchasesTableProps> = ({
   );
 };
 
-export default CompactPurchasesTable;
+export default PurchasesTable;
