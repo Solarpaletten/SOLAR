@@ -23,11 +23,11 @@ const PurchasesPage: React.FC = () => {
   // ===============================================
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
-  const [bulkLoading, setBulkLoading] = useState(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
 
   // Modal states
+  const [bulkLoading, setBulkLoading] = useState(false);
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [editingPurchase, setEditingPurchase] = useState<Purchase | null>(null);
@@ -273,29 +273,6 @@ const PurchasesPage: React.FC = () => {
     }
   };
 
-  const handleDeletePurchase = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this purchase?')) {
-      return;
-    }
-
-    try {
-      const response = await api.delete(`/api/company/purchases/${id}`);
-
-      if (response.data.success) {
-        fetchPurchases();
-        fetchStats();
-      } else {
-        throw new Error(response.data.error || 'Failed to delete purchase');
-      }
-    } catch (error: any) {
-      console.error('Error deleting purchase:', error);
-      alert(
-        'Error deleting purchase: ' +
-          (error.response?.data?.message || error.message)
-      );
-    }
-  };
-
   // ===============================================
   // 🔄 EFFECTS
   // ===============================================
@@ -366,8 +343,10 @@ const PurchasesPage: React.FC = () => {
       <div className="flex-1 px-6 pb-6">
         <CompactPurchasesTable
           purchases={purchases}
-          onBulkDelete={(ids) => console.log('Delete:', ids)}
-          onBulkCopy={(ids) => console.log('Copy:', ids)}
+          onBulkDelete={handleBulkDelete} // ← Подключаем РЕАЛЬНУЮ функцию
+          onBulkCopy={handleBulkCopy} // ← Подключаем РЕАЛЬНУЮ функцию
+          onBulkExport={handleBulkExport} // ← Добавляем Export
+          bulkLoading={bulkLoading} // ← Показываем загрузку
           loading={loading}
           onRefresh={fetchPurchases}
           onEdit={(purchase) => {

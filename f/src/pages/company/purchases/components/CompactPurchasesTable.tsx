@@ -33,21 +33,6 @@ const CompactPurchasesTable: React.FC<CompactPurchasesTableProps> = ({
   const [filters, setFilters] = useState<ColumnFilter[]>([]);
   const [liteMode, setLiteMode] = useState(true);
 
-  // 📋 ОБНОВИТЕ КОМПОНЕНТ CompactPurchasesTable:
-<CompactPurchasesTable
-  purchases={purchases}
-  loading={loading || bulkLoading}
-  onRefresh={fetchPurchases}
-  onEdit={(purchase) => {
-    setEditingPurchase(purchase);
-    setShowEditModal(true);
-  }}
-  onDelete={handleDeletePurchase}
-  onBulkDelete={handleBulkDelete}
-  onBulkCopy={handleBulkCopy}
-  onBulkExport={handleBulkExport} // Добавьте этот проп в интерфейс
-/>
-
   // 🔍 Фильтрация данных
   const filteredPurchases = useMemo(() => {
     if (filters.length === 0) return purchases;
