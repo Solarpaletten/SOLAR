@@ -9,7 +9,7 @@ interface CompactPurchasesTableProps {
   onDelete: (id: number) => void;
   onBulkDelete: (ids: number[]) => void;
   onBulkCopy: (ids: number[]) => void;
-  onBulkExport?: (ids: number[]) => void;
+  onBulkExport?: (ids: number[]) => void; // Добавьте эту строку
 }
 
 interface ColumnFilter {
@@ -17,7 +17,7 @@ interface ColumnFilter {
   value: string;
   type: 'text' | 'date' | 'select';
 }
-
+// Компонент для компактного отображения списка покупок
 const CompactPurchasesTable: React.FC<CompactPurchasesTableProps> = ({
   purchases,
   loading,
@@ -25,12 +25,28 @@ const CompactPurchasesTable: React.FC<CompactPurchasesTableProps> = ({
   onEdit,
   onDelete,
   onBulkDelete,
-  onBulkExport
+  onBulkCopy,
+  onBulkExport, // Добавьте этот проп в интерфейс
 }) => {
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [editingCell, setEditingCell] = useState<{id: number, field: string} | null>(null);
   const [filters, setFilters] = useState<ColumnFilter[]>([]);
   const [liteMode, setLiteMode] = useState(true);
+
+  // 📋 ОБНОВИТЕ КОМПОНЕНТ CompactPurchasesTable:
+<CompactPurchasesTable
+  purchases={purchases}
+  loading={loading || bulkLoading}
+  onRefresh={fetchPurchases}
+  onEdit={(purchase) => {
+    setEditingPurchase(purchase);
+    setShowEditModal(true);
+  }}
+  onDelete={handleDeletePurchase}
+  onBulkDelete={handleBulkDelete}
+  onBulkCopy={handleBulkCopy}
+  onBulkExport={handleBulkExport} // Добавьте этот проп в интерфейс
+/>
 
   // 🔍 Фильтрация данных
   const filteredPurchases = useMemo(() => {
@@ -146,14 +162,6 @@ const CompactPurchasesTable: React.FC<CompactPurchasesTableProps> = ({
               >
                 🗑️ Delete
               </button>
-              {onBulkExport && (
-                <button
-                  onClick={() => onBulkExport(Array.from(selectedIds))}
-                  className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
-                >
-                  📊 Export
-                </button>
-              )}
             </>
           )}
           
