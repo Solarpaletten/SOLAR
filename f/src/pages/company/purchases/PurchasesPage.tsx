@@ -47,6 +47,8 @@ const PurchasesPage: React.FC = () => {
   // 📡 API FUNCTIONS
   // ===============================================
 
+  // MISSING FUNCTIONS
+
   const fetchPurchases = async () => {
     if (!companyId) return;
 
@@ -131,18 +133,18 @@ const PurchasesPage: React.FC = () => {
     }
   };
 
+  // Добавьте ЭТИ ФУНКЦИИ в PurchasesPage.tsx:
+
   // 🗑️ BULK DELETE - массовое удаление
   const handleBulkDelete = async (ids: number[]) => {
-    if (
-      !confirm(`Are you sure you want to delete ${ids.length} purchase(s)?`)
-    ) {
+    if (!confirm(`Are you sure you want to delete ${ids.length} purchase(s)?`)) {
       return;
     }
 
     setBulkLoading(true);
 
     try {
-      // Удаляем по очереди (можно оптимизировать одним запросом)
+      // Удаляем по очереди
       const deletePromises = ids.map((id) =>
         api.delete(`/api/company/purchases/${id}`, {
           headers: { 'Company-ID': companyId?.toString() || '1' },
@@ -158,9 +160,7 @@ const PurchasesPage: React.FC = () => {
       alert(`✅ Successfully deleted ${ids.length} purchase(s)`);
     } catch (error: any) {
       console.error('Error bulk deleting purchases:', error);
-      alert(
-        `❌ Error deleting purchases: ${error.response?.data?.message || error.message}`
-      );
+      alert(`❌ Error deleting purchases: ${error.response?.data?.message || error.message}`);
     } finally {
       setBulkLoading(false);
     }
@@ -186,16 +186,15 @@ const PurchasesPage: React.FC = () => {
           payment_status: 'PENDING', // Сбрасываем на PENDING
           delivery_status: 'PENDING',
           document_status: 'DRAFT',
-          items:
-            purchase.items?.map((item) => ({
-              product_id: item.product_id,
-              quantity: item.quantity,
-              unit_price_base: item.unit_price_base,
-              vat_rate: item.vat_rate,
-              vat_amount: item.vat_amount,
-              line_total: item.line_total,
-              notes: item.notes,
-            })) || [],
+          items: purchase.items?.map((item) => ({
+            product_id: item.product_id,
+            quantity: item.quantity,
+            unit_price_base: item.unit_price_base,
+            vat_rate: item.vat_rate,
+            vat_amount: item.vat_amount,
+            line_total: item.line_total,
+            notes: item.notes,
+          })) || [],
         };
 
         return api.post('/api/company/purchases', copyData, {
@@ -212,9 +211,7 @@ const PurchasesPage: React.FC = () => {
       alert(`✅ Successfully copied ${ids.length} purchase(s)`);
     } catch (error: any) {
       console.error('Error bulk copying purchases:', error);
-      alert(
-        `❌ Error copying purchases: ${error.response?.data?.message || error.message}`
-      );
+      alert(`❌ Error copying purchases: ${error.response?.data?.message || error.message}`);
     } finally {
       setBulkLoading(false);
     }
@@ -230,7 +227,7 @@ const PurchasesPage: React.FC = () => {
       // Создаём CSV данные
       const csvHeaders = [
         'Document Number',
-        'Date',
+        'Date', 
         'Supplier',
         'Total Amount',
         'Currency',

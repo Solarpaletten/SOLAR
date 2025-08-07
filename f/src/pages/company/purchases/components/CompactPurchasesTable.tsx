@@ -4,6 +4,7 @@ import { Purchase, PAYMENT_STATUSES, DELIVERY_STATUSES } from '../types/purchase
 interface CompactPurchasesTableProps {
   purchases: Purchase[];
   loading: boolean;
+  bulkLoading?: boolean;
   onRefresh: () => void;
   onEdit: (purchase: Purchase) => void;
   onDelete: (id: number) => void;
@@ -21,12 +22,13 @@ interface ColumnFilter {
 const CompactPurchasesTable: React.FC<CompactPurchasesTableProps> = ({
   purchases,
   loading,
+  bulkLoading = false,
   onRefresh,
   onEdit,
   onDelete,
   onBulkDelete,
   onBulkCopy,
-  onBulkExport, // Добавьте этот проп в интерфейс
+  onBulkExport, 
 }) => {
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [editingCell, setEditingCell] = useState<{id: number, field: string} | null>(null);
