@@ -83,7 +83,7 @@ export const CompanyProvider: React.FC<CompanyProviderProps> = ({
     try {
       console.log(`🏢 Loading company ${id}...`);
       
-      const response = await api.get(`/api/companies/${id}`);
+      const response = await api.get(`/api/account/companies/${id}`);
       
       if (response.data.success) {
         setCompany(response.data.company);
@@ -136,7 +136,7 @@ export const CompanyProvider: React.FC<CompanyProviderProps> = ({
     try {
       console.log('🔍 Loading first available company...');
       
-      const response = await api.get('/api/companies?limit=1');
+      const response = await api.get('/api/account/companies?limit=1');
       
       if (response.data.success && response.data.companies.length > 0) {
         const firstCompany = response.data.companies[0];
@@ -184,7 +184,7 @@ export const CompanyProvider: React.FC<CompanyProviderProps> = ({
     try {
       setLoading(true);
       
-      const response = await api.put(`/api/companies/${companyId}`, data);
+      const response = await api.put(`/api/account/companies/${companyId}`, data);
       
       if (response.data.success) {
         setCompany(response.data.company);
