@@ -1,7 +1,3 @@
-// ===============================================
-// 🏗️ SOLAR ERP - ИСПРАВЛЕННАЯ ДВУХУРОВНЕВАЯ PRISMA СХЕМА
-// ===============================================
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,10 +6,6 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
-// ===============================================
-// 📊 ENUMS
-// ===============================================
 
 enum UserRole {
   ADMIN
@@ -93,10 +85,6 @@ enum BankOperationType {
   TRANSFER
 }
 
-// ===============================================
-// 🏢 ACCOUNT LEVEL MODELS
-// ===============================================
-
 model users {
   id Int @id @default(autoincrement())
 
@@ -126,36 +114,42 @@ model users {
   updated_at    DateTime  @updatedAt
   last_login_at DateTime?
 
-  // Account Level связи
-  owned_companies     companies[]     @relation("CompanyOwner")
-  company_memberships company_users[]
+  companies       companies[]      @relation("CompanyOwner")
+  company_users   company_users[]
 
-  // Company Level связи
-  created_clients                clients[]           @relation("ClientCreator")
-  created_products               products[]          @relation("ProductCreator")
-  created_sales                  sales[]             @relation("SaleCreator")
-  modified_sales                 sales[]             @relation("SaleModifier")
-  managed_sales                  sales[]             @relation("SalesManager")
-  created_purchases              purchases[]         @relation("PurchaseCreator")
-  modified_purchases             purchases[]         @relation("PurchaseModifier")
-  managed_purchases              purchases[]         @relation("PurchaseManager")
-  created_warehouses             warehouses[]        @relation("WarehouseCreator")
-  responsible_warehouses         warehouses[]        @relation("WarehouseResponsible")
-  bank_operations                bank_operations[]
-  chart_of_accounts              chart_of_accounts[]
-  address_responsibilities       client_addresses[]  @relation("AddressEmployee")
-  purchase_item_responsibilities purchase_items[]    @relation("PurchaseItemEmployee")
+  created_sales       sales[]        @relation("SaleCreator")
+  modified_sales      sales[]        @relation("SaleModifier")
+  managed_sales       sales[]        @relation("SalesManager")
+  
+  created_purchases   purchases[]    @relation("PurchaseCreator")
+  modified_purchases  purchases[]    @relation("PurchaseModifier")
+  locked_purchases    purchases[]    @relation("PurchaseLocker")
+  managed_purchases   purchases[]    @relation("PurchaseManager")
+  
+  purchase_items      purchase_items[] @relation("PurchaseItemEmployee")
+  
+  created_products    products[]     @relation("ProductCreator")
+  modified_products   products[]     @relation("ProductModifier")
+  
+  created_clients     clients[]      @relation("ClientCreator") 
+  modified_clients    clients[]      @relation("ClientModifier")
+  
+  client_addresses    client_addresses[] @relation("AddressEmployee")
+  
+  created_warehouses  warehouses[]   @relation("WarehouseCreator")
+  warehouse_manager   warehouses[]   @relation("WarehouseResponsible")
+  
+  bank_operations     bank_operations[]
+  chart_of_accounts   chart_of_accounts[]
 
-  // Партийная система
-  batches_created   product_batches[]    @relation("BatchCreator")
-  movements_created batch_movements[]    @relation("MovementCreator")
-  entries_created   accounting_entries[] @relation("EntryCreator")
+  created_batches     product_batches[] @relation("BatchCreator")
+  batch_movements     batch_movements[] @relation("MovementCreator")
+  accounting_entries  accounting_entries[] @relation("EntryCreator")
 
   @@index([email])
   @@index([username])
   @@index([role])
   @@index([is_active])
-  @@index([current_company_id])
 }
 
 model companies {
@@ -190,11 +184,9 @@ model companies {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  // Account Level связи
   owner     users           @relation("CompanyOwner", fields: [owner_id], references: [id], onDelete: Restrict)
   employees company_users[]
 
-  // Company Level связи
   clients             clients[]
   products            products[]
   sales               sales[]
@@ -205,7 +197,6 @@ model companies {
   vat_classifications vat_classifications[]
   cost_centers        cost_centers[]
 
-  // Партийная система
   product_batches    product_batches[]
   batch_movements    batch_movements[]
   accounting_entries accounting_entries[]
@@ -240,62 +231,87 @@ model company_users {
   @@index([role])
 }
 
-// ===============================================
-// 🏭 COMPANY LEVEL MODELS
-// ===============================================
+// УЛУЧШЕННАЯ МОДЕЛЬ CLIENTS ПО СТАНДАРТУ B1.lt
 
 model clients {
   id         Int @id @default(autoincrement())
   company_id Int
 
+  // ======= ОСНОВНАЯ ИНФОРМАЦИЯ =======
   name         String  @db.VarChar(200)
-  abbreviation String? @db.VarChar(100)
+  abbreviation String? @db.VarChar(100)  // shortName в B1.lt
   code         String? @db.VarChar(50)
 
+  // ======= КОНТАКТНАЯ ИНФОРМАЦИЯ =======
   email               String  @db.VarChar(100)
-  phone               String? @db.VarChar(20)
-  fax                 String? @db.VarChar(20)
+  phone               String? @db.VarChar(20)  // phoneNumber в B1.lt
+  fax                 String? @db.VarChar(20)  // faxNumber в B1.lt
   website             String? @db.VarChar(200)
   contact_information String? @db.Text
 
+  // ======= ТИПЫ И СТАТУСЫ =======
   role         ClientRole @default(CLIENT)
   is_juridical Boolean    @default(true)
   is_active    Boolean    @default(true)
-  is_foreigner Boolean    @default(false)
+  is_foreigner Boolean    @default(false)  // location в B1.lt
 
-  country        String? @db.VarChar(100)
-  legal_address  String? @db.Text
-  actual_address String? @db.Text
+  // ======= РЕГИСТРАЦИОННЫЙ АДРЕС (как в B1.lt) =======
+  registration_country_code String? @db.VarChar(3)   // registrationCountryCode
+  registration_city         String? @db.VarChar(100) // registrationCity  
+  registration_address      String? @db.Text         // registrationAddress
+  registration_zip_code     String? @db.VarChar(20)  // registrationZipCode
 
+  // ======= КОРРЕСПОНДЕНТСКИЙ АДРЕС (как в B1.lt) =======
+  correspondence_country_code String? @db.VarChar(3)   // correspondenceCountryCode
+  correspondence_city         String? @db.VarChar(100) // correspondenceCity
+  correspondence_address      String? @db.Text         // correspondenceAddress  
+  correspondence_zip_code     String? @db.VarChar(20)  // correspondenceZipCode
+
+  // ======= LEGACY ПОЛЯ (для совместимости) =======
+  country        String? @db.VarChar(100) // DEPRECATED: использовать registration_country_code
+  legal_address  String? @db.Text         // DEPRECATED: использовать registration_address  
+  actual_address String? @db.Text         // DEPRECATED: использовать correspondence_address
+
+  // ======= НАЛОГОВЫЕ И ПРАВОВЫЕ ДАННЫЕ =======
   business_license_code String?  @db.VarChar(50)
-  vat_code              String?  @db.VarChar(50)
+  vat_code              String?  @db.VarChar(50)  // vatCode в B1.lt
   vat_rate              Decimal? @db.Decimal(5, 2)
   eori_code             String?  @db.VarChar(50)
   foreign_taxpayer_code String?  @db.VarChar(50)
   registration_number   String?  @db.VarChar(50)
+  resident_code         String?  @db.VarChar(50)  // Новое поле из B1.lt
 
-  credit_sum              Decimal? @default(0) @db.Decimal(15, 2)
-  pay_per                 String?  @db.VarChar(50)
+  // ======= ФИНАНСОВЫЕ НАСТРОЙКИ =======
+  credit_sum              Decimal? @default(0) @db.Decimal(15, 2)  // creditSum в B1.lt
+  pay_within              Int?     @default(30)                    // payWithin в B1.lt (дни)
   currency                Currency @default(EUR)
   payment_terms           String?  @db.VarChar(100)
-  automatic_debt_reminder Boolean? @default(false)
+  automatic_debt_reminder Boolean? @default(false)                 // automaticDebtRemind в B1.lt
 
+  // ======= ПЕРСОНАЛЬНЫЕ ДАННЫЕ =======
   registration_date DateTime? @db.Date
-  date_of_birth     DateTime? @db.Date
+  date_of_birth     DateTime? @db.Date  // birthday в B1.lt
 
+  // ======= ИНТЕГРАЦИЯ С SABIS =======
   sabis_customer_name String? @db.VarChar(200)
   sabis_customer_code String? @db.VarChar(50)
 
+  // ======= ДОПОЛНИТЕЛЬНАЯ ИНФОРМАЦИЯ =======
   additional_information String? @db.Text
   notes                  String? @db.Text
 
+  // ======= АУДИТ =======
   created_by Int
+  updated_by Int?
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  company companies @relation(fields: [company_id], references: [id], onDelete: Cascade)
-  creator users     @relation("ClientCreator", fields: [created_by], references: [id])
+  // ======= СВЯЗИ =======
+  company  companies @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  creator  users     @relation("ClientCreator", fields: [created_by], references: [id])
+  modifier users?    @relation("ClientModifier", fields: [updated_by], references: [id])
 
+  // Связанные данные
   addresses     client_addresses[]
   bank_accounts client_bank_accounts[]
 
@@ -307,13 +323,47 @@ model clients {
   batches_supplied   product_batches[]    @relation("BatchSupplier")
   accounting_entries accounting_entries[]
 
+  // ======= ИНДЕКСЫ =======
   @@unique([company_id, code])
   @@unique([company_id, vat_code])
   @@index([company_id])
   @@index([role])
   @@index([is_active])
-  @@index([country])
+  @@index([registration_country_code])
+  @@index([correspondence_country_code])
   @@index([created_by])
+  @@index([updated_by])
+}
+
+// ОБНОВЛЕННАЯ МОДЕЛЬ BANK ACCOUNTS
+model client_bank_accounts {
+  id        Int @id @default(autoincrement())
+  client_id Int
+
+  // ======= ОСНОВНЫЕ БАНКОВСКИЕ ДАННЫЕ (как в B1.lt) =======
+  account_number String   @db.VarChar(50)  // bankAccount в B1.lt
+  bank_name      String   @db.VarChar(100) // bankName в B1.lt  
+  bank_code      String?  @db.VarChar(20)  // bankCode в B1.lt
+  swift_code     String?  @db.VarChar(20)  // bankSwiftCode в B1.lt
+  iban           String?  @db.VarChar(50)
+  
+  // ======= ДОПОЛНИТЕЛЬНЫЕ ПОЛЯ =======
+  currency       Currency @default(EUR)
+  is_primary     Boolean  @default(false)
+  is_active      Boolean  @default(true)
+
+  // ======= АУДИТ =======
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // ======= СВЯЗИ =======
+  client clients @relation(fields: [client_id], references: [id], onDelete: Cascade)
+
+  // ======= ИНДЕКСЫ =======
+  @@unique([client_id, account_number])
+  @@index([client_id])
+  @@index([is_primary])
+  @@index([swift_code])
 }
 
 model client_addresses {
@@ -345,30 +395,10 @@ model client_addresses {
   @@index([client_id])
   @@index([country])
   @@index([is_correspondence])
+  @@index([employee_id])
 }
 
-model client_bank_accounts {
-  id        Int @id @default(autoincrement())
-  client_id Int
 
-  account_number String   @db.VarChar(50)
-  bank_name      String   @db.VarChar(100)
-  bank_code      String?  @db.VarChar(20)
-  swift_code     String?  @db.VarChar(20)
-  iban           String?  @db.VarChar(50)
-  currency       Currency @default(EUR)
-  is_primary     Boolean  @default(false)
-  is_active      Boolean  @default(true)
-
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  client clients @relation(fields: [client_id], references: [id], onDelete: Cascade)
-
-  @@unique([client_id, account_number])
-  @@index([client_id])
-  @@index([is_primary])
-}
 
 model products {
   id         Int @id @default(autoincrement())
@@ -389,25 +419,27 @@ model products {
   is_active     Boolean  @default(true)
   is_service    Boolean  @default(false)
 
-  // Партийный учёт
   batch_tracking Boolean @default(true)
 
   created_by Int
+  updated_by Int?
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
   company        companies        @relation(fields: [company_id], references: [id], onDelete: Cascade)
   creator        users            @relation("ProductCreator", fields: [created_by], references: [id])
+  modifier       users?           @relation("ProductModifier", fields: [updated_by], references: [id])
   sale_items     sale_items[]
   purchase_items purchase_items[]
 
-  // Партийная система
   product_batches    product_batches[]
   accounting_entries accounting_entries[]
 
   @@unique([company_id, code])
   @@index([company_id])
   @@index([is_active])
+  @@index([created_by])
+  @@index([updated_by])
 }
 
 model sales {
@@ -486,59 +518,112 @@ model purchases {
 
   document_number String                @db.VarChar(50)
   document_date   DateTime              @db.Date
+  due_date        DateTime?             @db.Date
   operation_type  PurchaseOperationType @default(PURCHASE)
 
   supplier_id         Int
+  supplier_code       String? @db.VarChar(50)
   warehouse_id        Int?
   purchase_manager_id Int?
 
-  subtotal     Decimal  @db.Decimal(15, 2)
-  vat_amount   Decimal  @default(0) @db.Decimal(15, 2)
-  total_amount Decimal  @db.Decimal(15, 2)
-  currency     Currency @default(EUR)
+  subtotal         Decimal  @db.Decimal(15, 2)
+  vat_amount       Decimal  @default(0) @db.Decimal(15, 2)
+  total_amount     Decimal  @db.Decimal(15, 2)
+  total_excl_vat   Decimal? @db.Decimal(15, 2)
+  
+  advance_payment  Decimal? @default(0) @db.Decimal(15, 2)
+  discount_percent Decimal? @default(0) @db.Decimal(5, 2)
+  discount_amount  Decimal? @default(0) @db.Decimal(15, 2)
+  balance_amount   Decimal? @db.Decimal(15, 2)
+  
+  currency         Currency @default(EUR)
+  foreign_currency String?  @db.VarChar(3)
+  exchange_rate    Decimal? @default(1) @db.Decimal(10, 4)
+
+  country String? @db.VarChar(100)
+  city    String? @db.VarChar(100)
+
+  business_license_code String? @db.VarChar(100)
+  delivery_method       String? @db.VarChar(50)
+  estimated_vat         Decimal? @default(0) @db.Decimal(15, 2)
+  vat_classification    String?  @db.VarChar(50)
+  vat_date              DateTime? @db.Date
+  vat_comment           String?  @db.Text
+
+  file_count           Int?     @default(0)
+  additional_expenses  Decimal? @default(0) @db.Decimal(15, 2)
+  comments             String?  @db.Text
+  rounding_amount      Decimal? @default(0) @db.Decimal(15, 2)
 
   payment_status  PaymentStatus  @default(PENDING)
   delivery_status DeliveryStatus @default(PENDING)
   document_status DocumentStatus @default(DRAFT)
 
+  locked      Boolean   @default(false)
+  locked_date DateTime?
+  locked_by   Int?
+
   created_by Int
   created_at DateTime @default(now())
-  updated_by Int? // ← ДОБАВЬ ЭТО ПОЛЕ
+  updated_by Int?
   updated_at DateTime @updatedAt
 
   company          companies        @relation(fields: [company_id], references: [id], onDelete: Cascade)
   creator          users            @relation("PurchaseCreator", fields: [created_by], references: [id])
-  modifier         users?           @relation("PurchaseModifier", fields: [updated_by], references: [id]) // ← ДОБАВЬ ЭТУ СТРОЧКУ!
+  modifier         users?           @relation("PurchaseModifier", fields: [updated_by], references: [id])
+  locker           users?           @relation("PurchaseLocker", fields: [locked_by], references: [id])
   supplier         clients          @relation(fields: [supplier_id], references: [id])
   warehouse        warehouses?      @relation(fields: [warehouse_id], references: [id])
   purchase_manager users?           @relation("PurchaseManager", fields: [purchase_manager_id], references: [id])
   items            purchase_items[]
 
-  // Партийная система
   product_batches product_batches[]
 
   @@unique([company_id, document_number])
   @@index([company_id])
   @@index([document_date])
+  @@index([due_date])
   @@index([supplier_id])
+  @@index([payment_status])
+  @@index([delivery_status])
+  @@index([document_status])
+  @@index([country])
+  @@index([city])
+  @@index([supplier_code])
+  @@index([business_license_code])
+  @@index([vat_classification])
+  @@index([locked])
+  @@index([advance_payment])
+  @@index([balance_amount])
+  @@index([payment_status, document_date])
+  @@index([country, city])
+  @@index([locked, document_date])
 }
 
 model purchase_items {
   id Int @id @default(autoincrement())
 
-  purchase_id     Int
-  product_id      Int
-  line_number     Int?
-  quantity        Decimal  @db.Decimal(10, 3)
-  unit_price_base Decimal  @db.Decimal(10, 2)
-  vat_rate        Decimal? @db.Decimal(5, 2)
-  vat_amount      Decimal? @db.Decimal(15, 2)
-  line_total      Decimal  @db.Decimal(15, 2)
+  purchase_id Int
+  product_id  Int
+  line_number Int?
+
+  quantity        Decimal @db.Decimal(10, 3)
+  unit_price_base Decimal @db.Decimal(10, 2)
+
+  vat_rate   Decimal? @db.Decimal(5, 2)
+  vat_amount Decimal? @db.Decimal(15, 2)
+  line_total Decimal  @db.Decimal(15, 2)
+
+  advance_payment       Decimal? @default(0) @db.Decimal(15, 2)
+  discount_percent      Decimal? @default(0) @db.Decimal(5, 2)
+  discount_amount       Decimal? @default(0) @db.Decimal(15, 2)
+  business_license_code String?  @db.VarChar(100)
 
   employee_id Int?
-  notes       String?  @db.Text
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+  notes       String? @db.Text
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   purchase purchases @relation(fields: [purchase_id], references: [id], onDelete: Cascade)
   product  products  @relation(fields: [product_id], references: [id])
@@ -546,6 +631,8 @@ model purchase_items {
 
   @@index([purchase_id])
   @@index([product_id])
+  @@index([employee_id])
+  @@index([business_license_code])
 }
 
 model warehouses {
@@ -570,7 +657,6 @@ model warehouses {
   sales     sales[]
   purchases purchases[]
 
-  // Партийная система
   product_batches    product_batches[]
   accounting_entries accounting_entries[]
 
@@ -668,43 +754,34 @@ model intrastat_codes {
   @@index([code_type])
 }
 
-// ПАРТИЙНАЯ СИСТЕМА ТОВАРОВ
-
 model product_batches {
   id         Int @id @default(autoincrement())
   company_id Int
 
-  // Основная информация партии
   batch_number String @db.VarChar(50)
   product_id   Int
   warehouse_id Int
   supplier_id  Int?
 
-  // Количество и стоимость
   original_quantity Decimal  @db.Decimal(15, 3)
   current_quantity  Decimal  @db.Decimal(15, 3)
   unit_cost         Decimal  @db.Decimal(15, 2)
   total_cost        Decimal  @db.Decimal(15, 2)
   currency          Currency @default(EUR)
 
-  // Даты
   purchase_date   DateTime  @db.Date
   expiry_date     DateTime? @db.Date
   production_date DateTime? @db.Date
 
-  // Статус партии
-  status    String  @default("ACTIVE") @db.VarChar(20) // ACTIVE, EXPIRED, SOLD_OUT
+  status    String  @default("ACTIVE") @db.VarChar(20)
   is_active Boolean @default(true)
 
-  // Связанные документы
   purchase_id Int?
 
-  // Метаданные
   created_by Int
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  // Связи
   company   companies  @relation(fields: [company_id], references: [id], onDelete: Cascade)
   product   products   @relation(fields: [product_id], references: [id])
   warehouse warehouses @relation(fields: [warehouse_id], references: [id])
@@ -712,7 +789,6 @@ model product_batches {
   purchase  purchases? @relation(fields: [purchase_id], references: [id])
   creator   users      @relation("BatchCreator", fields: [created_by], references: [id])
 
-  // Движения партии
   batch_movements    batch_movements[]
   accounting_entries accounting_entries[]
 
@@ -729,26 +805,21 @@ model batch_movements {
   id         Int @id @default(autoincrement())
   company_id Int
 
-  // Информация о движении
   batch_id      Int
-  movement_type String   @db.VarChar(20) // IN, OUT, TRANSFER, CORRECTION
+  movement_type String   @db.VarChar(20)
   quantity      Decimal  @db.Decimal(15, 3)
   unit_price    Decimal? @db.Decimal(15, 2)
 
-  // Связанные документы
-  reference_type String? @db.VarChar(20) // PURCHASE, SALE, TRANSFER
+  reference_type String? @db.VarChar(20)
   reference_id   Int?
 
-  // Описание движения
   description String? @db.Text
   notes       String? @db.Text
 
-  // Метаданные
   movement_date DateTime @db.Date
   created_by    Int
   created_at    DateTime @default(now())
 
-  // Связи
   company companies       @relation(fields: [company_id], references: [id], onDelete: Cascade)
   batch   product_batches @relation(fields: [batch_id], references: [id], onDelete: Cascade)
   creator users           @relation("MovementCreator", fields: [created_by], references: [id])
@@ -760,42 +831,33 @@ model batch_movements {
   @@index([reference_type, reference_id])
 }
 
-// АВТОМАТИЧЕСКИЕ БУХГАЛТЕРСКИЕ ПРОВОДКИ
-
 model accounting_entries {
   id         Int @id @default(autoincrement())
   company_id Int
 
-  // Основная информация проводки
   entry_number String   @db.VarChar(50)
   entry_date   DateTime @db.Date
   amount       Decimal  @db.Decimal(15, 2)
   currency     Currency @default(EUR)
 
-  // Дебет и кредит
   account_debit  String @db.VarChar(10) // 2040, 2410, etc.
   account_credit String @db.VarChar(10) // 4430, 7001, etc.
 
-  // Описание и примечания
   description String  @db.VarChar(255)
   notes       String? @db.Text
 
-  // Связанные объекты
   reference_type String? @db.VarChar(20) // PURCHASE, SALE, BANKING
   reference_id   Int?
   product_id     Int?
   warehouse_id   Int?
   client_id      Int?
 
-  // Партийная информация
   batch_id Int?
 
-  // Метаданные
   is_automatic Boolean  @default(true)
   created_by   Int
   created_at   DateTime @default(now())
 
-  // Связи
   company   companies        @relation(fields: [company_id], references: [id], onDelete: Cascade)
   product   products?        @relation(fields: [product_id], references: [id])
   warehouse warehouses?      @relation(fields: [warehouse_id], references: [id])
