@@ -5,4 +5,4 @@ export { default as PurchasesToolbar } from './components/PurchasesToolbar';
 export { default as PurchasesStats } from './components/PurchasesStats';
 export { default as AddPurchaseModal } from './components/AddPurchaseModal';
 export { default as EditPurchaseModal } from './components/EditPurchaseModal';
-export * from './types/purchasesTypes';
+export * from './types/purchasesTypes.ts.backup';

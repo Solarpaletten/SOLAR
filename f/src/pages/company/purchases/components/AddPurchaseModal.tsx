@@ -1,6 +1,6 @@
 // f/src/pages/company/purchases/components/AddPurchaseModal.tsx
 import React, { useState, useEffect } from 'react';
-import { PurchaseFormData, PurchaseItem, Supplier, Product, Warehouse, User, Currency, PaymentStatus, DeliveryStatus, DocumentStatus } from '../types/purchasesTypes';
+import { PurchaseFormData, PurchaseItem, Supplier, Product, Warehouse, User, Currency, PaymentStatus, DeliveryStatus, DocumentStatus } from '../types/purchasesTypes.ts.backup';
 import { api } from '../../../../api/axios';
 
 interface AddPurchaseModalProps {

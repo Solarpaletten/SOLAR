@@ -1,5 +1,5 @@
 import React from 'react';
-import { PurchasesStats as Stats } from '../types/purchasesTypes';
+import { PurchasesStats as Stats } from '../types/purchasesTypes.ts.backup';
 
 interface PurchasesStatsProps {
   stats: Stats;

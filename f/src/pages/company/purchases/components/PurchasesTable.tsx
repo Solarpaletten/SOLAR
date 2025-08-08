@@ -1,5 +1,8 @@
+// f/src/pages/company/purchases/components/PurchasesTable.tsx - Enhanced Version
 import React, { useState, useMemo } from 'react';
-import { Purchase, PAYMENT_STATUSES, DELIVERY_STATUSES } from '../types/purchasesTypes';
+import { useNavigate } from 'react-router-dom'; // ← ДОБАВЛЯЕМ
+import { Purchase, PurchaseTableColumn, DEFAULT_PURCHASE_COLUMNS } from '../types/purchasesTypes';
+import ColumnSettingsModal from './ColumnSettingsModal';
 
 interface PurchasesTableProps {
   purchases: Purchase[];
@@ -10,15 +13,9 @@ interface PurchasesTableProps {
   onDelete: (id: number) => void;
   onBulkDelete: (ids: number[]) => void;
   onBulkCopy: (ids: number[]) => void;
-  onBulkExport?: (ids: number[]) => void; // Добавьте эту строку
+  onBulkExport?: (ids: number[]) => void;
 }
 
-interface ColumnFilter {
-  field: string;
-  value: string;
-  type: 'text' | 'date' | 'select';
-}
-// Компонент для компактного отображения списка покупок
 const PurchasesTable: React.FC<PurchasesTableProps> = ({
   purchases,
   loading,
@@ -28,26 +25,20 @@ const PurchasesTable: React.FC<PurchasesTableProps> = ({
   onDelete,
   onBulkDelete,
   onBulkCopy,
-  onBulkExport, 
+  onBulkExport,
 }) => {
+  const navigate = useNavigate(); // ← ДОБАВЛЯЕМ
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
-  const [editingCell, setEditingCell] = useState<{id: number, field: string} | null>(null);
-  const [filters, setFilters] = useState<ColumnFilter[]>([]);
-  const [liteMode, setLiteMode] = useState(true);
+  const [columns, setColumns] = useState<PurchaseTableColumn[]>(DEFAULT_PURCHASE_COLUMNS);
+  const [showColumnSettings, setShowColumnSettings] = useState(false);
+  const [liteMode, setLiteMode] = useState(false);
 
-  // 🔍 Фильтрация данных
-  const filteredPurchases = useMemo(() => {
-    if (filters.length === 0) return purchases;
-    
-    return purchases.filter(purchase => {
-      return filters.every(filter => {
-        const value = purchase[filter.field]?.toString().toLowerCase() || '';
-        return value.includes(filter.value.toLowerCase());
-      });
-    });
-  }, [purchases, filters]);
+  // Get visible columns only
+  const visibleColumns = useMemo(() => 
+    columns.filter(col => col.visible), [columns]
+  );
 
-  // ✅ Управление выбором
+  // Selection handlers
   const toggleSelect = (id: number) => {
     const newSelected = new Set(selectedIds);
     if (newSelected.has(id)) {
@@ -59,99 +50,131 @@ const PurchasesTable: React.FC<PurchasesTableProps> = ({
   };
 
   const selectAll = () => {
-    if (selectedIds.size === filteredPurchases.length) {
+    if (selectedIds.size === purchases.length) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(filteredPurchases.map(p => p.id)));
+      setSelectedIds(new Set(purchases.map(p => p.id)));
     }
   };
 
-  // 📝 Inline редактирование
-  const startEdit = (id: number, field: string) => {
-    setEditingCell({ id, field });
-  };
+  // Render cell content based on column type
+  const renderCell = (purchase: Purchase, column: PurchaseTableColumn) => {
+    const value = purchase[column.key as keyof Purchase];
 
-  const saveEdit = (id: number, field: string, value: string) => {
-    // Здесь будет API вызов для обновления поля
-    console.log(`Обновить ${field} для покупки ${id}: ${value}`);
-    setEditingCell(null);
-  };
-
-  // 🔍 Обновление фильтра
-  const updateFilter = (field: string, value: string) => {
-    setFilters(prev => {
-      const existing = prev.find(f => f.field === field);
-      if (existing) {
-        if (value === '') {
-          return prev.filter(f => f.field !== field);
+    switch (column.type) {
+      case 'date':
+        return value ? new Date(value as string).toLocaleDateString() : '-';
+      
+      case 'currency':
+        return value ? `€ ${Number(value).toLocaleString()}` : '€ 0';
+      
+      case 'number':
+        return value ? Number(value).toLocaleString() : '0';
+      
+      case 'status':
+        if (column.key === 'payment_status') {
+          const statusColors = {
+            'PENDING': 'bg-yellow-100 text-yellow-800',
+            'PAID': 'bg-green-100 text-green-800',
+            'PARTIAL': 'bg-blue-100 text-blue-800',
+            'OVERDUE': 'bg-red-100 text-red-800',
+            'CANCELLED': 'bg-gray-100 text-gray-800'
+          };
+          return (
+            <span className={`px-2 py-1 rounded text-xs font-medium ${statusColors[value as keyof typeof statusColors] || 'bg-gray-100 text-gray-800'}`}>
+              {value}
+            </span>
+          );
         }
-        existing.value = value;
-        return [...prev];
-      } else if (value !== '') {
-        return [...prev, { field, value, type: 'text' }];
-      }
-      return prev;
-    });
-  };
-
-  const formatCurrency = (amount: number, currency: string) => {
-    const symbols = { EUR: '€', USD: '$', UAH: '₴', AED: 'د.إ' };
-    return `${symbols[currency] || currency} ${amount.toLocaleString()}`;
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-GB'); // DD/MM/YYYY
+        if (column.key === 'locked') {
+          return value ? '🔒' : '';
+        }
+        return value ? String(value) : '-';
+      
+      case 'text':
+        if (column.key === 'supplier') {
+          return purchase.supplier?.name || `Supplier #${purchase.supplier_id}`;
+        }
+        if (column.key === 'warehouse') {
+          return purchase.warehouse?.name || 'All';
+        }
+        if (column.key === 'document_number') {
+          // Делаем номер документа кликабельным для перехода к детальной странице
+          return (
+            <button
+              onClick={() => navigate(`/purchases/${purchase.id}`)}
+              className="text-blue-600 hover:text-blue-800 hover:underline"
+            >
+              {purchase.document_number}
+            </button>
+          );
+        }
+        return value ? String(value) : '-';
+      
+      default:
+        return value ? String(value) : '-';
+    }
   };
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200">
-        <div className="flex items-center justify-center h-32 text-gray-500">
-          ⏳ Loading purchases...
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-500">⏳ Loading purchases...</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-      {/* Header с переключателем режима и bulk операциями */}
-      <div className="bg-blue-50 px-4 py-2 border-b border-blue-200 flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <h3 className="font-medium text-blue-900">Purchases</h3>
-          
-          <label className="flex items-center space-x-2 text-sm">
-            <input
-              type="checkbox"
-              checked={liteMode}
-              onChange={(e) => setLiteMode(e.target.checked)}
-              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-            />
-            <span className="text-blue-800">Enable lite mode</span>
-          </label>
-        </div>
+    <>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        {/* Table Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-blue-50">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center">
+              <span className="text-2xl mr-2">🛒</span>
+              <span className="font-semibold text-blue-900">Purchases</span>
+              {liteMode && (
+                <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">
+                  ⚡ Enable lite mode
+                </span>
+              )}
+            </div>
 
-        <div className="flex items-center space-x-2">
-          {selectedIds.size > 0 && (
-            <>
-              <span className="text-sm text-blue-700">
-                {selectedIds.size} selected
-              </span>
-              <button
-                onClick={() => onBulkCopy(Array.from(selectedIds))}
-                className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
-              >
-                📋 Copy
-              </button>
-              <button
-                onClick={() => onBulkDelete(Array.from(selectedIds))}
-                className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
-              >
-                🗑️ Delete
-              </button>
-            </>
-          )}
-          
+            {selectedIds.size > 0 && (
+              <>
+                <span className="text-sm text-blue-700">
+                  {selectedIds.size} selected
+                </span>
+                <button
+                  onClick={() => onBulkCopy(Array.from(selectedIds))}
+                  disabled={bulkLoading}
+                  className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50"
+                >
+                  📋 Copy
+                </button>
+                <button
+                  onClick={() => onBulkDelete(Array.from(selectedIds))}
+                  disabled={bulkLoading}
+                  className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700 disabled:opacity-50"
+                >
+                  🗑️ Delete
+                </button>
+                {onBulkExport && (
+                  <button
+                    onClick={() => onBulkExport(Array.from(selectedIds))}
+                    disabled={bulkLoading}
+                    className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 disabled:opacity-50"
+                  >
+                    📊 Export
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Right side controls */}
           <div className="flex items-center space-x-2 text-sm text-blue-700">
             <span>1 / 1</span>
             <button className="p-1 hover:bg-blue-100 rounded">◀</button>
@@ -161,251 +184,143 @@ const PurchasesTable: React.FC<PurchasesTableProps> = ({
               <option>50</option>
               <option>100</option>
             </select>
-            <span>of 2</span>
-          </div>
-
-          <div className="flex items-center space-x-1">
-            <button className="p-1 hover:bg-blue-100 rounded text-blue-600">🔍</button>
-            <button className="p-1 hover:bg-blue-100 rounded text-blue-600">⚙️</button>
-            <button 
-              onClick={onRefresh}
-              className="p-1 hover:bg-blue-100 rounded text-blue-600"
-            >
-              🔄
-            </button>
-            <button className="p-1 hover:bg-blue-100 rounded text-blue-600">📤</button>
-            <button className="p-1 hover:bg-blue-100 rounded text-blue-600">📥</button>
+            <span>of {purchases.length}</span>
+            
+            <div className="flex items-center space-x-1 ml-4">
+              <button className="p-1 hover:bg-blue-100 rounded text-blue-600" title="Search">🔍</button>
+              <button 
+                onClick={() => setShowColumnSettings(true)}
+                className="p-1 hover:bg-blue-100 rounded text-blue-600" 
+                title="Column Settings"
+              >
+                ⚙️
+              </button>
+              <button 
+                onClick={onRefresh}
+                className="p-1 hover:bg-blue-100 rounded text-blue-600"
+                title="Refresh"
+              >
+                🔄
+              </button>
+              <button className="p-1 hover:bg-blue-100 rounded text-blue-600" title="Export">📤</button>
+              <button className="p-1 hover:bg-blue-100 rounded text-blue-600" title="Import">📥</button>
+              <button 
+                onClick={() => setLiteMode(!liteMode)}
+                className={`p-1 hover:bg-blue-100 rounded ${liteMode ? 'text-blue-800' : 'text-blue-600'}`}
+                title="Toggle Lite Mode"
+              >
+                ⚡
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Компактная таблица */}
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="w-10 px-2 py-1">
-                <input
-                  type="checkbox"
-                  checked={selectedIds.size === filteredPurchases.length && filteredPurchases.length > 0}
-                  onChange={selectAll}
-                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                />
-              </th>
-              
-              {/* Purchase date */}
-              <th className="px-2 py-1 text-left">
-                <div className="text-xs font-medium text-gray-700">📅 Purchase date</div>
-                <input
-                  type="text"
-                  placeholder="yyyy-mm-dd"
-                  className="w-20 text-xs border border-gray-300 rounded px-1 mt-1"
-                  onChange={(e) => updateFilter('document_date', e.target.value)}
-                />
-              </th>
-
-              {/* Due date */}
-              <th className="px-2 py-1 text-left">
-                <div className="text-xs font-medium text-gray-700">Due date</div>
-                <input
-                  type="text"
-                  placeholder="yyyy-mm-dd"
-                  className="w-20 text-xs border border-gray-300 rounded px-1 mt-1"
-                  onChange={(e) => updateFilter('due_date', e.target.value)}
-                />
-              </th>
-
-              {/* Series */}
-              <th className="px-2 py-1 text-left">
-                <div className="text-xs font-medium text-gray-700">📄 Series</div>
-                <input
-                  type="text"
-                  placeholder="AB"
-                  className="w-12 text-xs border border-gray-300 rounded px-1 mt-1"
-                  onChange={(e) => updateFilter('series', e.target.value)}
-                />
-              </th>
-
-              {/* Number */}
-              <th className="px-2 py-1 text-left">
-                <div className="text-xs font-medium text-gray-700">📄 Number</div>
-                <input
-                  type="text"
-                  placeholder="Number"
-                  className="w-24 text-xs border border-gray-300 rounded px-1 mt-1"
-                  onChange={(e) => updateFilter('document_number', e.target.value)}
-                />
-              </th>
-
-              {/* Warehouse */}
-              <th className="px-2 py-1 text-left">
-                <div className="text-xs font-medium text-gray-700">Warehouse</div>
-                <select className="w-20 text-xs border border-gray-300 rounded px-1 mt-1">
-                  <option value="">All</option>
-                  <option value="main">Main</option>
-                </select>
-              </th>
-
-              {/* Supplier code */}
-              <th className="px-2 py-1 text-left">
-                <div className="text-xs font-medium text-gray-700">Supplier code</div>
-                <input
-                  type="text"
-                  placeholder="Code"
-                  className="w-16 text-xs border border-gray-300 rounded px-1 mt-1"
-                  onChange={(e) => updateFilter('supplier_code', e.target.value)}
-                />
-              </th>
-
-              {/* Supplier */}
-              <th className="px-2 py-1 text-left">
-                <div className="text-xs font-medium text-gray-700">Supplier</div>
-                <input
-                  type="text"
-                  placeholder="Supplier"
-                  className="w-32 text-xs border border-gray-300 rounded px-1 mt-1"
-                  onChange={(e) => updateFilter('supplier_name', e.target.value)}
-                />
-              </th>
-
-              {/* Business license */}
-              <th className="px-2 py-1 text-left">
-                <div className="text-xs font-medium text-gray-700">Business license</div>
-                <input
-                  type="text"
-                  placeholder="License"
-                  className="w-24 text-xs border border-gray-300 rounded px-1 mt-1"
-                />
-              </th>
-
-              {/* Total incl. VAT */}
-              <th className="px-2 py-1 text-right">
-                <div className="text-xs font-medium text-gray-700">Total incl. VAT</div>
-                <input
-                  type="text"
-                  placeholder="Amount"
-                  className="w-20 text-xs border border-gray-300 rounded px-1 mt-1"
-                  onChange={(e) => updateFilter('total_amount', e.target.value)}
-                />
-              </th>
-
-              {/* Remarks */}
-              <th className="px-2 py-1 text-left">
-                <div className="text-xs font-medium text-gray-700">Remarks</div>
-                <input
-                  type="text"
-                  placeholder="=="
-                  className="w-12 text-xs border border-gray-300 rounded px-1 mt-1"
-                />
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {filteredPurchases.map((purchase, index) => (
-              <tr 
-                key={purchase.id} 
-                className={`
-                  ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} 
-                  hover:bg-blue-50 border-b border-gray-100
-                  ${selectedIds.has(purchase.id) ? 'ring-2 ring-blue-200 bg-blue-50' : ''}
-                `}
-              >
-                <td className="px-2 py-1">
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="w-10 px-2 py-3 text-left">
                   <input
                     type="checkbox"
-                    checked={selectedIds.has(purchase.id)}
-                    onChange={() => toggleSelect(purchase.id)}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                    checked={selectedIds.size === purchases.length && purchases.length > 0}
+                    onChange={selectAll}
+                    className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
                   />
-                </td>
-
-                {/* Purchase date - editable */}
-                <td className="px-2 py-1 text-xs">
-                  {editingCell?.id === purchase.id && editingCell?.field === 'document_date' ? (
-                    <input
-                      type="date"
-                      defaultValue={purchase.document_date}
-                      onBlur={(e) => saveEdit(purchase.id, 'document_date', e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && saveEdit(purchase.id, 'document_date', (e.target as HTMLInputElement).value)}
-                      className="w-20 text-xs border border-blue-300 rounded px-1"
-                      autoFocus
-                    />
-                  ) : (
-                    <span 
-                      onClick={() => startEdit(purchase.id, 'document_date')}
-                      className="cursor-pointer hover:bg-yellow-100 px-1 rounded"
-                    >
-                      {formatDate(purchase.document_date)}
-                    </span>
-                  )}
-                </td>
-
-                {/* Due date */}
-                <td className="px-2 py-1 text-xs text-gray-600">
-                  {formatDate(purchase.document_date)} {/* Placeholder */}
-                </td>
-
-                {/* Series */}
-                <td className="px-2 py-1 text-xs font-mono">
-                  AB {/* Placeholder */}
-                </td>
-
-                {/* Number */}
-                <td className="px-2 py-1 text-xs font-mono">
-                  {purchase.document_number}
-                </td>
-
-                {/* Warehouse */}
-                <td className="px-2 py-1 text-xs">
-                  {purchase.warehouse?.name || '-'}
-                </td>
-
-                {/* Supplier code */}
-                <td className="px-2 py-1 text-xs font-mono">
-                  {purchase.supplier?.code || purchase.supplier_id}
-                </td>
-
-                {/* Supplier */}
-                <td className="px-2 py-1 text-xs">
-                  <span className="text-blue-600 hover:underline cursor-pointer">
-                    {purchase.supplier?.name || `Supplier #${purchase.supplier_id}`}
-                  </span>
-                </td>
-
-                {/* Business license */}
-                <td className="px-2 py-1 text-xs text-gray-500">
-                  {purchase.supplier?.registration_number || '-'}
-                </td>
-
-                {/* Total incl. VAT */}
-                <td className="px-2 py-1 text-xs text-right font-medium">
-                  {formatCurrency(purchase.total_amount, purchase.currency)}
-                </td>
-
-                {/* Remarks */}
-                <td className="px-2 py-1 text-xs text-center">
-                  {purchase.document_status === 'CONFIRMED' ? '==' : '-'}
-                </td>
+                </th>
+                {visibleColumns.map((column) => (
+                  <th
+                    key={column.key}
+                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    style={column.width ? { width: column.width } : undefined}
+                  >
+                    <div className="flex items-center">
+                      {column.label}
+                      {column.sortable && <span className="ml-1 text-gray-400">↕️</span>}
+                    </div>
+                  </th>
+                ))}
+                <th className="w-20 px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+                  Actions
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {purchases.map((purchase) => (
+                <tr
+                  key={purchase.id}
+                  className={`hover:bg-gray-50 ${selectedIds.has(purchase.id) ? 'bg-blue-50' : ''}`}
+                >
+                  <td className="px-2 py-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(purchase.id)}
+                      onChange={() => toggleSelect(purchase.id)}
+                      className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
+                    />
+                  </td>
+                  {visibleColumns.map((column) => (
+                    <td
+                      key={column.key}
+                      className="px-3 py-3 text-sm text-gray-900 whitespace-nowrap"
+                    >
+                      {renderCell(purchase, column)}
+                    </td>
+                  ))}
+                  <td className="px-3 py-3 text-center text-sm">
+                    <div className="flex items-center justify-center space-x-1">
+                      <button
+                        onClick={() => navigate(`/purchases/${purchase.id}`)}
+                        className="text-blue-600 hover:text-blue-800 p-1"
+                        title="View Details"
+                      >
+                        👁️
+                      </button>
+                      <button
+                        onClick={() => onEdit(purchase)}
+                        className="text-blue-600 hover:text-blue-800 p-1"
+                        title="Edit"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        onClick={() => onDelete(purchase.id)}
+                        className="text-red-600 hover:text-red-800 p-1"
+                        title="Delete"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-      {/* Footer */}
-      <div className="bg-gray-50 px-4 py-2 border-t border-gray-200">
-        <div className="flex items-center justify-between text-xs text-gray-600">
-          <span>Total: {filteredPurchases.length} purchases</span>
-          <span>
-            Total: {formatCurrency(
-              filteredPurchases.reduce((sum, p) => sum + p.total_amount, 0), 
-              'EUR'
-            )}
-          </span>
+          {purchases.length === 0 && (
+            <div className="text-center py-12">
+              <div className="text-gray-400 text-4xl mb-4">🛒</div>
+              <p className="text-gray-500">No purchases found</p>
+              <p className="text-sm text-gray-400 mt-2">Add your first purchase to get started</p>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 text-sm text-gray-600">
+          Total: {purchases.length} purchases
+          {selectedIds.size > 0 && ` • ${selectedIds.size} selected`}
         </div>
       </div>
-    </div>
+
+      {/* Column Settings Modal */}
+      <ColumnSettingsModal
+        isOpen={showColumnSettings}
+        onClose={() => setShowColumnSettings(false)}
+        columns={columns}
+        onColumnsChange={setColumns}
+      />
+    </>
   );
 };
 
