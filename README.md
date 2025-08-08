@@ -1,4 +1,4 @@
-MODULE REST
+AI IT SOLAR
 
 RELEASE NOTES v1.8.0 - Enterprise Batch System
 🧠 Концепция Эволюционной Автоматизации
