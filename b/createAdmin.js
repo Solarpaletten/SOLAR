@@ -5,9 +5,9 @@ const prisma = new PrismaClient();
 
 async function createAdmin() {
   try {
-    const email = 'dk@dk.de';
+    const email = 'solar@solar.de';
     const password = 'pass123';
-    const username = 'DASCHA';
+    const username = 'SOLAR';
 
     // Проверяем, существует ли пользователь с таким email
     const existingUser = await prisma.users.findUnique({
