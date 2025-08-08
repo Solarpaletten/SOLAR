@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 
 (async function createAdmin() {
   try {
-    const email = 'solar@solar.de';
+    const email = 'solar@solar.com';
     const username = 'SOLAR';
     const passwordHash = await bcrypt.hash('pass123', 10);
 
