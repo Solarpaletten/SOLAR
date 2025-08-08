@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Purchase, PurchaseFormData } from '../types/purchasesTypes';
+import { Purchase, PurchaseFormData } from '../types/purchasesTypes.ts.backup';
 
 interface EditPurchaseModalProps {
   purchase: Purchase;

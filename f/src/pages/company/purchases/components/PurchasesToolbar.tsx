@@ -1,6 +1,6 @@
 // f/src/pages/company/purchases/components/PurchasesToolbar.tsx
 import React, { useState } from 'react';
-import { PurchasesFilter, PaymentStatus } from '../types/purchasesTypes';
+import { PurchasesFilter, PaymentStatus } from '../types/purchasesTypes.ts.backup';
 
 interface PurchasesToolbarProps {
   filters: PurchasesFilter;
