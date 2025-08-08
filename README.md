@@ -1,5 +1,8 @@
 AI IT SOLAR
 
+b/GreateSOLARAdmin.js
+
+
 RELEASE NOTES v1.8.0 - Enterprise Batch System
 🧠 Концепция Эволюционной Автоматизации
 
